@@ -225,4 +225,36 @@ class BA {
         // Usage: [45] call BA_fnc_bearingToCompass;
         class bearingToCompass {};
     };
+
+    class Scanner {
+        file = "addon";
+
+        // Initialize scanner state variables and categories
+        // Usage: [] call BA_fnc_initScanner;
+        class initScanner {};
+
+        // Cycle scanner range (10/50/100/500/1000m)
+        // Usage: [] call BA_fnc_cycleScannerRange;
+        class cycleScannerRange {};
+
+        // Scan for objects near cursor position
+        // Usage: [] call BA_fnc_scanObjects;
+        class scanObjects {};
+
+        // Navigate scanner categories and objects
+        // Usage: ["category_next"] call BA_fnc_navigateScanner;
+        class navigateScanner {};
+
+        // Jump cursor to selected scanner object
+        // Usage: [] call BA_fnc_jumpToScannerObject;
+        class jumpToScannerObject {};
+
+        // Announce details of current scanner object
+        // Usage: [] call BA_fnc_announceScannedObject;
+        class announceScannedObject {};
+
+        // Get side relationship for object (friendly/enemy/etc)
+        // Usage: [_object] call BA_fnc_getObjectSide;
+        class getObjectSide {};
+    };
 };

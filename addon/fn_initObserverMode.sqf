@@ -14,6 +14,12 @@
  *   Arrow keys   - Cursor movement (with Alt/Shift/Ctrl modifiers)
  *   I            - Detailed scan at cursor
  *   Home/Backspace - Snap cursor to observed unit
+ *   U            - Cycle scanner range (10/50/100/500/1000m)
+ *   Ctrl+PageUp  - Previous scanner category
+ *   Ctrl+PageDown - Next scanner category
+ *   PageUp       - Previous object in scanner
+ *   PageDown     - Next object in scanner
+ *   J            - Jump cursor to selected scanner object
  *
  * Arguments:
  *   None
@@ -39,6 +45,9 @@ BA_currentUnitIndex = 0;        // Index in the group's unit array
 
 // Initialize landmarks menu system
 [] call BA_fnc_initLandmarksMenu;
+
+// Initialize scanner system
+[] call BA_fnc_initScanner;
 
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
@@ -200,6 +209,46 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // Home (199) or Backspace (14) - Snap cursor to observed unit
     if (_key in [199, 14] && !_ctrl && !_shift && !_alt) exitWith {
         [] call BA_fnc_snapCursorToUnit;
+        true
+    };
+
+    // U key (22) - Cycle scanner range
+    if (_key == 22 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_cycleScannerRange;
+        true
+    };
+
+    // PageUp (201) - Scanner navigation
+    if (_key == 201) exitWith {
+        if (_ctrl && !_shift && !_alt) then {
+            // Ctrl+PageUp - Previous category
+            ["category_prev"] call BA_fnc_navigateScanner;
+        } else {
+            if (!_ctrl && !_shift && !_alt) then {
+                // PageUp - Previous object
+                ["object_prev"] call BA_fnc_navigateScanner;
+            };
+        };
+        true
+    };
+
+    // PageDown (209) - Scanner navigation
+    if (_key == 209) exitWith {
+        if (_ctrl && !_shift && !_alt) then {
+            // Ctrl+PageDown - Next category
+            ["category_next"] call BA_fnc_navigateScanner;
+        } else {
+            if (!_ctrl && !_shift && !_alt) then {
+                // PageDown - Next object
+                ["object_next"] call BA_fnc_navigateScanner;
+            };
+        };
+        true
+    };
+
+    // J key (36) - Jump to selected scanner object
+    if (_key == 36 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_jumpToScannerObject;
         true
     };
 

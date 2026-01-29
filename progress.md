@@ -101,7 +101,40 @@ Discover nearby map locations from the virtual cursor position.
 
 ---
 
-## Next: Phase 6 - Potential Features
+## Phase 6: Object Scanner - COMPLETE
+Comprehensive object scanner with category-based filtering and adjustable range.
+Searches from virtual cursor position; auto-refreshes when cursor moves.
+
+### Scanner Controls
+| Key | Action |
+|-----|--------|
+| **U** | Cycle range: 10 → 50 → 100 → 500 → 1000 meters |
+| **Ctrl+PageUp** | Previous category |
+| **Ctrl+PageDown** | Next category |
+| **PageUp** | Previous object (cursor stays) |
+| **PageDown** | Next object (cursor stays) |
+| **J** | Jump cursor to selected object |
+
+### Categories (7 total)
+1. **Infantry** - All men units, including dead bodies
+2. **Vehicles** - Cars, armor, aircraft, ships, static weapons
+3. **Logistics** - Ammo, weapons, items, containers, backpacks
+4. **Cover** - Fortifications, walls, military structures, ruins
+5. **Hazards** - Mines, explosives, wrecks
+6. **Objectives** - Intel items, flags
+7. **World** - Furniture, signs, civilian structures
+
+### Announcements
+- Range change: "Scanner range: 500 meters. 12 Infantry."
+- Category change: "Vehicles, 3 objects"
+- Object: "CSAT Rifleman, 50 meters north, enemy"
+- Dead bodies: "dead NATO Medic, 30 meters southwest, friendly"
+- Vehicles: "Ifrit, 200 meters east, empty"
+- Jump: "Jumped to CSAT Rifleman."
+
+---
+
+## Next: Phase 7 - Potential Features
 - Formation changes
 - Waypoint queue management
 - Combat status announcements

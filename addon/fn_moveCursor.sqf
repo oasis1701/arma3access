@@ -66,4 +66,7 @@ if (_hitBoundary) then {
     ["Map boundary."] call BA_fnc_speak;
 };
 
+// Auto-refresh scanner objects when cursor moves
+[] call BA_fnc_scanObjects;
+
 true
