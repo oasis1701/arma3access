@@ -1,0 +1,33 @@
+# Build artifacts
+*.obj
+*.exp
+*.pdb
+*.ilk
+
+# Built DLLs and build outputs
+bridge/*.dll
+bridge/*.obj
+bridge/nvda_arma3_bridge_x64.lib
+bridge/nvda_arma3_bridge_x64.exp
+
+# NVDA Controller Client SDK (third-party, download separately)
+nvda controllerClient/
+
+# Claude Code local settings
+.claude/
+
+# Windows artifacts
+Thumbs.db
+Desktop.ini
+nul
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Arma 3 mission files that might be generated
+*.pbo
+*.bisign
