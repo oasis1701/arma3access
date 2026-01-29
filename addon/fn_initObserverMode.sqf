@@ -8,6 +8,12 @@
  *   Shift+Tab    - Previous unit in current group
  *   Ctrl+Tab     - Next group (switch to leader)
  *   Ctrl+Shift+Tab - Previous group (switch to leader)
+ *   G            - Open group selection menu
+ *   O            - Open orders menu
+ *   L            - Open landmarks menu
+ *   Arrow keys   - Cursor movement (with Alt/Shift/Ctrl modifiers)
+ *   I            - Detailed scan at cursor
+ *   Home/Backspace - Snap cursor to observed unit
  *
  * Arguments:
  *   None
@@ -30,6 +36,9 @@ BA_currentUnitIndex = 0;        // Index in the group's unit array
 
 // Initialize cursor system
 [] call BA_fnc_initCursor;
+
+// Initialize landmarks menu system
+[] call BA_fnc_initLandmarksMenu;
 
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
@@ -76,6 +85,52 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         // Escape (1)
         if (_key == 1) exitWith {
             [] call BA_fnc_closeGroupMenu;
+            true
+        };
+        // Block other keys while menu is open
+        true
+    };
+
+    // L key (38) - Open/close landmarks menu (only in observer mode)
+    if (_key == 38 && !_ctrl && !_shift && !_alt) exitWith {
+        if (BA_landmarksMenuActive) then {
+            [] call BA_fnc_closeLandmarksMenu;
+        } else {
+            [] call BA_fnc_openLandmarksMenu;
+        };
+        true
+    };
+
+    // Landmarks menu navigation (when active) - takes priority over cursor movement
+    if (BA_landmarksMenuActive) exitWith {
+        // Up arrow (200)
+        if (_key == 200) exitWith {
+            ["up"] call BA_fnc_navigateLandmarksMenu;
+            true
+        };
+        // Down arrow (208)
+        if (_key == 208) exitWith {
+            ["down"] call BA_fnc_navigateLandmarksMenu;
+            true
+        };
+        // Left arrow (203)
+        if (_key == 203) exitWith {
+            ["left"] call BA_fnc_navigateLandmarksMenu;
+            true
+        };
+        // Right arrow (205)
+        if (_key == 205) exitWith {
+            ["right"] call BA_fnc_navigateLandmarksMenu;
+            true
+        };
+        // Enter (28)
+        if (_key == 28) exitWith {
+            [] call BA_fnc_selectLandmarksMenuItem;
+            true
+        };
+        // Escape (1)
+        if (_key == 1) exitWith {
+            [] call BA_fnc_closeLandmarksMenu;
             true
         };
         // Block other keys while menu is open

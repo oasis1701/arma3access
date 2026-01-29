@@ -189,4 +189,40 @@ class BA {
         // Usage: [_group] call BA_fnc_getGroupDescription;
         class getGroupDescription {};
     };
+
+    class LandmarksMenu {
+        file = "addon";
+
+        // Initialize landmarks menu state variables
+        // Usage: [] call BA_fnc_initLandmarksMenu;
+        class initLandmarksMenu {};
+
+        // Open the landmarks menu
+        // Usage: [] call BA_fnc_openLandmarksMenu;
+        class openLandmarksMenu {};
+
+        // Navigate the landmarks menu
+        // Usage: ["up"] call BA_fnc_navigateLandmarksMenu;
+        class navigateLandmarksMenu {};
+
+        // Select current landmark and move cursor
+        // Usage: [] call BA_fnc_selectLandmarksMenuItem;
+        class selectLandmarksMenuItem {};
+
+        // Close landmarks menu without selection
+        // Usage: [] call BA_fnc_closeLandmarksMenu;
+        class closeLandmarksMenu {};
+
+        // Get formatted landmark description
+        // Usage: [_location] call BA_fnc_getLandmarkDescription;
+        class getLandmarkDescription {};
+
+        // Convert location type to readable name
+        // Usage: ["NameCity"] call BA_fnc_getLocationTypeName;
+        class getLocationTypeName {};
+
+        // Convert bearing to compass direction
+        // Usage: [45] call BA_fnc_bearingToCompass;
+        class bearingToCompass {};
+    };
 };

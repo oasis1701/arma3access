@@ -78,7 +78,30 @@ BA_debugMode = true;  // Enable debug output to systemChat
 
 ---
 
-## Next: Phase 5 - Potential Features
+## Phase 5: Landmarks Menu - COMPLETE
+Discover nearby map locations from the virtual cursor position.
+- **L** - Open/close landmarks menu
+- **Left/Right** - Switch between categories (Geography, Tactical, NATO)
+- **Up/Down** - Navigate items within category
+- **Enter** - Move cursor to selected landmark
+- **Escape** - Cancel
+
+### Categories
+| Category | Location Types |
+|----------|----------------|
+| Geography | Capital, City, Village, Airport, Marine, Hill, Mountain, Rocky Area, Viewpoint |
+| Tactical | Strategic Point, Strongpoint, Border Crossing, Safety Zone, Camp, Historical Site, Cultural Property |
+| NATO | BLUFOR/OPFOR/Independent markers (Infantry, Armor, Air, Artillery, HQ, etc.) |
+
+### Announcements
+- Opening: "Landmarks. Geography category, 5 items. 1. Agia Marina, Village, 1520 meters northeast."
+- Navigation: "2. Girna, Village, 2340 meters east."
+- Category switch: "Tactical category, 3 items. 1. ..."
+- Selection: "Cursor moved to Agia Marina."
+
+---
+
+## Next: Phase 6 - Potential Features
 - Formation changes
 - Waypoint queue management
 - Combat status announcements
