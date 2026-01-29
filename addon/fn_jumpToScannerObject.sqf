@@ -58,6 +58,11 @@ if (_object isKindOf "Man") then {
     };
 };
 
+// Clear road state since cursor is leaving the road
+BA_currentRoad = objNull;
+BA_atRoadEnd = false;
+BA_lastTravelDirection = "";
+
 // Move cursor to object position (without announcement from setCursorPos)
 BA_cursorPos = [_objectPos select 0, _objectPos select 1, getTerrainHeightASL [_objectPos select 0, _objectPos select 1]];
 

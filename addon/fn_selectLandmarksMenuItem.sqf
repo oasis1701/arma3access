@@ -38,6 +38,11 @@ BA_landmarksCategoryIndex = 0;
 BA_landmarksItemIndex = [0, 0, 0, 0];
 BA_landmarksItems = [[], [], [], []];
 
+// Clear road state since cursor is leaving the road
+BA_currentRoad = objNull;
+BA_atRoadEnd = false;
+BA_lastTravelDirection = "";
+
 // Move cursor to the location
 [_locPos, false] call BA_fnc_setCursorPos;
 

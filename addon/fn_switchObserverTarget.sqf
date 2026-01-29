@@ -40,6 +40,11 @@ BA_currentUnitIndex = (units BA_currentGroup) find _unit;
 // Reset selected order group when camera switches (orders default to new observed group)
 BA_selectedOrderGroup = grpNull;
 
+// Clear road state since cursor is leaving the road
+BA_currentRoad = objNull;
+BA_atRoadEnd = false;
+BA_lastTravelDirection = "";
+
 // Snap cursor to new unit's position
 BA_cursorPos = getPos _unit;
 
