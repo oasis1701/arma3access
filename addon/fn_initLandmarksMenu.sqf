@@ -30,7 +30,9 @@ BA_landmarksCategories = [
         "Airport",
         "NameMarine",
         "RockArea",
-        "ViewPoint"
+        "ViewPoint",
+        "Name",
+        "NameLocal"
     ]],
     ["Tactical", [
         "Strategic",
@@ -39,11 +41,14 @@ BA_landmarksCategories = [
         "SafetyZone",
         "HandDrawnCamp",
         "HistoricalSite",
-        "CulturalProperty"
+        "CulturalProperty",
+        "CivilDefense",
+        "DangerousForces"
     ]],
     ["NATO", []],  // NATO types detected dynamically by prefix
     ["Extras", [
-        "Hill"
+        "Hill",
+        "Flag"
     ]]
 ];
 

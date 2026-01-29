@@ -78,6 +78,13 @@ switch (_type) do {
     case "HandDrawnCamp": { "Camp" };
     case "HistoricalSite": { "Historical Site" };
     case "CulturalProperty": { "Cultural Property" };
+    case "CivilDefense": { "Civil Defense" };
+    case "DangerousForces": { "Dangerous Forces" };
+
+    // Extras
+    case "Flag": { "Flag" };
+    case "Name": { "Location" };
+    case "NameLocal": { "Local Area" };
 
     // Default - return type as-is
     default { _type };
