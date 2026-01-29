@@ -257,4 +257,36 @@ class BA {
         // Usage: [_object] call BA_fnc_getObjectSide;
         class getObjectSide {};
     };
+
+    class RoadMode {
+        file = "addon";
+
+        // Toggle road exploration mode on/off
+        // Usage: [] call BA_fnc_toggleRoadMode;
+        class toggleRoadMode {};
+
+        // Get human-readable road type description
+        // Usage: [getRoadInfo _road] call BA_fnc_getRoadTypeDescription;
+        class getRoadTypeDescription {};
+
+        // Snap cursor to nearest road in direction
+        // Usage: ["North"] call BA_fnc_snapToRoad;
+        class snapToRoad {};
+
+        // Follow road in current direction
+        // Usage: [true] call BA_fnc_followRoad;
+        class followRoad {};
+
+        // Detect if position is at an intersection
+        // Usage: [_road, _position] call BA_fnc_detectIntersection;
+        class detectIntersection {};
+
+        // Announce intersection options
+        // Usage: [_road, _position, _direction] call BA_fnc_announceIntersection;
+        class announceIntersection {};
+
+        // Select road at intersection by compass direction
+        // Usage: ["East"] call BA_fnc_selectRoadAtIntersection;
+        class selectRoadAtIntersection {};
+    };
 };

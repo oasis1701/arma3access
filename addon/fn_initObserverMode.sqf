@@ -11,7 +11,9 @@
  *   G            - Open group selection menu
  *   O            - Open orders menu
  *   L            - Open landmarks menu
+ *   R            - Toggle road exploration mode
  *   Arrow keys   - Cursor movement (with Alt/Shift/Ctrl modifiers)
+ *                  In road mode: Alt+Arrow follows road in compass direction, Shift+Arrow turns at intersection
  *   I            - Detailed scan at cursor
  *   Home/Backspace - Snap cursor to observed unit
  *   U            - Cycle scanner range (10/50/100/500/1000m)
@@ -182,6 +184,12 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         false
     };
 
+    // R key (19) - Toggle road exploration mode
+    if (_key == 19 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_toggleRoadMode;
+        true
+    };
+
     // Arrow keys (200=Up, 208=Down, 203=Left, 205=Right) - Cursor movement
     if (_key in [200, 208, 203, 205]) exitWith {
         private _direction = switch (_key) do {
@@ -190,6 +198,28 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
             case 205: { "East" };   // Right arrow
             case 203: { "West" };   // Left arrow
         };
+
+        // Check if road mode is enabled
+        if (BA_roadModeEnabled) exitWith {
+            // Road mode arrow key handling
+            if (_alt && !_ctrl && !_shift) then {
+                // Alt+Arrow = Follow road in compass direction
+                // All arrow keys now work based on compass direction
+                [_direction] call BA_fnc_followRoad;
+                true
+            } else {
+                if (_shift && !_ctrl && !_alt) then {
+                    // Shift+Arrow = Turn at intersection
+                    [_direction] call BA_fnc_selectRoadAtIntersection;
+                    true
+                } else {
+                    // No modifier or Ctrl = do nothing in road mode (reserve for future)
+                    false
+                };
+            };
+        };
+
+        // Normal cursor movement (road mode disabled)
         // Alt+Arrow = 10m, Shift+Arrow = 100m, Ctrl+Arrow = 1000m
         private _distance = if (_alt && !_ctrl && !_shift) then { 10 }
             else { if (_shift && !_ctrl && !_alt) then { 100 }

@@ -21,6 +21,14 @@ BA_cursorActive = false;
 
 // Terrain type mapping for human-readable names
 // Includes generic GDT types and Stratis-specific surfaces
+// Road exploration mode variables
+BA_roadModeEnabled = false;        // Toggle state for road exploration mode
+BA_currentRoad = objNull;          // Current road segment being followed
+BA_roadDirection = 0;              // 0 = toward endPos (positive bearing), 1 = toward begPos (negative bearing)
+BA_lastRoadInfo = [];              // Cached getRoadInfo result for current road
+
+// Terrain type mapping for human-readable names
+// Includes generic GDT types and Stratis-specific surfaces
 BA_terrainTypes = createHashMapFromArray [
     // Generic GDT types
     ["#gdt_grass", "Grass"],

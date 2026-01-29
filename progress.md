@@ -134,7 +134,50 @@ Searches from virtual cursor position; auto-refreshes when cursor moves.
 
 ---
 
-## Next: Phase 7 - Potential Features
+## Phase 7: Road Exploration Mode - COMPLETE
+Snap to and follow roads using the virtual cursor system.
+Toggle with **R** key while in observer mode.
+
+### Road Mode Controls
+| Key | Action |
+|-----|--------|
+| **R** | Toggle road mode on/off |
+| **Alt+Up** | Follow road northward (toward more northerly endpoint) |
+| **Alt+Down** | Follow road southward (toward more southerly endpoint) |
+| **Alt+Right** | Follow road eastward (toward more easterly endpoint) |
+| **Alt+Left** | Follow road westward (toward more westerly endpoint) |
+| **Alt+Arrow** (off-road) | Search for road in that direction (200m range) |
+| **Shift+Arrow** | Turn at intersection (compass direction) |
+
+### Road Types Detected
+| Type | Description |
+|------|-------------|
+| Main road | Major paved roads, highways |
+| Road | Standard paved roads |
+| Dirt track | Unpaved dirt roads |
+| Footpath | Pedestrian trails |
+| Bridge | Detected and announced with length |
+
+### Announcements
+- Toggle: "Road mode on." / "Road mode off."
+- Snap: "Snapped to main road. Heading northeast."
+- Follow: "Main road. 12 meters."
+- Type change: "Road becomes dirt track."
+- Bridge: "Bridge. 45 meters."
+- Intersection: "Intersection. Roads north, east, south, west." (all available directions)
+- Turn: "Turned east onto dirt track."
+- End: "Road ends."
+- Not found: "No road within range."
+
+### Technical Notes
+- Uses multi-method road detection: `roadAt`, `roadsConnectedTo`, and `nearRoads` combined
+- `nearRoads` finds roads by CENTER point, not endpoints, so 50m radius is needed for long segments
+- Endpoint filtering uses 15m tolerance to ensure roads with endpoints at target position are found
+- This approach eliminates false "Road ends" announcements caused by `nearRoads` missing nearby segments
+
+---
+
+## Next: Phase 8 - Potential Features
 - Formation changes
 - Waypoint queue management
 - Combat status announcements
