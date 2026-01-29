@@ -20,6 +20,17 @@ params [
 // Must be in observer mode with cursor active and road mode enabled
 if (!BA_observerMode || !BA_cursorActive || !BA_roadModeEnabled) exitWith { false };
 
+// If at a dead end, handle specially
+if (BA_atRoadEnd) then {
+    if (_direction == BA_lastTravelDirection) exitWith {
+        // Same direction as when we hit the dead end - just repeat message
+        ["Road ends."] call BA_fnc_speak;
+        false
+    };
+    // Different direction - clear dead end state and continue
+    BA_atRoadEnd = false;
+};
+
 // If no current road, snap to nearest first
 if (isNull BA_currentRoad) exitWith {
     [_direction] call BA_fnc_snapToRoad
@@ -117,28 +128,36 @@ if (_distToTarget < _stepSize * 1.5) then {
         _allRoads pushBackUnique _x;
     } forEach _nearbyRoads;
 
-    // Filter to roads with an endpoint near target position (within 15m)
+    // Get exact endpoint position from current road (more accurate than calculated _targetPos)
+    private _exactEndpoint = if (_targetPos distance2D _begPos < _targetPos distance2D _endPos) then { _begPos } else { _endPos };
+
+    // Filter to roads with an endpoint near the exact endpoint (within 15m)
     private _connectedRoads = _allRoads select {
         private _info = getRoadInfo _x;
         if (count _info == 0) then { false } else {
             _info params ["", "", "", "", "", "", "_b", "_e"];
-            (_targetPos distance2D _b < 15) || (_targetPos distance2D _e < 15)
+            (_exactEndpoint distance2D _b < 15) || (_exactEndpoint distance2D _e < 15)
         };
     };
 
     if (count _connectedRoads == 0) exitWith {
-        // Road truly ends - no roads found by any method
+        // Road truly ends - set dead end state
+        BA_atRoadEnd = true;
+        BA_lastTravelDirection = _direction;
         ["Road ends."] call BA_fnc_speak;
-        BA_currentRoad = objNull;
+        // Keep BA_currentRoad so user can turn around
         false
     };
 
-    // Check for intersection (more than 1 connected road)
-    private _isIntersection = [BA_currentRoad, _targetPos] call BA_fnc_detectIntersection;
+    // Clear dead end state since we found connecting roads
+    BA_atRoadEnd = false;
+
+    // Check for intersection (more than 1 connected road) using exact endpoint
+    private _isIntersection = [BA_currentRoad, _exactEndpoint] call BA_fnc_detectIntersection;
 
     if (_isIntersection) then {
-        // Announce intersection with all available directions
-        [BA_currentRoad, _targetPos, 0] call BA_fnc_announceIntersection;
+        // Announce intersection with all available directions using exact endpoint
+        [BA_currentRoad, _exactEndpoint, 0] call BA_fnc_announceIntersection;
     };
 
     // Find the road that best continues in the requested direction
@@ -154,8 +173,8 @@ if (_distToTarget < _stepSize * 1.5) then {
 
         _nextInfo params ["", "", "", "", "", "", "_nextBeg", "_nextEnd"];
 
-        // Determine which endpoint connects to our target
-        private _nextStart = if (_nextBeg distance2D _targetPos < _nextEnd distance2D _targetPos) then { _nextBeg } else { _nextEnd };
+        // Determine which endpoint connects to our exact endpoint
+        private _nextStart = if (_nextBeg distance2D _exactEndpoint < _nextEnd distance2D _exactEndpoint) then { _nextBeg } else { _nextEnd };
         private _nextTarget = if (_nextStart isEqualTo _nextBeg) then { _nextEnd } else { _nextBeg };
 
         // Calculate bearing of next road segment (away from intersection)
@@ -173,8 +192,11 @@ if (_distToTarget < _stepSize * 1.5) then {
     } forEach _connectedRoads;
 
     if (isNull _bestRoad) exitWith {
+        // No road in requested direction - set dead end state
+        BA_atRoadEnd = true;
+        BA_lastTravelDirection = _direction;
         ["Road ends."] call BA_fnc_speak;
-        BA_currentRoad = objNull;
+        // Keep BA_currentRoad so user can turn around
         false
     };
 
@@ -189,13 +211,15 @@ if (_distToTarget < _stepSize * 1.5) then {
         [format ["Road becomes %1.", _newType]] call BA_fnc_speak;
     };
 
-    // Move cursor to transition point
-    private _z = getTerrainHeightASL _targetPos;
-    BA_cursorPos = [_targetPos select 0, _targetPos select 1, _z];
+    // Move cursor to exact endpoint (transition point)
+    private _z = getTerrainHeightASL _exactEndpoint;
+    BA_cursorPos = [_exactEndpoint select 0, _exactEndpoint select 1, _z];
 };
 
 // Calculate new position along road
 if (_distToTarget >= _stepSize) then {
+    // Clear dead end state since we're successfully moving
+    BA_atRoadEnd = false;
     // Normalize direction vector
     private _dirNorm = [
         (_toTarget select 0) / _distToTarget,

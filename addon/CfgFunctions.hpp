@@ -288,5 +288,21 @@ class BA {
         // Select road at intersection by compass direction
         // Usage: ["East"] call BA_fnc_selectRoadAtIntersection;
         class selectRoadAtIntersection {};
+
+        // Open intersection menu showing all roads at position
+        // Usage: [] call BA_fnc_openIntersectionMenu;
+        class openIntersectionMenu {};
+
+        // Navigate intersection menu up/down
+        // Usage: [1] call BA_fnc_navigateIntersectionMenu;
+        class navigateIntersectionMenu {};
+
+        // Select current road in intersection menu
+        // Usage: [] call BA_fnc_selectIntersectionMenuItem;
+        class selectIntersectionMenuItem {};
+
+        // Close intersection menu
+        // Usage: [] call BA_fnc_closeIntersectionMenu;
+        class closeIntersectionMenu {};
     };
 };

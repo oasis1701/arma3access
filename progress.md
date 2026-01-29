@@ -142,12 +142,22 @@ Toggle with **R** key while in observer mode.
 | Key | Action |
 |-----|--------|
 | **R** | Toggle road mode on/off |
+| **Ctrl+R** | Open intersection menu (shows all roads at position) |
 | **Alt+Up** | Follow road northward (toward more northerly endpoint) |
 | **Alt+Down** | Follow road southward (toward more southerly endpoint) |
 | **Alt+Right** | Follow road eastward (toward more easterly endpoint) |
 | **Alt+Left** | Follow road westward (toward more westerly endpoint) |
 | **Alt+Arrow** (off-road) | Search for road in that direction (200m range) |
 | **Shift+Arrow** | Turn at intersection (compass direction) |
+
+### Intersection Menu (Ctrl+R)
+| Key | Action |
+|-----|--------|
+| **Up/Down** | Navigate roads |
+| **Enter** | Select road and start following |
+| **Escape** | Cancel |
+
+Each road shows: direction, type, length, and destination (continues/ends/intersection)
 
 ### Road Types Detected
 | Type | Description |
@@ -160,19 +170,23 @@ Toggle with **R** key while in observer mode.
 
 ### Announcements
 - Toggle: "Road mode on." / "Road mode off."
-- Snap: "Snapped to main road. Heading northeast."
-- Follow: "Main road. 12 meters."
+- Snap: "Snapped to main road, 45 meters east. Heading northeast." (includes jump distance/direction)
+- Follow: "Main road. 12 meters northeast." (includes actual travel direction)
 - Type change: "Road becomes dirt track."
-- Bridge: "Bridge. 45 meters."
-- Intersection: "Intersection. Roads north, east, south, west." (all available directions)
+- Bridge: "Bridge. 45 meters east."
+- Intersection: "Intersection. Roads north, east, south, southwest." (all available directions)
 - Turn: "Turned east onto dirt track."
-- End: "Road ends."
+- End: "Road ends." (stays on road for turn-around)
 - Not found: "No road within range."
+- Menu open: "Intersection menu. 4 roads. 1: Northeast, main road, 85 meters, continues."
+- Menu select: "Selected east onto dirt track."
 
 ### Technical Notes
 - Uses multi-method road detection: `roadAt`, `roadsConnectedTo`, and `nearRoads` combined
 - `nearRoads` finds roads by CENTER point, not endpoints, so 50m radius is needed for long segments
 - Endpoint filtering uses 15m tolerance to ensure roads with endpoints at target position are found
+- Uses exact road endpoints for intersection detection (not calculated positions)
+- Dead-end handling: stays on road at dead end, allows turn-around without re-snap bouncing
 - This approach eliminates false "Road ends" announcements caused by `nearRoads` missing nearby segments
 
 ---

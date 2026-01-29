@@ -142,14 +142,23 @@ BA_roadDirection = if (_bearingDiff <= 90) then { 0 } else { 1 };
 private _headingBearing = if (BA_roadDirection == 0) then { _roadBearing } else { (_roadBearing + 180) mod 360 };
 private _headingCompass = [_headingBearing] call BA_fnc_bearingToCompass;
 
+// Calculate jump distance and direction before moving cursor
+private _jumpDist = _cursorPos2D distance2D _bestPos;
+private _jumpBearing = _cursorPos2D getDir _bestPos;
+private _jumpDir = [_jumpBearing] call BA_fnc_bearingToCompass;
+
 // Snap cursor to road center
 private _z = getTerrainHeightASL _bestPos;
 BA_cursorPos = [_bestPos select 0, _bestPos select 1, _z];
 BA_currentRoad = _bestRoad;
 BA_lastRoadInfo = _roadInfo;
 
-// Announce snap
-private _announcement = format ["Snapped to %1. Heading %2.", _roadType, toLower _headingCompass];
+// Clear any dead end state
+BA_atRoadEnd = false;
+
+// Announce snap with jump distance: "Snapped to main road, 45 meters east. Heading northeast."
+private _announcement = format ["Snapped to %1, %2 meters %3. Heading %4.",
+    _roadType, round _jumpDist, toLower _jumpDir, toLower _headingCompass];
 [_announcement] call BA_fnc_speak;
 
 // Auto-refresh scanner

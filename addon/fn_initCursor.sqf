@@ -26,6 +26,13 @@ BA_roadModeEnabled = false;        // Toggle state for road exploration mode
 BA_currentRoad = objNull;          // Current road segment being followed
 BA_roadDirection = 0;              // 0 = toward endPos (positive bearing), 1 = toward begPos (negative bearing)
 BA_lastRoadInfo = [];              // Cached getRoadInfo result for current road
+BA_atRoadEnd = false;              // Track if cursor is at a dead end
+BA_lastTravelDirection = "";       // Track last travel direction for dead-end handling
+
+// Intersection menu variables
+BA_intersectionMenuActive = false; // Whether intersection menu is open
+BA_intersectionMenuItems = [];     // Array of road data for menu
+BA_intersectionMenuIndex = 0;      // Current selection index
 
 // Terrain type mapping for human-readable names
 // Includes generic GDT types and Stratis-specific surfaces

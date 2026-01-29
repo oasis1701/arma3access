@@ -12,6 +12,7 @@
  *   O            - Open orders menu
  *   L            - Open landmarks menu
  *   R            - Toggle road exploration mode
+ *   Ctrl+R       - Open intersection menu (in road mode)
  *   Arrow keys   - Cursor movement (with Alt/Shift/Ctrl modifiers)
  *                  In road mode: Alt+Arrow follows road in compass direction, Shift+Arrow turns at intersection
  *   I            - Detailed scan at cursor
@@ -148,6 +149,32 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         true
     };
 
+    // Intersection menu navigation (when active) - takes priority
+    if (BA_intersectionMenuActive) exitWith {
+        // Up arrow (200)
+        if (_key == 200) exitWith {
+            [-1] call BA_fnc_navigateIntersectionMenu;
+            true
+        };
+        // Down arrow (208)
+        if (_key == 208) exitWith {
+            [1] call BA_fnc_navigateIntersectionMenu;
+            true
+        };
+        // Enter (28)
+        if (_key == 28) exitWith {
+            [] call BA_fnc_selectIntersectionMenuItem;
+            true
+        };
+        // Escape (1)
+        if (_key == 1) exitWith {
+            [] call BA_fnc_closeIntersectionMenu;
+            true
+        };
+        // Block other keys while menu is open
+        true
+    };
+
     // O key (24) without Ctrl - Open/close orders menu (only in observer mode)
     if (_key == 24 && !_ctrl && !_shift && !_alt) exitWith {
         if (BA_orderMenuActive) then {
@@ -187,6 +214,16 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // R key (19) - Toggle road exploration mode
     if (_key == 19 && !_ctrl && !_shift && !_alt) exitWith {
         [] call BA_fnc_toggleRoadMode;
+        true
+    };
+
+    // Ctrl+R (key 19) - Open intersection menu (in road mode)
+    if (_key == 19 && _ctrl && !_shift && !_alt) exitWith {
+        if (BA_intersectionMenuActive) then {
+            [] call BA_fnc_closeIntersectionMenu;
+        } else {
+            [] call BA_fnc_openIntersectionMenu;
+        };
         true
     };
 
