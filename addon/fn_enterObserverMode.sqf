@@ -114,24 +114,13 @@ BA_observerKilledEH = BA_originalUnit addEventHandler ["Killed", {
     params ["_unit", "_killer"];
 
     if (BA_observerMode) then {
-        // Detach camera so it stays at current position
-        detach BA_observerCamera;
         ["Your soldier has been killed."] call BA_fnc_speak;
 
-        // Check if there are other playable units in the group
-        private _group = group _unit;
-        private _aliveUnits = {alive _x} count units _group;
-
-        if (_aliveUnits == 0) then {
-            // No units left - mission failed
-            sleep 2;
-            ["All units lost. Mission failed."] call BA_fnc_speak;
-
-            // Exit observer mode to let game handle mission end
-            [] spawn {
-                sleep 3;
-                [] call BA_fnc_exitObserverMode;
-            };
+        // Exit observer mode immediately so player becomes the dead soldier
+        // This triggers Arma's native respawn/death systems (respawn menu, tickets, etc.)
+        [] spawn {
+            sleep 0.5; // Brief delay for speech to start
+            [] call BA_fnc_exitObserverMode;
         };
     };
 }];

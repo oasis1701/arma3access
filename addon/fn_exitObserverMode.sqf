@@ -48,17 +48,23 @@ if (_unitAlive && !isNull BA_originalUnit) then {
     BA_originalUnit removeEventHandler ["Killed", BA_observerKilledEH];
 };
 
-// Switch player back to original unit (if alive) or handle death
-if (_unitAlive && !isNull BA_originalUnit) then {
-    // Return control to original soldier
+// Switch player back to original unit (alive or dead)
+if (!isNull BA_originalUnit) then {
+    // Return control to original soldier - even if dead
+    // This makes Arma's native respawn/death systems trigger
     selectPlayer BA_originalUnit;
-    ["Manual control restored."] call BA_fnc_speak;
-    systemChat "Observer Mode: Manual control restored";
+
+    if (_unitAlive) then {
+        ["Manual control restored."] call BA_fnc_speak;
+        systemChat "Observer Mode: Manual control restored";
+    } else {
+        // Soldier is dead - Arma's respawn system will now see player as dead
+        systemChat "Observer Mode: Soldier dead - respawn system active";
+    };
 } else {
-    // Soldier is dead - let normal respawn/death handling occur
-    // Player stays as ghost temporarily until respawn system takes over
-    ["Soldier is dead. Exiting observer mode."] call BA_fnc_speak;
-    systemChat "Observer Mode: Soldier dead - exiting";
+    // Original unit no longer exists (deleted, etc.)
+    ["Original soldier no longer exists."] call BA_fnc_speak;
+    systemChat "Observer Mode: Original unit gone";
 };
 
 // Delete ghost unit

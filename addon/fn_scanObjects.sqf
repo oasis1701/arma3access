@@ -48,6 +48,11 @@ if (BA_scannerCategoryIndex == 0) then {
 
     // Filter out animals (snakes, rabbits, etc.)
     _allObjects = _allObjects select { !(_x isKindOf "Animal") };
+
+    // Filter out ghost unit (observer mode invisible player)
+    if (!isNil "BA_ghostUnit" && {!isNull BA_ghostUnit}) then {
+        _allObjects = _allObjects - [BA_ghostUnit];
+    };
 };
 
 // Filter out clutter objects (by classname only)

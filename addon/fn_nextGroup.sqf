@@ -20,10 +20,11 @@ if (!BA_observerMode) exitWith {
 // Get the side of the original player unit
 private _playerSide = side BA_originalUnit;
 
-// Get all groups on the same side with alive units
+// Get all groups on the same side with alive units (excluding ghost group)
 private _friendlyGroups = allGroups select {
     side _x == _playerSide &&
-    {alive _x} count units _x > 0
+    {alive _x} count units _x > 0 &&
+    {isNil "BA_ghostGroup" || {_x != BA_ghostGroup}}
 };
 
 if (count _friendlyGroups == 0) exitWith {
