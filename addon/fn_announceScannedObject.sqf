@@ -73,6 +73,61 @@ if (_object isKindOf "Man") then {
     };
 };
 
+// Special handling for Logistics category (containers, dropped equipment)
+private _isContainer = false;
+if (!isNil "BA_scannerCategoryIndex" && {BA_scannerCategoryIndex == 2}) then {
+    private _weapons = weaponCargo _object;
+    private _magazines = magazineCargo _object;
+    private _items = itemCargo _object;
+    private _backpacks = backpackCargo _object;
+
+    private _totalCargo = count _weapons + count _magazines + count _items + count _backpacks;
+
+    if (_totalCargo > 0) then {
+        _isContainer = true;
+        private _contents = [];
+
+        // Weapons
+        if (count _weapons > 0) then {
+            if (count _weapons == 1) then {
+                private _weaponName = getText (configFile >> "CfgWeapons" >> (_weapons select 0) >> "displayName");
+                if (_weaponName == "") then { _weaponName = "weapon" };
+                _contents pushBack _weaponName;
+            } else {
+                _contents pushBack format ["%1 weapons", count _weapons];
+            };
+        };
+
+        // Magazines -> "ammo"
+        if (count _magazines > 0) then {
+            _contents pushBack "ammo";
+        };
+
+        // Items
+        if (count _items > 0) then {
+            _contents pushBack format ["%1 items", count _items];
+        };
+
+        // Backpacks
+        if (count _backpacks > 0) then {
+            if (count _backpacks == 1) then {
+                _contents pushBack "backpack";
+            } else {
+                _contents pushBack format ["%1 backpacks", count _backpacks];
+            };
+        };
+
+        _name = "Dropped: " + (_contents joinString ", ");
+    } else {
+        // Empty cargo but is a WeaponHolder type
+        private _className = typeOf _object;
+        if (_className find "WeaponHolder" >= 0) then {
+            _isContainer = true;
+            _name = "Dropped equipment";
+        };
+    };
+};
+
 // Get side/status [sideName, relation]
 private _sideInfo = [_object] call BA_fnc_getObjectSide;
 _sideInfo params ["_sideName", "_relation"];
@@ -91,12 +146,16 @@ private _sideStatus = if (_sideName == "") then {
 // Build announcement
 private _announcement = "";
 
-// Add "dead" prefix for dead units, "destroyed" for vehicles
-if (_isDead) then {
-    private _deadPrefix = if (_object isKindOf "Man") then { "dead" } else { "destroyed" };
-    _announcement = format ["%1 %2, %3 meters %4, %5", _deadPrefix, _name, _distance, _direction, _sideStatus];
+if (_isContainer) then {
+    // Containers: no side info needed
+    _announcement = format ["%1, %2 meters %3", _name, _distance, _direction];
 } else {
-    _announcement = format ["%1, %2 meters %3, %4", _name, _distance, _direction, _sideStatus];
+    if (_isDead) then {
+        private _deadPrefix = if (_object isKindOf "Man") then { "dead" } else { "destroyed" };
+        _announcement = format ["%1 %2, %3 meters %4, %5", _deadPrefix, _name, _distance, _direction, _sideStatus];
+    } else {
+        _announcement = format ["%1, %2 meters %3, %4", _name, _distance, _direction, _sideStatus];
+    };
 };
 
 // Speak the announcement
