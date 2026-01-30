@@ -30,6 +30,7 @@ D:\arma3 access\nvda controllerClient\x64\
 
 ## Architecture
 
+### NVDA Bridge
 ```
 Arma 3 SQF Scripts
     | (callExtension)
@@ -42,6 +43,57 @@ nvdaControllerClient.dll (NVDA SDK)
     v
 NVDA Screen Reader
 ```
+
+### Observer Mode Architecture (IMPORTANT)
+
+The core concept: Blind players enjoy Arma by letting AI control their soldier while they listen and give orders.
+
+**The Problem:**
+- Arma 3 requires a `player` object - the game always needs a unit the human "controls"
+- We want AI to control the soldier so blind players can command it
+- If AI controls the soldier, what does `player` point to?
+
+**The Solution - Ghost Unit:**
+```
+Before Observer Mode:
+  player = Your Soldier (you control it directly)
+
+After Observer Mode:
+  player = Ghost Unit (invisible, does nothing)
+  Your Soldier = AI-controlled (BA_originalUnit - receives your orders)
+  Camera = Attached to observed unit (BA_observedUnit - can be any unit)
+```
+
+We use `selectPlayer ghostUnit` to transfer control. The original soldier becomes AI-controlled.
+
+**Why Ghost Must Follow Your Soldier:**
+
+Many mission scripts check `player` for position, side, variables, and triggers:
+```sqf
+player distance objective < 50    // Position check
+side player == west               // Side check
+player getVariable "money"        // Variable access
+player in thisList                // Trigger area
+```
+
+If ghost was at `[0,0,0]` with wrong side, **missions would break**. So we:
+1. Create ghost as hidden soldier (same side class: B_/O_/I_Soldier)
+2. Position ghost at BA_originalUnit location (sync every 0.5s)
+3. Sync variables bidirectionally between ghost and original unit
+
+**Key Global Variables:**
+| Variable | Purpose |
+|----------|---------|
+| `BA_originalUnit` | Your soldier (AI-controlled, receives orders) |
+| `BA_ghostUnit` | The invisible `player` object |
+| `BA_observedUnit` | Unit camera is attached to (can differ from original) |
+| `BA_ghostGroup` | Group containing ghost (for correct side) |
+
+**Critical Implementation Notes:**
+- Ghost uses `hideObjectGlobal true` + `enableSimulation false` + `disableAI "ALL"`
+- Do NOT use `setCaptive true` - it changes `side player` to civilian!
+- Ghost group created with `createGroup [side, true]` for correct side
+- Switching observed unit (Ctrl+Tab) does NOT move the ghost - ghost always follows BA_originalUnit
 
 ## Build Instructions
 

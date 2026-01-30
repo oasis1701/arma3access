@@ -107,12 +107,6 @@ BA_lastAnnouncedAsset = objNull;
     };
 };
 
-// Join all asset groups to player's group for command
-{
-    private _grp = _x;
-    _grp join player;
-} forEach BA_assetGroups;
-
 // Speak initialization complete
 private _assetCount = count BA_assetGroups;
 private _msg = format["Dev sandbox initialized. %1 asset groups available. Use Control Tab to cycle groups.", _assetCount];

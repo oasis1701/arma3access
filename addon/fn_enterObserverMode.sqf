@@ -57,9 +57,10 @@ private _ghostClass = switch (_playerSide) do {
 BA_ghostUnit = BA_ghostGroup createUnit [_ghostClass, ASLToATL _ghostPos, [], 0, "NONE"];
 BA_ghostUnit hideObjectGlobal true;       // Completely invisible
 BA_ghostUnit allowDamage false;           // Cannot be damaged
-BA_ghostUnit setCaptive true;             // AI won't target
+// NOTE: Do NOT use setCaptive - it changes side to CIV
 BA_ghostUnit disableAI "ALL";             // No AI behavior
 BA_ghostUnit enableSimulation false;      // No physics/collision
+
 BA_ghostUnit setPosASL _ghostPos;
 
 // Copy all variables from original unit to ghost BEFORE selectPlayer
@@ -81,24 +82,21 @@ BA_ghostSyncHandle = [] spawn {
             BA_ghostUnit setPosASL (getPosASL BA_originalUnit);
 
             // Sync variables: original unit -> ghost (so player getVariable works)
+            // Note: Must check isNil because getVariable can return nil, making local var undefined
             private _origVars = allVariables BA_originalUnit;
             {
-                private _value = BA_originalUnit getVariable _x;
-                private _ghostValue = BA_ghostUnit getVariable _x;
-                // Only sync if value changed to avoid unnecessary updates
-                if (!(_value isEqualTo _ghostValue)) then {
-                    BA_ghostUnit setVariable [_x, _value];
+                private _varName = _x;
+                if (!isNil {BA_originalUnit getVariable _varName}) then {
+                    BA_ghostUnit setVariable [_varName, BA_originalUnit getVariable _varName];
                 };
             } forEach _origVars;
 
             // Sync variables: ghost -> original unit (in case scripts SET on player)
             private _ghostVars = allVariables BA_ghostUnit;
             {
-                private _value = BA_ghostUnit getVariable _x;
-                private _origValue = BA_originalUnit getVariable _x;
-                // Only sync if value changed and wasn't just synced from original
-                if (!(_value isEqualTo _origValue)) then {
-                    BA_originalUnit setVariable [_x, _value];
+                private _varName = _x;
+                if (!isNil {BA_ghostUnit getVariable _varName}) then {
+                    BA_originalUnit setVariable [_varName, BA_ghostUnit getVariable _varName];
                 };
             } forEach _ghostVars;
         };
