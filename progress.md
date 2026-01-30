@@ -24,6 +24,13 @@ Ghost unit (hidden soldier) follows original soldier's position for mission comp
   - `hideObjectGlobal`, `allowDamage false`, `setCaptive`, `disableAI ALL`, `enableSimulation false`
 - **Limitation**: `player in vehicle` checks fail (ghost not physically seated)
 
+### Edge Case Monitoring (2026-01-30)
+Automatic detection and announcements for soldier states the ghost doesn't experience:
+- **Unconsciousness**: "Warning. Soldier is unconscious." (explosions, ACE3 medical)
+- **Captivity**: "Warning. Soldier is captive. Cannot issue orders." (ACE3/Antistasi handcuffs)
+- **Vehicle changes**: "Dismounted." or "Now in [vehicle]." (ejection, mount/dismount)
+- **Inventory rescue**: Items given to `player` (ghost) are transferred to soldier on exit
+
 ## Phase 3: Virtual Cursor - COMPLETE
 Explore map positions from observed unit.
 - **Alt/Shift/Ctrl + Arrows** - Move cursor 10/100/1000m

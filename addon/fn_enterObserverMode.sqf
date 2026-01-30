@@ -74,6 +74,11 @@ private _allVars = allVariables BA_originalUnit;
 // Switch player control to ghost - original unit becomes AI-controlled
 selectPlayer BA_ghostUnit;
 
+// Initialize edge case monitoring flags
+BA_warnedIncapacitated = false;
+BA_warnedCaptive = false;
+BA_lastObservedVehicle = vehicle BA_observedUnit;
+
 // Start sync loop to keep ghost at original unit and sync variables
 BA_ghostSyncHandle = [] spawn {
     while {BA_observerMode} do {
@@ -99,7 +104,46 @@ BA_ghostSyncHandle = [] spawn {
                     BA_originalUnit setVariable [_varName, BA_ghostUnit getVariable _varName];
                 };
             } forEach _ghostVars;
+
+            // === Edge Case Monitoring ===
+
+            // Check soldier's life state (unconsciousness from explosions, ACE3 medical, etc.)
+            private _state = lifeState BA_originalUnit;
+            if (_state == "INCAPACITATED" && !BA_warnedIncapacitated) then {
+                ["Warning. Soldier is unconscious."] call BA_fnc_speak;
+                BA_warnedIncapacitated = true;
+            };
+            if (_state != "INCAPACITATED") then {
+                BA_warnedIncapacitated = false;
+            };
+
+            // Check if soldier is captive (handcuffed by ACE3/Antistasi/etc.)
+            if (captive BA_originalUnit && !BA_warnedCaptive) then {
+                ["Warning. Soldier is captive. Cannot issue orders."] call BA_fnc_speak;
+                BA_warnedCaptive = true;
+            };
+            if (!captive BA_originalUnit) then {
+                BA_warnedCaptive = false;
+            };
         };
+
+        // Check if observed unit changed vehicles (ejection, dismount)
+        if (!isNull BA_observedUnit && alive BA_observedUnit) then {
+            private _currentVehicle = vehicle BA_observedUnit;
+            if (!isNil "BA_lastObservedVehicle" && {_currentVehicle != BA_lastObservedVehicle}) then {
+                // Re-attach camera to unit
+                BA_observerCamera attachTo [BA_observedUnit, [0, 0.1, 0.1], "head"];
+
+                if (_currentVehicle == BA_observedUnit) then {
+                    ["Dismounted."] call BA_fnc_speak;
+                } else {
+                    private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _currentVehicle >> "displayName");
+                    [format["Now in %1.", _vehName]] call BA_fnc_speak;
+                };
+            };
+            BA_lastObservedVehicle = _currentVehicle;
+        };
+
         sleep 0.5;
     };
 };

@@ -36,6 +36,28 @@ if (_unitAlive && !isNull BA_originalUnit && !isNull BA_ghostUnit) then {
     } forEach _ghostVars;
 };
 
+// Rescue inventory from ghost to soldier (missions may give items to player)
+if (!isNull BA_ghostUnit && !isNull BA_originalUnit && alive BA_originalUnit) then {
+    // Transfer items (maps, GPS, quest items, etc.)
+    {
+        if !(_x in items BA_originalUnit) then {
+            BA_originalUnit addItem _x;
+        };
+    } forEach (items BA_ghostUnit);
+
+    // Transfer assigned items (NVGs, binoculars, etc.)
+    {
+        if !(_x in assignedItems BA_originalUnit) then {
+            BA_originalUnit linkItem _x;
+        };
+    } forEach (assignedItems BA_ghostUnit);
+
+    // Transfer magazines
+    {
+        BA_originalUnit addMagazine _x;
+    } forEach (magazines BA_ghostUnit);
+};
+
 // Remove camera effect first
 BA_observerCamera cameraEffect ["Terminate", "Back"];
 
@@ -89,5 +111,10 @@ BA_originalUnit = objNull;
 BA_observedUnit = objNull;
 BA_currentGroup = grpNull;
 BA_currentUnitIndex = 0;
+
+// Reset edge case monitoring variables
+BA_warnedIncapacitated = false;
+BA_warnedCaptive = false;
+BA_lastObservedVehicle = objNull;
 
 true

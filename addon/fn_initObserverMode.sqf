@@ -43,6 +43,11 @@ BA_observedUnit = objNull;      // Currently observed unit (camera attached to)
 BA_currentGroup = grpNull;      // Group of the observed unit
 BA_currentUnitIndex = 0;        // Index in the group's unit array
 
+// Edge case monitoring variables
+BA_warnedIncapacitated = false; // Prevents unconscious warning spam
+BA_warnedCaptive = false;       // Prevents captive warning spam
+BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
+
 // Initialize cursor system
 [] call BA_fnc_initCursor;
 
