@@ -305,4 +305,29 @@ class BA {
         // Usage: [] call BA_fnc_closeIntersectionMenu;
         class closeIntersectionMenu {};
     };
+
+    class DevSandbox {
+        file = "addon";
+
+        // Initialize dev sandbox with pre-placed assets
+        // Usage: [] call BA_fnc_initDevSandbox;
+        class initDevSandbox {};
+
+        // Spawn enemy units at designated zone
+        // Usage: ["infantry", 6] call BA_fnc_spawnEnemies;
+        // Types: "infantry", "armor", "mixed"
+        class spawnEnemies {};
+
+        // Clear all spawned enemies
+        // Usage: [] call BA_fnc_clearEnemies;
+        class clearEnemies {};
+
+        // Reset dead friendly assets to original positions
+        // Usage: [] call BA_fnc_resetAssets;
+        class resetAssets {};
+
+        // Announce nearby asset when player approaches
+        // Usage: [_asset] call BA_fnc_announceNearbyAsset;
+        class announceNearbyAsset {};
+    };
 };

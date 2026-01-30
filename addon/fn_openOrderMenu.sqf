@@ -27,8 +27,12 @@ if (isNull BA_observedUnit) exitWith {
     false
 };
 
-// Detect unit type
-BA_orderMenuUnitType = [BA_observedUnit] call BA_fnc_detectUnitType;
+// Detect unit type - use selected order group if set, otherwise observed unit
+private _unitForDetection = BA_observedUnit;
+if (!isNil "BA_selectedOrderGroup" && {!isNull BA_selectedOrderGroup}) then {
+    _unitForDetection = leader BA_selectedOrderGroup;
+};
+BA_orderMenuUnitType = [_unitForDetection] call BA_fnc_detectUnitType;
 
 // Populate menu based on unit type
 BA_orderMenuItems = switch (BA_orderMenuUnitType) do {

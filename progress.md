@@ -191,6 +191,46 @@ Each road shows: direction, type, length, and destination (continues/ends/inters
 
 ---
 
+## Dev Sandbox - COMPLETE
+Pre-placed assets at Stratis Air Base for testing all accessibility features.
+
+### Assets Available
+| Asset | Composition | Location |
+|-------|-------------|----------|
+| Infantry Squad Alpha | Leader, 2x Rifleman, Autorifleman, Medic, AT | North of runway |
+| Infantry Squad Bravo | Leader, 2x Rifleman, Marksman, Engineer, Grenadier | 50m east of Alpha |
+| Ghost Hawk Helicopter | UH-80 with pilot | West side of runway |
+| Wipeout Jet | A-164 with pilot | East side of runway |
+| Marshall APC | With crew of 3 | Center of base |
+| Mortar Team | 2 soldiers + Mk6 Mortar | Behind infantry |
+
+### Debug Console Commands
+```sqf
+// Spawn enemies at designated zone (300m north)
+["infantry", 6] call BA_fnc_spawnEnemies;
+["armor", 2] call BA_fnc_spawnEnemies;
+["mixed", 8] call BA_fnc_spawnEnemies;
+
+// Clear all spawned enemies
+[] call BA_fnc_clearEnemies;
+
+// Respawn dead friendly units
+[] call BA_fnc_resetAssets;
+```
+
+### Speech Feedback
+- Spawn: "Spawned 6 infantry enemies, 300 meters north"
+- Clear: "Cleared 8 enemies"
+- Reset: "Reset complete. 2 units respawned" or "All units alive, no reset needed"
+- Approach asset: "Infantry Squad Alpha - 6 units" / "Ghost Hawk Helicopter - ready"
+
+### Navigation
+- **Ctrl+Tab** cycles between all group leaders (squads, heli, jet, APC, mortar)
+- **Tab** cycles members within each group
+- Walk near an asset to hear its announcement
+
+---
+
 ## Next: Phase 8 - Potential Features
 - Formation changes
 - Waypoint queue management
