@@ -12,6 +12,18 @@ AI controls soldier while player observes through first-person camera.
 - **Ctrl+Tab / Ctrl+Shift+Tab** - Cycle between groups
 - NVDA announces: Side, Group, Unit type on switch
 
+### Game Compatibility (2026-01-30)
+Ghost unit (hidden soldier) follows original soldier's position for mission compatibility:
+- Distance checks work (`player distance objective < 50`)
+- Variable access works (`player getVariable "money"`)
+- Trigger areas work (`player in thisList`)
+- Side checks work (`side player == west`)
+- Variables sync bidirectionally between ghost and original unit
+- Camera still follows observed unit (can be different via Ctrl+Tab)
+- Ghost uses side-appropriate soldier class (B_/O_/I_/C_) with:
+  - `hideObjectGlobal`, `allowDamage false`, `setCaptive`, `disableAI ALL`, `enableSimulation false`
+- **Limitation**: `player in vehicle` checks fail (ghost not physically seated)
+
 ## Phase 3: Virtual Cursor - COMPLETE
 Explore map positions from observed unit.
 - **Alt/Shift/Ctrl + Arrows** - Move cursor 10/100/1000m

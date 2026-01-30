@@ -18,8 +18,23 @@ if (!BA_observerMode) exitWith {
     false
 };
 
+// Terminate the ghost sync loop
+if (!isNil "BA_ghostSyncHandle") then {
+    terminate BA_ghostSyncHandle;
+    BA_ghostSyncHandle = nil;
+};
+
 // Check if original unit is still alive
 private _unitAlive = alive BA_originalUnit;
+
+// Final sync: ghost variables -> original unit (capture any changes made during observer mode)
+if (_unitAlive && !isNull BA_originalUnit && !isNull BA_ghostUnit) then {
+    private _ghostVars = allVariables BA_ghostUnit;
+    {
+        private _value = BA_ghostUnit getVariable _x;
+        BA_originalUnit setVariable [_x, _value];
+    } forEach _ghostVars;
+};
 
 // Remove camera effect first
 BA_observerCamera cameraEffect ["Terminate", "Back"];
@@ -50,6 +65,12 @@ if (_unitAlive && !isNull BA_originalUnit) then {
 if (!isNull BA_ghostUnit) then {
     deleteVehicle BA_ghostUnit;
     BA_ghostUnit = objNull;
+};
+
+// Delete ghost group
+if (!isNil "BA_ghostGroup" && {!isNull BA_ghostGroup}) then {
+    deleteGroup BA_ghostGroup;
+    BA_ghostGroup = grpNull;
 };
 
 // Deactivate cursor

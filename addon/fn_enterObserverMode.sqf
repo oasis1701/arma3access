@@ -41,15 +41,70 @@ private _groupName = groupId BA_currentGroup;
 private _unitType = getText (configFile >> "CfgVehicles" >> typeOf BA_originalUnit >> "displayName");
 if (_unitType == "") then { _unitType = "Soldier"; };
 
-// Create invisible ghost unit at a safe location far away
-// Using a Logic entity which is invisible and has no physical presence
-private _safePos = [0, 0, 0];
-BA_ghostUnit = createAgent ["Logic", _safePos, [], 0, "NONE"];
-BA_ghostUnit hideObjectGlobal true;
-BA_ghostUnit allowDamage false;
+// Create a temporary group on the player's side for the ghost
+private _playerSide = side BA_originalUnit;
+BA_ghostGroup = createGroup [_playerSide, true]; // true = delete when empty
+
+// Create invisible ghost unit (hidden soldier for correct side)
+// Using soldier class ensures side player returns correct side
+private _ghostPos = getPosASL BA_originalUnit;
+private _ghostClass = switch (_playerSide) do {
+    case west: { "B_Soldier_unarmed_F" };
+    case east: { "O_Soldier_unarmed_F" };
+    case independent: { "I_Soldier_unarmed_F" };
+    default { "C_man_1" };
+};
+BA_ghostUnit = BA_ghostGroup createUnit [_ghostClass, ASLToATL _ghostPos, [], 0, "NONE"];
+BA_ghostUnit hideObjectGlobal true;       // Completely invisible
+BA_ghostUnit allowDamage false;           // Cannot be damaged
+BA_ghostUnit setCaptive true;             // AI won't target
+BA_ghostUnit disableAI "ALL";             // No AI behavior
+BA_ghostUnit enableSimulation false;      // No physics/collision
+BA_ghostUnit setPosASL _ghostPos;
+
+// Copy all variables from original unit to ghost BEFORE selectPlayer
+// This ensures player getVariable works immediately after entering observer mode
+private _allVars = allVariables BA_originalUnit;
+{
+    private _value = BA_originalUnit getVariable _x;
+    BA_ghostUnit setVariable [_x, _value];
+} forEach _allVars;
 
 // Switch player control to ghost - original unit becomes AI-controlled
 selectPlayer BA_ghostUnit;
+
+// Start sync loop to keep ghost at original unit and sync variables
+BA_ghostSyncHandle = [] spawn {
+    while {BA_observerMode} do {
+        if (!isNull BA_originalUnit && alive BA_originalUnit && !isNull BA_ghostUnit) then {
+            // Position ghost at original unit (so distance/area checks work)
+            BA_ghostUnit setPosASL (getPosASL BA_originalUnit);
+
+            // Sync variables: original unit -> ghost (so player getVariable works)
+            private _origVars = allVariables BA_originalUnit;
+            {
+                private _value = BA_originalUnit getVariable _x;
+                private _ghostValue = BA_ghostUnit getVariable _x;
+                // Only sync if value changed to avoid unnecessary updates
+                if (!(_value isEqualTo _ghostValue)) then {
+                    BA_ghostUnit setVariable [_x, _value];
+                };
+            } forEach _origVars;
+
+            // Sync variables: ghost -> original unit (in case scripts SET on player)
+            private _ghostVars = allVariables BA_ghostUnit;
+            {
+                private _value = BA_ghostUnit getVariable _x;
+                private _origValue = BA_originalUnit getVariable _x;
+                // Only sync if value changed and wasn't just synced from original
+                if (!(_value isEqualTo _origValue)) then {
+                    BA_originalUnit setVariable [_x, _value];
+                };
+            } forEach _ghostVars;
+        };
+        sleep 0.5;
+    };
+};
 
 // Create camera attached to original unit's head
 BA_observerCamera = "camera" camCreate (getPos BA_originalUnit);
