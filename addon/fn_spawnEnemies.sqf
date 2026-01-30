@@ -72,6 +72,7 @@ switch (toLower _type) do {
 
     case "armor": {
         // Spawn armored vehicles
+        private _armorGroups = [];
         for "_i" from 1 to _count do {
             private _class = selectRandom _armorClasses;
             private _pos = _spawnPos getPos [30 + random 30, random 360];
@@ -83,8 +84,7 @@ switch (toLower _type) do {
             private _crew = createVehicleCrew _veh;
             (crew _veh) joinSilent _grp;
 
-            _grp setBehaviour "COMBAT";
-            _grp setCombatMode "RED";
+            _armorGroups pushBack _grp;
 
             _spawned pushBack _veh;
             _spawned append (crew _veh);
@@ -95,6 +95,12 @@ switch (toLower _type) do {
             BA_spawnedEnemies pushBack _veh;
             BA_spawnedEnemies append (crew _veh);
         };
+
+        // Set combat behavior AFTER all vehicles are spawned
+        {
+            _x setBehaviour "COMBAT";
+            _x setCombatMode "RED";
+        } forEach _armorGroups;
     };
 
     case "mixed": {
@@ -112,10 +118,9 @@ switch (toLower _type) do {
             _spawned pushBack _unit;
             _infantryCount = _infantryCount + 1;
         };
-        _grp setBehaviour "COMBAT";
-        _grp setCombatMode "RED";
 
-        // Spawn armor
+        // Spawn armor (collect groups, set behavior later)
+        private _armorGroups = [];
         for "_i" from 1 to _armorToSpawn do {
             private _class = selectRandom _armorClasses;
             private _pos = _spawnPos getPos [30 + random 30, random 360];
@@ -126,13 +131,20 @@ switch (toLower _type) do {
             private _crew = createVehicleCrew _veh;
             (crew _veh) joinSilent _vehGrp;
 
-            _vehGrp setBehaviour "COMBAT";
-            _vehGrp setCombatMode "RED";
+            _armorGroups pushBack _vehGrp;
 
             _spawned pushBack _veh;
             _spawned append (crew _veh);
             _armorCount = _armorCount + 1;
         };
+
+        // Set combat behavior AFTER all units are spawned
+        _grp setBehaviour "COMBAT";
+        _grp setCombatMode "RED";
+        {
+            _x setBehaviour "COMBAT";
+            _x setCombatMode "RED";
+        } forEach _armorGroups;
 
         // Track enemies
         if (isNil "BA_spawnedEnemies") then { BA_spawnedEnemies = []; };

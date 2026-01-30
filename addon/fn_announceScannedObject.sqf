@@ -64,21 +64,37 @@ if (_object isKindOf "Man") then {
     };
 } else {
     // For vehicles and other objects
+    if (!alive _object) then {
+        _isDead = true;
+    };
     _name = getText (configFile >> "CfgVehicles" >> typeOf _object >> "displayName");
     if (_name == "") then {
         _name = typeOf _object;
     };
 };
 
-// Get side/status
-private _sideStatus = [_object] call BA_fnc_getObjectSide;
+// Get side/status [sideName, relation]
+private _sideInfo = [_object] call BA_fnc_getObjectSide;
+_sideInfo params ["_sideName", "_relation"];
+
+// Format side status: "OPFOR enemy", "BLUFOR friendly", etc.
+private _sideStatus = if (_sideName == "") then {
+    _relation
+} else {
+    if (_relation in ["empty", "unknown"]) then {
+        _relation
+    } else {
+        format ["%1 %2", _sideName, _relation]
+    }
+};
 
 // Build announcement
 private _announcement = "";
 
-// Add "dead" prefix for dead units
+// Add "dead" prefix for dead units, "destroyed" for vehicles
 if (_isDead) then {
-    _announcement = format ["dead %1, %2 meters %3, %4", _name, _distance, _direction, _sideStatus];
+    private _deadPrefix = if (_object isKindOf "Man") then { "dead" } else { "destroyed" };
+    _announcement = format ["%1 %2, %3 meters %4, %5", _deadPrefix, _name, _distance, _direction, _sideStatus];
 } else {
     _announcement = format ["%1, %2 meters %3, %4", _name, _distance, _direction, _sideStatus];
 };
