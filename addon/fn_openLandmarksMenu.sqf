@@ -85,14 +85,34 @@ if (count _tacItems > _maxItems) then { _tacItems resize _maxItems };
 if (count _natoItems > _maxItems) then { _natoItems resize _maxItems };
 if (count _extrasItems > _maxItems) then { _extrasItems resize _maxItems };
 
+// Get mission markers
+private _markerItems = [];
+{
+    private _name = _x;
+    // Skip system markers (BIS_ prefix) and empty markers
+    if (_name != "" && {!(_name select [0, 4] == "BIS_")} && {!(_name select [0, 1] == "_")}) then {
+        private _pos = getMarkerPos _name;
+        // Skip markers at [0,0,0] (invalid or hidden)
+        if !(_pos isEqualTo [0, 0, 0]) then {
+            _markerItems pushBack _name;
+        };
+    };
+} forEach allMapMarkers;
+
+// Sort markers by distance from cursor
+_markerItems = [_markerItems, [], { BA_cursorPos distance2D (getMarkerPos _x) }, "ASCEND"] call BIS_fnc_sortBy;
+
+// Limit markers
+if (count _markerItems > _maxItems) then { _markerItems resize _maxItems };
+
 // Store in state
-BA_landmarksItems = [_geoItems, _tacItems, _natoItems, _extrasItems];
+BA_landmarksItems = [_geoItems, _tacItems, _natoItems, _extrasItems, _markerItems];
 BA_landmarksCategoryIndex = 0;
-BA_landmarksItemIndex = [0, 0, 0, 0];
+BA_landmarksItemIndex = [0, 0, 0, 0, 0];
 BA_landmarksMenuActive = true;
 
 // Build announcement
-private _categoryNames = ["Geography", "Tactical", "NATO", "Extras"];
+private _categoryNames = ["Geography", "Tactical", "NATO", "Extras", "Markers"];
 private _currentCategory = _categoryNames select BA_landmarksCategoryIndex;
 private _currentItems = BA_landmarksItems select BA_landmarksCategoryIndex;
 private _itemCount = count _currentItems;
@@ -102,9 +122,14 @@ private _announcement = "Landmarks. ";
 if (_itemCount > 0) then {
     _announcement = _announcement + format ["%1 category, %2 items. ", _currentCategory, _itemCount];
 
-    // Announce first item
+    // Announce first item (check if marker string or location object)
     private _firstItem = _currentItems select 0;
-    private _description = [_firstItem] call BA_fnc_getLandmarkDescription;
+    private _description = "";
+    if (_firstItem isEqualType "") then {
+        _description = [_firstItem] call BA_fnc_getMarkerDescription;
+    } else {
+        _description = [_firstItem] call BA_fnc_getLandmarkDescription;
+    };
     _announcement = _announcement + format ["1. %1. ", _description];
 } else {
     _announcement = _announcement + format ["%1 category, no items. ", _currentCategory];

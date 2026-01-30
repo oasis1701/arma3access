@@ -10,14 +10,18 @@ Update `progress.md` briefly when completing milestones or changing direction.
 
 ## Key Paths
 
-### Project Directory
+### Project Directory (Source - edit files here)
 D:\arma3 access\
 
 ### Arma 3 Installation
 F:\Steam\steamapps\common\Arma 3\
 
-### Test Mission
+### Test Mission (Deploy target - don't edit directly)
 F:\Steam\steamapps\common\Arma 3\Missions\AutoTest2.Stratis\
+
+**IMPORTANT:** All source files live in the project directory and are version controlled with git.
+The test mission folder is for deployment/testing only. Always edit files in `D:\arma3 access\`
+then deploy to the game folder.
 
 ### Arma 3 Log Files
 C:\Users\rhadi\AppData\Local\Arma 3\
@@ -104,12 +108,17 @@ Build the bridge DLL:
 powershell -Command "& { cmd /c '\"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat\" x64 && cd /d \"D:\arma3 access\bridge\" && cl /LD /EHsc /O2 /Fe:nvda_arma3_bridge_x64.dll nvda_arma3_bridge.cpp nvdaControllerClient.lib' }"
 ```
 
-Deploy to Arma 3:
+Deploy DLLs to Arma 3:
 ```bash
 cp "D:/arma3 access/bridge/nvda_arma3_bridge_x64.dll" "F:/Steam/steamapps/common/Arma 3/" && cp "D:/arma3 access/nvda controllerClient/x64/nvdaControllerClient.dll" "F:/Steam/steamapps/common/Arma 3/"
 ```
 
-Verify deployment:
+Deploy SQF scripts to test mission:
+```bash
+cp "D:/arma3 access/addon/"*.sqf "F:/Steam/steamapps/common/Arma 3/Missions/AutoTest2.Stratis/addon/"
+```
+
+Verify DLL deployment:
 ```bash
 ls -la "F:/Steam/steamapps/common/Arma 3/"*nvda*
 ```
@@ -146,18 +155,25 @@ deploy.bat
 ## Project Structure
 
 ```
-D:\arma3 access\
+D:\arma3 access\                    (SOURCE - all edits here, git controlled)
 ├── CLAUDE.md                       (this file - project context)
 ├── progress.md                     (current status - update this!)
 ├── bridge/
 │   ├── nvda_arma3_bridge.cpp       (main source)
 │   ├── build.bat                   (compile script)
 │   └── deploy.bat                  (copy to Arma 3)
-├── addon/
+├── addon/                          (SQF scripts - deploy to test mission)
 │   ├── fn_speak.sqf                (speak wrapper)
 │   ├── fn_cancel.sqf               (cancel speech)
-│   ├── fn_test.sqf                 (test NVDA connection)
+│   ├── fn_*.sqf                    (all function scripts)
 │   └── CfgFunctions.hpp            (function definitions)
 └── test_mission/
     └── init.sqf                    (test the bridge)
+
+F:\Steam\...\Missions\AutoTest2.Stratis\  (DEPLOY TARGET - don't edit here)
+├── addon/                          (copy of D:\arma3 access\addon\)
+├── description.ext                 (mission config)
+└── init.sqf                        (mission init)
 ```
+
+**Workflow:** Edit in `D:\arma3 access\` → Deploy to test mission → Test in Arma 3

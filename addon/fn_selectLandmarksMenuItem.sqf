@@ -22,21 +22,31 @@ if (_itemCount == 0) exitWith {
 };
 
 private _currentIndex = BA_landmarksItemIndex select BA_landmarksCategoryIndex;
-private _selectedLocation = _currentItems select _currentIndex;
+private _selectedItem = _currentItems select _currentIndex;
 
-// Get location position and name
-private _locPos = locationPosition _selectedLocation;
-private _name = text _selectedLocation;
+// Get position and name (check if marker string or location object)
+private _locPos = [];
+private _name = "";
 
-if (_name == "") then {
-    _name = [type _selectedLocation] call BA_fnc_getLocationTypeName;
+if (_selectedItem isEqualType "") then {
+    // It's a marker name (string)
+    _locPos = getMarkerPos _selectedItem;
+    _name = markerText _selectedItem;
+    if (_name == "") then { _name = _selectedItem };
+} else {
+    // It's a location object
+    _locPos = locationPosition _selectedItem;
+    _name = text _selectedItem;
+    if (_name == "") then {
+        _name = [type _selectedItem] call BA_fnc_getLocationTypeName;
+    };
 };
 
 // Close the menu first
 BA_landmarksMenuActive = false;
 BA_landmarksCategoryIndex = 0;
-BA_landmarksItemIndex = [0, 0, 0, 0];
-BA_landmarksItems = [[], [], [], []];
+BA_landmarksItemIndex = [0, 0, 0, 0, 0];
+BA_landmarksItems = [[], [], [], [], []];
 
 // Clear road state since cursor is leaving the road
 BA_currentRoad = objNull;

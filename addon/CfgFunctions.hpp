@@ -217,6 +217,10 @@ class BA {
         // Usage: [_location] call BA_fnc_getLandmarkDescription;
         class getLandmarkDescription {};
 
+        // Get formatted marker description
+        // Usage: ["marker_name"] call BA_fnc_getMarkerDescription;
+        class getMarkerDescription {};
+
         // Convert location type to readable name
         // Usage: ["NameCity"] call BA_fnc_getLocationTypeName;
         class getLocationTypeName {};
