@@ -98,16 +98,84 @@ switch (_orderType) do {
     };
 
     case "garrison": {
-        private _buildings = _targetPos nearObjects ["Building", 100];
+        private _buildings = nearestObjects [_targetPos, ["Building", "House"], 100];
         if (count _buildings > 0) then {
             private _building = _buildings select 0;
             _group move (getPos _building);
             if (!isNil "BIS_fnc_taskDefend") then {
                 [_group, _building] call BIS_fnc_taskDefend;
             };
+            private _dist = round (_targetPos distance _building);
+            [format["Garrisoning building %1 meters from cursor", _dist]] call BA_fnc_speak;
         } else {
             ["No building found near cursor"] call BA_fnc_speak;
         };
+    };
+
+    case "sweep": {
+        private _wp = _group addWaypoint [_targetPos, 0];
+        _wp setWaypointType "SAD";
+        _wp setWaypointBehaviour "COMBAT";
+        _wp setWaypointCombatMode "RED";
+        _group setCurrentWaypoint _wp;
+    };
+
+    case "heal": {
+        private _units = units _group;
+        private _medic = objNull;
+        private _mostInjured = objNull;
+        private _maxDamage = 0;
+
+        {
+            if ("Medikit" in items _x) then { _medic = _x; };
+            if (damage _x > _maxDamage && alive _x) then {
+                _maxDamage = damage _x;
+                _mostInjured = _x;
+            };
+        } forEach _units;
+
+        if (!isNull _medic && !isNull _mostInjured && _maxDamage > 0.1) then {
+            _medic action ["Heal", _mostInjured];
+            [format["Medic healing %1", name _mostInjured]] call BA_fnc_speak;
+        } else {
+            {
+                if (damage _x > 0.1 && "FirstAidKit" in items _x) then {
+                    _x action ["HealSelf", _x];
+                };
+            } forEach _units;
+            ["Squad using first aid kits"] call BA_fnc_speak;
+        };
+    };
+
+    case "regroup": {
+        private _leader = leader _group;
+        {
+            _x doFollow _leader;
+            _x setUnitPos "AUTO";
+            _x setBehaviour "AWARE";
+        } forEach units _group;
+        _group setSpeedMode "NORMAL";
+        ["Squad regrouping on leader"] call BA_fnc_speak;
+    };
+
+    case "find_cover": {
+        _group setBehaviour "COMBAT";
+        _group setSpeedMode "FULL";
+
+        {
+            private _unit = _x;
+            private _coverObjects = nearestTerrainObjects [getPos _unit, ["TREE", "SMALL TREE", "BUSH", "ROCK", "ROCKS", "WALL", "FENCE"], 50];
+
+            if (count _coverObjects > 0) then {
+                private _cover = _coverObjects select 0;
+                _unit doMove (getPos _cover);
+                _unit setUnitPos "MIDDLE";
+            } else {
+                _unit setUnitPos "DOWN";
+            };
+        } forEach units _group;
+
+        ["Squad scattering to cover"] call BA_fnc_speak;
     };
 
     case "hold_fire": {
@@ -128,7 +196,7 @@ switch (_orderType) do {
 };
 
 // Announce order issued (except for commands with custom messages or error cases)
-if !(_orderType in ["garrison"]) then {
+if !(_orderType in ["garrison", "heal", "regroup", "find_cover"]) then {
     private _message = format["%1 issued to grid %2", _label, _gridInfo];
     format["announcing: %1", _message] call _debug;
     [_message] call BA_fnc_speak;

@@ -41,7 +41,11 @@ BA_orderMenuItems = switch (BA_orderMenuUnitType) do {
             ["Move", "move"],
             ["Sneak", "sneak"],
             ["Assault", "assault"],
+            ["Sweep", "sweep"],
             ["Garrison", "garrison"],
+            ["Find Cover", "find_cover"],
+            ["Regroup", "regroup"],
+            ["Heal Up", "heal"],
             ["Hold Fire", "hold_fire"],
             ["Fire at Will", "fire_at_will"]
         ]
