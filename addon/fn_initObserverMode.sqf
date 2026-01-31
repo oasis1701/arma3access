@@ -23,6 +23,16 @@
  *   PageUp       - Previous object in scanner
  *   PageDown     - Next object in scanner
  *   J            - Jump cursor to selected scanner object
+ *   Alt+1        - Announce health status
+ *   Alt+2        - Announce fatigue level
+ *   Alt+3        - Announce capability (can move/fire)
+ *   Alt+4        - Announce suppression (under fire)
+ *   Alt+5        - Announce enemy contact
+ *   Alt+6        - Announce weapon and ammo
+ *   Alt+7        - Announce morale
+ *   Alt+8        - Announce position context
+ *   Alt+9        - Announce role
+ *   Alt+0        - Announce full status summary
  *
  * Arguments:
  *   None
@@ -321,6 +331,19 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // J key (36) - Jump to selected scanner object
     if (_key == 36 && !_ctrl && !_shift && !_alt) exitWith {
         [] call BA_fnc_jumpToScannerObject;
+        true
+    };
+
+    // Alt+1 through Alt+9: Unit status categories (DIK codes 2-10)
+    // 1=2, 2=3, 3=4, 4=5, 5=6, 6=7, 7=8, 8=9, 9=10
+    if (_alt && !_ctrl && !_shift && _key >= 2 && _key <= 10) exitWith {
+        [_key - 1] call BA_fnc_announceUnitStatus;
+        true
+    };
+
+    // Alt+0: Summary (DIK code 11)
+    if (_alt && !_ctrl && !_shift && _key == 11) exitWith {
+        [10] call BA_fnc_announceUnitStatus;
         true
     };
 

@@ -58,5 +58,22 @@ if (_aliveCount > 0) then {
     };
 };
 
-// Build description
-format["%1, %2, %3 %4", _callsign, _leaderName, _aliveCount, _typeDesc]
+// Count stragglers (units far from leader or stuck)
+private _stragglers = 0;
+private _aliveUnits = units _group select { alive _x };
+{
+    if (_x != _leader) then {
+        private _distFromLeader = _x distance _leader;
+        // Straggler if: >50m from leader OR moveToFailed
+        if (_distFromLeader > 50 || moveToFailed _x) then {
+            _stragglers = _stragglers + 1;
+        };
+    };
+} forEach _aliveUnits;
+
+// Build final description
+private _baseDesc = format["%1, %2, %3 %4", _callsign, _leaderName, _aliveCount, _typeDesc];
+if (_stragglers > 0) then {
+    _baseDesc = _baseDesc + format[", %1 straggler%2", _stragglers, if (_stragglers > 1) then {"s"} else {""}];
+};
+_baseDesc

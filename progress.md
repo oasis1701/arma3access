@@ -254,6 +254,45 @@ Pre-placed assets at Stratis Air Base for testing all accessibility features.
 
 ---
 
+## AI Status Feedback System - COMPLETE (Revised)
+Rich unit state information for blind players - Tab through units to assess their status.
+
+### Philosophy
+Instead of unreliable automatic order completion detection, give players rich unit state
+information and let them judge for themselves when orders are complete.
+
+### Group Menu (G key)
+Simple format with straggler count:
+- "Alpha 1-1, Sergeant Miller, 4 infantry"
+- "Alpha 1-1, Sergeant Miller, 4 infantry, 2 stragglers"
+
+**Straggler detection**: Unit >50m from leader OR `moveToFailed` (stuck on terrain)
+
+### Unit Switching (Tab/Ctrl+Tab) - Enhanced
+
+**Infantry announcements** include stance, alert, movement, and context:
+- "Blufor. Alpha 1. Rifleman. John Smith. Crouched. Combat. Moving."
+- "Blufor. Alpha 1. Rifleman. John Smith. Prone. Combat. Ready. Inside building."
+- "Blufor. Alpha 1. Rifleman. John Smith. Standing. Aware. Moving. 85 meters from leader."
+- "Blufor. Alpha 1. Rifleman. John Smith. Crouched. Combat. Ready. Targeting enemy."
+
+| Status | Values |
+|--------|--------|
+| Stance | Standing, Crouched, Prone |
+| Alert | Relaxed, Safe, Aware, Combat, Stealth |
+| Movement | Ready, Moving, Stuck |
+| Context | Inside building, X meters from leader, Targeting enemy |
+
+**Vehicle crew announcements** (skip stance/movement - doesn't apply):
+- "Blufor. Condor. Helicopter Pilot. Mike Ross. In Ghost Hawk."
+- "Blufor. Condor. Helicopter Crew. In Ghost Hawk."
+
+### Fixed: Vehicle Announcement Bugs
+- No more false "Dismounted" spam when Tab-switching between units
+- Vehicle name now announced when switching to crew members
+
+---
+
 ## Next: Phase 8 - Potential Features
 - Formation changes
 - Waypoint queue management

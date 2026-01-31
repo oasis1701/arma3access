@@ -68,6 +68,12 @@ class BA {
         // Previous group leader (Ctrl+Shift+Tab)
         // Usage: [] call BA_fnc_prevGroup;
         class prevGroup {};
+
+        // Announce detailed unit status by category
+        // Usage: [1] call BA_fnc_announceUnitStatus;
+        // Categories: 1=Health, 2=Fatigue, 3=Capability, 4=Suppression,
+        //   5=Enemies, 6=Weapon, 7=Morale, 8=Position, 9=Role, 10=Summary
+        class announceUnitStatus {};
     };
 
     class Cursor {
