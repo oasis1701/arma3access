@@ -58,11 +58,11 @@ if (!isNull BA_ghostUnit && !isNull BA_originalUnit && alive BA_originalUnit) th
     } forEach (magazines BA_ghostUnit);
 };
 
-// Remove camera effect first
-BA_observerCamera cameraEffect ["Terminate", "Back"];
-
-// Destroy camera
-camDestroy BA_observerCamera;
+// Clean up camera if it exists (legacy, now using switchCamera instead)
+if (!isNull BA_observerCamera) then {
+    BA_observerCamera cameraEffect ["Terminate", "Back"];
+    camDestroy BA_observerCamera;
+};
 BA_observerCamera = objNull;
 
 // Remove killed event handler if unit is still alive

@@ -26,11 +26,8 @@ if (!BA_observerMode) exitWith {
     false
 };
 
-// Detach camera from current target
-detach BA_observerCamera;
-
-// Attach camera to new unit's head
-BA_observerCamera attachTo [_unit, [0, 0.1, 0.1], "head"];
+// Use switchCamera for all units - consistent first-person view for both infantry and vehicles
+_unit switchCamera "INTERNAL";
 
 // Update tracked unit
 BA_observedUnit = _unit;

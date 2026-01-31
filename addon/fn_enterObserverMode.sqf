@@ -131,14 +131,23 @@ BA_ghostSyncHandle = [] spawn {
         if (!isNull BA_observedUnit && alive BA_observedUnit) then {
             private _currentVehicle = vehicle BA_observedUnit;
             if (!isNil "BA_lastObservedVehicle" && {_currentVehicle != BA_lastObservedVehicle}) then {
-                // Re-attach camera to unit
-                BA_observerCamera attachTo [BA_observedUnit, [0, 0.1, 0.1], "head"];
+                private _nowInVehicle = _currentVehicle != BA_observedUnit;
+                private _wasInVehicle = BA_lastObservedVehicle != BA_observedUnit;
 
-                if (_currentVehicle == BA_observedUnit) then {
-                    ["Dismounted."] call BA_fnc_speak;
-                } else {
+                // Just use switchCamera for all cases - keeps audio consistent
+                BA_observedUnit switchCamera "INTERNAL";
+
+                if (_nowInVehicle && !_wasInVehicle) then {
                     private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _currentVehicle >> "displayName");
                     [format["Now in %1.", _vehName]] call BA_fnc_speak;
+                } else {
+                    if (!_nowInVehicle && _wasInVehicle) then {
+                        ["Dismounted."] call BA_fnc_speak;
+                    } else {
+                        // Changed from one vehicle to another
+                        private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _currentVehicle >> "displayName");
+                        [format["Now in %1.", _vehName]] call BA_fnc_speak;
+                    };
                 };
             };
             BA_lastObservedVehicle = _currentVehicle;
@@ -148,10 +157,9 @@ BA_ghostSyncHandle = [] spawn {
     };
 };
 
-// Create camera attached to original unit's head
-BA_observerCamera = "camera" camCreate (getPos BA_originalUnit);
-BA_observerCamera attachTo [BA_originalUnit, [0, 0.1, 0.1], "head"];
-BA_observerCamera cameraEffect ["Internal", "Back"];
+// Use switchCamera for consistent first-person view (works for both infantry and vehicles)
+BA_observerCamera = objNull; // Not using custom camera anymore
+BA_originalUnit switchCamera "INTERNAL";
 
 // Add killed event handler to detect if soldier dies while observing
 BA_observerKilledEH = BA_originalUnit addEventHandler ["Killed", {
