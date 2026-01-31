@@ -100,7 +100,7 @@ BA_debugMode = true;  // Enable debug output to systemChat
 ## Phase 5: Landmarks Menu - COMPLETE
 Discover nearby map locations from the virtual cursor position.
 - **L** - Open/close landmarks menu
-- **Left/Right** - Switch between categories (Geography, Tactical, NATO)
+- **Left/Right** - Switch between categories (Geography, Tactical, NATO, Extras, Markers, Tasks)
 - **Up/Down** - Navigate items within category
 - **Enter** - Move cursor to selected landmark
 - **Escape** - Cancel
@@ -111,11 +111,15 @@ Discover nearby map locations from the virtual cursor position.
 | Geography | Capital, City, Village, Airport, Marine, Hill, Mountain, Rocky Area, Viewpoint |
 | Tactical | Strategic Point, Strongpoint, Border Crossing, Safety Zone, Camp, Historical Site, Cultural Property |
 | NATO | BLUFOR/OPFOR/Independent markers (Infantry, Armor, Air, Artillery, HQ, etc.) |
+| Extras | Hill, Flag |
+| Markers | Mission-placed map markers |
+| Tasks | Mission objectives with destinations (new/active only, checks both player and original unit in observer mode) |
 
 ### Announcements
 - Opening: "Landmarks. Geography category, 5 items. 1. Agia Marina, Village, 1520 meters northeast."
 - Navigation: "2. Girna, Village, 2340 meters east."
 - Category switch: "Tactical category, 3 items. 1. ..."
+- Tasks: "1. Destroy the Radar, active, 450 meters northwest."
 - Selection: "Cursor moved to Agia Marina."
 
 ---

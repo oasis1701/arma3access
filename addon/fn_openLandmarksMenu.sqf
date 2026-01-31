@@ -105,14 +105,41 @@ _markerItems = [_markerItems, [], { BA_cursorPos distance2D (getMarkerPos _x) },
 // Limit markers
 if (count _markerItems > _maxItems) then { _markerItems resize _maxItems };
 
+// Get mission tasks - check both player and original unit (for observer mode)
+private _taskItems = [];
+private _allTasks = simpleTasks player;
+// Also check original unit's tasks if in observer mode
+if (!isNil "BA_originalUnit" && {!isNull BA_originalUnit} && {BA_originalUnit != player}) then {
+    _allTasks = _allTasks + (simpleTasks BA_originalUnit);
+    _allTasks = _allTasks arrayIntersect _allTasks;  // Remove duplicates
+};
+{
+    private _task = _x;
+    private _state = taskState _task;
+    // Only include active tasks (not completed/failed/canceled)
+    if (toUpper _state in ["CREATED", "ASSIGNED"]) then {
+        private _pos = taskDestination _task;
+        // Skip tasks with no destination
+        if !(_pos isEqualTo [0, 0, 0]) then {
+            _taskItems pushBack _task;  // Store Task object directly
+        };
+    };
+} forEach _allTasks;
+
+// Sort tasks by distance from cursor
+_taskItems = [_taskItems, [], { BA_cursorPos distance2D (taskDestination _x) }, "ASCEND"] call BIS_fnc_sortBy;
+
+// Limit tasks
+if (count _taskItems > _maxItems) then { _taskItems resize _maxItems };
+
 // Store in state
-BA_landmarksItems = [_geoItems, _tacItems, _natoItems, _extrasItems, _markerItems];
+BA_landmarksItems = [_geoItems, _tacItems, _natoItems, _extrasItems, _markerItems, _taskItems];
 BA_landmarksCategoryIndex = 0;
-BA_landmarksItemIndex = [0, 0, 0, 0, 0];
+BA_landmarksItemIndex = [0, 0, 0, 0, 0, 0];
 BA_landmarksMenuActive = true;
 
 // Build announcement
-private _categoryNames = ["Geography", "Tactical", "NATO", "Extras", "Markers"];
+private _categoryNames = ["Geography", "Tactical", "NATO", "Extras", "Markers", "Tasks"];
 private _currentCategory = _categoryNames select BA_landmarksCategoryIndex;
 private _currentItems = BA_landmarksItems select BA_landmarksCategoryIndex;
 private _itemCount = count _currentItems;
@@ -122,13 +149,20 @@ private _announcement = "Landmarks. ";
 if (_itemCount > 0) then {
     _announcement = _announcement + format ["%1 category, %2 items. ", _currentCategory, _itemCount];
 
-    // Announce first item (check if marker string or location object)
+    // Announce first item (check type based on category)
     private _firstItem = _currentItems select 0;
     private _description = "";
-    if (_firstItem isEqualType "") then {
-        _description = [_firstItem] call BA_fnc_getMarkerDescription;
+    if (BA_landmarksCategoryIndex == 5) then {
+        // Tasks category - item is task ID
+        _description = [_firstItem] call BA_fnc_getTaskDescription;
     } else {
-        _description = [_firstItem] call BA_fnc_getLandmarkDescription;
+        if (_firstItem isEqualType "") then {
+            // Markers category - item is marker name
+            _description = [_firstItem] call BA_fnc_getMarkerDescription;
+        } else {
+            // Location object
+            _description = [_firstItem] call BA_fnc_getLandmarkDescription;
+        };
     };
     _announcement = _announcement + format ["1. %1. ", _description];
 } else {

@@ -221,6 +221,10 @@ class BA {
         // Usage: ["marker_name"] call BA_fnc_getMarkerDescription;
         class getMarkerDescription {};
 
+        // Get formatted task description
+        // Usage: ["task_id"] call BA_fnc_getTaskDescription;
+        class getTaskDescription {};
+
         // Convert location type to readable name
         // Usage: ["NameCity"] call BA_fnc_getLocationTypeName;
         class getLocationTypeName {};

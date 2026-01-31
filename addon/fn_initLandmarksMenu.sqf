@@ -17,9 +17,9 @@
 
 // Landmarks menu state variables
 BA_landmarksMenuActive = false;      // Is menu currently open?
-BA_landmarksCategoryIndex = 0;       // Current category (0=Geography, 1=Tactical, 2=NATO, 3=Extras, 4=Markers)
-BA_landmarksItemIndex = [0, 0, 0, 0, 0];   // Current item index per category
-BA_landmarksItems = [[], [], [], [], []];    // Cached landmarks per category [geo, tac, nato, extras, markers]
+BA_landmarksCategoryIndex = 0;       // Current category (0=Geography, 1=Tactical, 2=NATO, 3=Extras, 4=Markers, 5=Tasks)
+BA_landmarksItemIndex = [0, 0, 0, 0, 0, 0];   // Current item index per category
+BA_landmarksItems = [[], [], [], [], [], []];    // Cached landmarks per category [geo, tac, nato, extras, markers, tasks]
 
 // Category definitions
 BA_landmarksCategories = [
@@ -50,7 +50,8 @@ BA_landmarksCategories = [
         "Hill",
         "Flag"
     ]],
-    ["Markers", []]  // Mission markers (stored as strings, not location objects)
+    ["Markers", []],  // Mission markers (stored as strings, not location objects)
+    ["Tasks", []]     // Mission tasks (stored as task ID strings)
 ];
 
 // Search configuration

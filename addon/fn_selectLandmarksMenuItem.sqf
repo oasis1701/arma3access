@@ -24,29 +24,38 @@ if (_itemCount == 0) exitWith {
 private _currentIndex = BA_landmarksItemIndex select BA_landmarksCategoryIndex;
 private _selectedItem = _currentItems select _currentIndex;
 
-// Get position and name (check if marker string or location object)
+// Get position and name (check type based on category)
 private _locPos = [];
 private _name = "";
 
-if (_selectedItem isEqualType "") then {
-    // It's a marker name (string)
-    _locPos = getMarkerPos _selectedItem;
-    _name = markerText _selectedItem;
-    if (_name == "") then { _name = _selectedItem };
+if (BA_landmarksCategoryIndex == 5) then {
+    // It's a Task object
+    _locPos = taskDestination _selectedItem;
+    private _desc = taskDescription _selectedItem;
+    // taskDescription returns [desc, title, marker] - get the title
+    _name = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
+    if (_name == "") then { _name = str _selectedItem };
 } else {
-    // It's a location object
-    _locPos = locationPosition _selectedItem;
-    _name = text _selectedItem;
-    if (_name == "") then {
-        _name = [type _selectedItem] call BA_fnc_getLocationTypeName;
+    if (_selectedItem isEqualType "") then {
+        // It's a marker name (string)
+        _locPos = getMarkerPos _selectedItem;
+        _name = markerText _selectedItem;
+        if (_name == "") then { _name = _selectedItem };
+    } else {
+        // It's a location object
+        _locPos = locationPosition _selectedItem;
+        _name = text _selectedItem;
+        if (_name == "") then {
+            _name = [type _selectedItem] call BA_fnc_getLocationTypeName;
+        };
     };
 };
 
 // Close the menu first
 BA_landmarksMenuActive = false;
 BA_landmarksCategoryIndex = 0;
-BA_landmarksItemIndex = [0, 0, 0, 0, 0];
-BA_landmarksItems = [[], [], [], [], []];
+BA_landmarksItemIndex = [0, 0, 0, 0, 0, 0];
+BA_landmarksItems = [[], [], [], [], [], []];
 
 // Clear road state since cursor is leaving the road
 BA_currentRoad = objNull;

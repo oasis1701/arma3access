@@ -16,7 +16,7 @@ params [["_direction", "", [""]]];
 
 if (!BA_landmarksMenuActive) exitWith {};
 
-private _categoryNames = ["Geography", "Tactical", "NATO", "Extras", "Markers"];
+private _categoryNames = ["Geography", "Tactical", "NATO", "Extras", "Markers", "Tasks"];
 private _categoryCount = count BA_landmarksCategories;
 
 switch (_direction) do {
@@ -37,10 +37,14 @@ switch (_direction) do {
         if (_itemCount > 0) then {
             private _item = _currentItems select _currentIndex;
             private _description = "";
-            if (_item isEqualType "") then {
-                _description = [_item] call BA_fnc_getMarkerDescription;
+            if (BA_landmarksCategoryIndex == 5) then {
+                _description = [_item] call BA_fnc_getTaskDescription;
             } else {
-                _description = [_item] call BA_fnc_getLandmarkDescription;
+                if (_item isEqualType "") then {
+                    _description = [_item] call BA_fnc_getMarkerDescription;
+                } else {
+                    _description = [_item] call BA_fnc_getLandmarkDescription;
+                };
             };
             _announcement = _announcement + format ["%1. %2.", _currentIndex + 1, _description];
         } else {
@@ -66,10 +70,14 @@ switch (_direction) do {
         if (_itemCount > 0) then {
             private _item = _currentItems select _currentIndex;
             private _description = "";
-            if (_item isEqualType "") then {
-                _description = [_item] call BA_fnc_getMarkerDescription;
+            if (BA_landmarksCategoryIndex == 5) then {
+                _description = [_item] call BA_fnc_getTaskDescription;
             } else {
-                _description = [_item] call BA_fnc_getLandmarkDescription;
+                if (_item isEqualType "") then {
+                    _description = [_item] call BA_fnc_getMarkerDescription;
+                } else {
+                    _description = [_item] call BA_fnc_getLandmarkDescription;
+                };
             };
             _announcement = _announcement + format ["%1. %2.", _currentIndex + 1, _description];
         } else {
@@ -97,10 +105,14 @@ switch (_direction) do {
 
         private _item = _currentItems select _currentIndex;
         private _description = "";
-        if (_item isEqualType "") then {
-            _description = [_item] call BA_fnc_getMarkerDescription;
+        if (BA_landmarksCategoryIndex == 5) then {
+            _description = [_item] call BA_fnc_getTaskDescription;
         } else {
-            _description = [_item] call BA_fnc_getLandmarkDescription;
+            if (_item isEqualType "") then {
+                _description = [_item] call BA_fnc_getMarkerDescription;
+            } else {
+                _description = [_item] call BA_fnc_getLandmarkDescription;
+            };
         };
         [format ["%1. %2.", _currentIndex + 1, _description]] call BA_fnc_speak;
     };
@@ -122,10 +134,14 @@ switch (_direction) do {
 
         private _item = _currentItems select _currentIndex;
         private _description = "";
-        if (_item isEqualType "") then {
-            _description = [_item] call BA_fnc_getMarkerDescription;
+        if (BA_landmarksCategoryIndex == 5) then {
+            _description = [_item] call BA_fnc_getTaskDescription;
         } else {
-            _description = [_item] call BA_fnc_getLandmarkDescription;
+            if (_item isEqualType "") then {
+                _description = [_item] call BA_fnc_getMarkerDescription;
+            } else {
+                _description = [_item] call BA_fnc_getLandmarkDescription;
+            };
         };
         [format ["%1. %2.", _currentIndex + 1, _description]] call BA_fnc_speak;
     };
