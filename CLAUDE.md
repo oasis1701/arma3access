@@ -99,6 +99,30 @@ If ghost was at `[0,0,0]` with wrong side, **missions would break**. So we:
 - Ghost group created with `createGroup [side, true]` for correct side
 - Switching observed unit (Ctrl+Tab) does NOT move the ghost - ghost always follows BA_originalUnit
 
+### Vehicle Commands Pattern (IMPORTANT)
+
+When issuing orders to vehicles (helicopters, jets, tanks, etc.), the player may command them in two ways:
+1. **G key** - Select a different group to command (sets `BA_selectedOrderGroup`)
+2. **Ctrl+Tab** - Switch to observe a unit in that vehicle (changes `BA_observedUnit`)
+
+**The Problem:** If you get the vehicle from `BA_observedUnit`, it breaks when using G key (player is on foot, not in the vehicle).
+
+**The Solution:** Always get the vehicle from the **group leader**, not the observed unit:
+```sqf
+// WRONG - breaks with G key selection
+private _vehicle = vehicle BA_observedUnit;
+
+// CORRECT - works for both G key AND Ctrl+Tab
+private _groupLeader = leader _group;  // _group already handles BA_selectedOrderGroup
+private _vehicle = vehicle _groupLeader;
+```
+
+**Helicopter-specific notes:**
+- Use `AWARE` behavior (not `COMBAT`) to respect `flyInHeight` altitude commands
+- Use `RED` combat mode for weapons free while maintaining steady flight
+- After landing, `BA_flyHeight` is set to 0; flight commands check `if (_flyHeight < 30)` and default to 150m
+- Landing uses waypoint statements: `_wp setWaypointStatements ["true", "(vehicle this) land 'LAND'"]`
+
 ## Build Instructions
 
 ### For Claude Sessions (Recommended)
