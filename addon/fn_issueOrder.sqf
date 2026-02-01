@@ -364,9 +364,223 @@ switch (_orderType) do {
         ["Strafing target, will return after"] call BA_fnc_speak;
     };
 
+    // ========== JET COMMANDS ==========
+
+    case "jet_move": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
+
+        _group move _targetPos;
+        _group setBehaviour "AWARE";
+        _group setCombatMode "RED";
+        _group setSpeedMode "FULL";
+    };
+
+    case "jet_patrol_small": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
+
+        // AWARE behavior (not COMBAT - jets can't take cover)
+        _group setBehaviour "AWARE";
+        _group setCombatMode "RED";
+        _group enableAttack true;
+
+        private _radius = 1000;
+
+        // Create 3 random SAD waypoints within radius (Rydygier's approach)
+        for "_i" from 1 to 3 do {
+            private _angle = random 360;
+            private _dist = _radius * sqrt(random 1);
+            private _wpPos = _targetPos getPos [_dist, _angle];
+            _wpPos set [2, _altitude];
+
+            private _wp = _group addWaypoint [_wpPos, 0];
+            _wp setWaypointType "SAD";
+        };
+
+        // CYCLE waypoint to loop patrol
+        private _wpCycle = _group addWaypoint [_targetPos, 0];
+        _wpCycle setWaypointType "CYCLE";
+
+        _group setCurrentWaypoint (waypoints _group select 0);
+
+        ["Jet patrolling 1 kilometer area"] call BA_fnc_speak;
+    };
+
+    case "jet_patrol_med": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
+
+        // AWARE behavior (not COMBAT - jets can't take cover)
+        _group setBehaviour "AWARE";
+        _group setCombatMode "RED";
+        _group enableAttack true;
+
+        private _radius = 2000;
+
+        // Create 3 random SAD waypoints within radius (Rydygier's approach)
+        for "_i" from 1 to 3 do {
+            private _angle = random 360;
+            private _dist = _radius * sqrt(random 1);
+            private _wpPos = _targetPos getPos [_dist, _angle];
+            _wpPos set [2, _altitude];
+
+            private _wp = _group addWaypoint [_wpPos, 0];
+            _wp setWaypointType "SAD";
+        };
+
+        // CYCLE waypoint to loop patrol
+        private _wpCycle = _group addWaypoint [_targetPos, 0];
+        _wpCycle setWaypointType "CYCLE";
+
+        _group setCurrentWaypoint (waypoints _group select 0);
+
+        ["Jet patrolling 2 kilometer area"] call BA_fnc_speak;
+    };
+
+    case "jet_patrol_large": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
+
+        // AWARE behavior (not COMBAT - jets can't take cover)
+        _group setBehaviour "AWARE";
+        _group setCombatMode "RED";
+        _group enableAttack true;
+
+        private _radius = 4000;
+
+        // Create 3 random SAD waypoints within radius (Rydygier's approach)
+        for "_i" from 1 to 3 do {
+            private _angle = random 360;
+            private _dist = _radius * sqrt(random 1);
+            private _wpPos = _targetPos getPos [_dist, _angle];
+            _wpPos set [2, _altitude];
+
+            private _wp = _group addWaypoint [_wpPos, 0];
+            _wp setWaypointType "SAD";
+        };
+
+        // CYCLE waypoint to loop patrol
+        private _wpCycle = _group addWaypoint [_targetPos, 0];
+        _wpCycle setWaypointType "CYCLE";
+
+        _group setCurrentWaypoint (waypoints _group select 0);
+
+        ["Jet patrolling 4 kilometer area"] call BA_fnc_speak;
+    };
+
+    case "jet_strike": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        // Create invisible target at cursor
+        private _targetType = if (side _group == west) then {"LaserTargetW"} else {
+            if (side _group == east) then {"LaserTargetE"} else {"Land_HelipadEmpty_F"}
+        };
+        private _bullseye = _targetType createVehicle _targetPos;
+        _group reveal [_bullseye, 4];
+
+        // Calculate attack run positions (3km approach)
+        private _attackDir = _vehicle getDir _targetPos;
+        private _startPos = [
+            (_targetPos select 0) + (sin (_attackDir + 180) * 3000),
+            (_targetPos select 1) + (cos (_attackDir + 180) * 3000),
+            0
+        ];
+        private _exitPos = [
+            (_targetPos select 0) + (sin _attackDir * 3000),
+            (_targetPos select 1) + (cos _attackDir * 3000),
+            0
+        ];
+
+        // High altitude for approach
+        _vehicle flyInHeightASL [1000, 300, 1000];
+
+        _group setBehaviour "COMBAT";
+        _group setCombatMode "RED";
+
+        // WP1: Line up
+        private _wp1 = _group addWaypoint [_startPos, 0];
+        _wp1 setWaypointType "MOVE";
+        _wp1 setWaypointSpeed "FULL";
+
+        // WP2: Destroy target
+        private _wp2 = _group addWaypoint [_targetPos, 0];
+        _wp2 setWaypointType "DESTROY";
+        _wp2 waypointAttachVehicle _bullseye;
+
+        // WP3: Exit
+        private _wp3 = _group addWaypoint [_exitPos, 0];
+        _wp3 setWaypointType "MOVE";
+
+        _group setCurrentWaypoint _wp1;
+
+        ["Jet beginning attack run"] call BA_fnc_speak;
+
+        // Cleanup target after 2 minutes
+        [_bullseye] spawn {
+            params ["_target"];
+            sleep 120;
+            if (!isNull _target) then { deleteVehicle _target; };
+        };
+    };
+
+    case "jet_loiter": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
+
+        _group setBehaviour "AWARE";
+        _group setCombatMode "RED";
+
+        private _wp = _group addWaypoint [_targetPos, 0];
+        _wp setWaypointType "LOITER";
+        _wp setWaypointLoiterRadius 2000;
+        _wp setWaypointLoiterType "CIRCLE_L";
+        _group setCurrentWaypoint _wp;
+    };
+
+    case "jet_alt_low": {
+        _vehicle setVariable ["BA_jetAltitude", 200];
+        _vehicle flyInHeightASL [200, 200, 200];
+        ["Altitude set to 200 meters"] call BA_fnc_speak;
+    };
+
+    case "jet_alt_med": {
+        _vehicle setVariable ["BA_jetAltitude", 500];
+        _vehicle flyInHeightASL [500, 500, 500];
+        ["Altitude set to 500 meters"] call BA_fnc_speak;
+    };
+
+    case "jet_alt_high": {
+        _vehicle setVariable ["BA_jetAltitude", 1000];
+        _vehicle flyInHeightASL [1000, 1000, 1000];
+        ["Altitude set to 1000 meters"] call BA_fnc_speak;
+    };
+
+    case "jet_rtb": {
+        while {count waypoints _group > 0} do { deleteWaypoint [_group, 0]; };
+
+        _vehicle flyInHeightASL [500, 500, 500];
+        _group setBehaviour "CARELESS";
+
+        // Land command will find nearest airport
+        _vehicle land "LAND";
+
+        ["Jet returning to base"] call BA_fnc_speak;
+    };
+
     // ========== DISABLED - NEED FIXING ==========
     // case "stop", "hold_position", "watch", "mount_nearest", "dismount"
-    // case jet/vehicle/artillery/static commands
+    // case vehicle/artillery/static commands
 
     default {
         ["Command not yet implemented"] call BA_fnc_speak;
@@ -374,7 +588,7 @@ switch (_orderType) do {
 };
 
 // Announce order issued (except for commands with custom messages or error cases)
-if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe"]) then {
+if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe", "jet_patrol", "jet_strike", "jet_hunt", "jet_strafe", "jet_alt_low", "jet_alt_med", "jet_alt_high", "jet_rtb"]) then {
     private _message = format["%1 issued to grid %2", _label, _gridInfo];
     format["announcing: %1", _message] call _debug;
     [_message] call BA_fnc_speak;

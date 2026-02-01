@@ -66,8 +66,21 @@ BA_orderMenuItems = switch (BA_orderMenuUnitType) do {
             ["Attack and Return", "heli_strafe"]
         ]
     };
+    case "jet": {
+        [
+            ["Move", "jet_move"],
+            ["Patrol Small 1km", "jet_patrol_small"],
+            ["Patrol Medium 2km", "jet_patrol_med"],
+            ["Patrol Large 4km", "jet_patrol_large"],
+            ["Strike Target", "jet_strike"],
+            ["Loiter", "jet_loiter"],
+            ["Altitude Low 200m", "jet_alt_low"],
+            ["Altitude Medium 500m", "jet_alt_med"],
+            ["Altitude High 1000m", "jet_alt_high"],
+            ["Return to Base", "jet_rtb"]
+        ]
+    };
     // Other unit types - temporarily disabled, show basic move only
-    case "jet";
     case "armed_vehicle";
     case "unarmed_vehicle";
     case "artillery";
