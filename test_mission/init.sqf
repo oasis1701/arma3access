@@ -16,18 +16,7 @@ systemChat format["NVDA Status: %1", _nvdaStatus];
 if (_nvdaStatus == "OK") then {
     // Test 2: Speak a welcome message
     systemChat "Speaking welcome message...";
-    "nvda_arma3_bridge" callExtension "speak:Welcome to Arma 3 Blind Assist. NVDA bridge is working.";
-
-    sleep 3;
-
-    // Test 3: Speak player position
-    private _pos = getPos player;
-    private _grid = mapGridPosition player;
-    private _message = format["You are at grid %1. Elevation %2 meters.", _grid, round (_pos select 2)];
-    systemChat format["Speaking: %1", _message];
-    "nvda_arma3_bridge" callExtension format["speak:%1", _message];
-
-    sleep 2;
+    "nvda_arma3_bridge" callExtension "speak:Welcome to Arma 3 Blind Assist, Loading, please wait.";
 
     // Initialize Observer Mode system
     [] call BA_fnc_initObserverMode;
@@ -38,9 +27,8 @@ if (_nvdaStatus == "OK") then {
     // Initialize Group Menu system
     [] call BA_fnc_initGroupMenu;
 
-    "nvda_arma3_bridge" callExtension "speak:Press Control O to toggle observer mode. Use Tab to cycle units. Control Tab to cycle groups. Press O to open orders menu. Press G to select a group for orders.";
-
-    systemChat "Observer Mode initialized - Ctrl+O toggle, Tab cycle units, Ctrl+Tab cycle groups, O for orders, G for group selection";
+    // Initialize Dev Sandbox (spawns assets, speaks ready message)
+    [] call BA_fnc_initDevSandbox;
 
 } else {
     systemChat "ERROR: NVDA is not running! Please start NVDA and reload the mission.";

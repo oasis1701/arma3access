@@ -339,9 +339,5 @@ class BA {
         // Reset dead friendly assets to original positions
         // Usage: [] call BA_fnc_resetAssets;
         class resetAssets {};
-
-        // Announce nearby asset when player approaches
-        // Usage: [_asset] call BA_fnc_announceNearbyAsset;
-        class announceNearbyAsset {};
     };
 };

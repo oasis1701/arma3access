@@ -6,7 +6,6 @@
  * - Global references to all friendly assets
  * - Enemy tracking array
  * - Asset spawn positions for reset functionality
- * - Nearby asset announcement system
  *
  * Usage: [] call BA_fnc_initDevSandbox;
  */
@@ -55,61 +54,9 @@ if (BA_enemySpawnPos isEqualTo [0,0,0]) then {
     BA_enemySpawnPos = [2036, 0, 5990];
 };
 
-// Track last announced asset to avoid spam
-BA_lastAnnouncedAsset = objNull;
-
-// Set up nearby asset announcement loop
-[] spawn {
-    while {true} do {
-        sleep 1;
-
-        // Only check if player is alive and on foot
-        if (alive player && vehicle player == player) then {
-            private _nearestAsset = objNull;
-            private _nearestDist = 15; // Detection radius
-
-            // Check all asset group leaders
-            {
-                private _grp = _x;
-                private _leader = leader _grp;
-                if (alive _leader) then {
-                    private _dist = player distance _leader;
-                    if (_dist < _nearestDist) then {
-                        _nearestDist = _dist;
-                        _nearestAsset = _leader;
-                    };
-                };
-
-                // Also check vehicles in group
-                {
-                    private _veh = vehicle _x;
-                    if (_veh != _x && alive _veh) then {
-                        private _dist = player distance _veh;
-                        if (_dist < _nearestDist) then {
-                            _nearestDist = _dist;
-                            _nearestAsset = _veh;
-                        };
-                    };
-                } forEach units _grp;
-            } forEach BA_assetGroups;
-
-            // Announce if we found a new asset
-            if (!isNull _nearestAsset && _nearestAsset != BA_lastAnnouncedAsset) then {
-                [_nearestAsset] call BA_fnc_announceNearbyAsset;
-                BA_lastAnnouncedAsset = _nearestAsset;
-            };
-
-            // Clear last announced if we moved away
-            if (isNull _nearestAsset) then {
-                BA_lastAnnouncedAsset = objNull;
-            };
-        };
-    };
-};
-
 // Speak initialization complete
 private _assetCount = count BA_assetGroups;
-private _msg = format["Dev sandbox initialized. %1 asset groups available. Use Control Tab to cycle groups.", _assetCount];
+private _msg = "Dev sandbox initialized, Arma 3 Blind Assist is ready";
 [_msg] call BA_fnc_speak;
 systemChat _msg;
 
