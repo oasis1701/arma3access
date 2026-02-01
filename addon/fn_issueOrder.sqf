@@ -188,6 +188,10 @@ switch (_orderType) do {
     // ========== HELICOPTER COMMANDS ==========
 
     case "heli_move": {
+        // Clear any existing waypoints (including loiter)
+        while {count waypoints _group > 0} do {
+            deleteWaypoint [_group, 0];
+        };
         private _flyHeight = _vehicle getVariable ["BA_flyHeight", 150];
         if (_flyHeight < 30) then { _flyHeight = 150; };
         _vehicle flyInHeight _flyHeight;
@@ -225,6 +229,10 @@ switch (_orderType) do {
     };
 
     case "heli_alt_50": {
+        // Clear any existing waypoints (including loiter)
+        while {count waypoints _group > 0} do {
+            deleteWaypoint [_group, 0];
+        };
         _vehicle flyInHeight 50;
         _vehicle setVariable ["BA_flyHeight", 50];
         _group setBehaviour "AWARE";
@@ -232,6 +240,10 @@ switch (_orderType) do {
     };
 
     case "heli_alt_150": {
+        // Clear any existing waypoints (including loiter)
+        while {count waypoints _group > 0} do {
+            deleteWaypoint [_group, 0];
+        };
         _vehicle flyInHeight 150;
         _vehicle setVariable ["BA_flyHeight", 150];
         _group setBehaviour "AWARE";
@@ -239,6 +251,10 @@ switch (_orderType) do {
     };
 
     case "heli_alt_300": {
+        // Clear any existing waypoints (including loiter)
+        while {count waypoints _group > 0} do {
+            deleteWaypoint [_group, 0];
+        };
         _vehicle flyInHeight 300;
         _vehicle setVariable ["BA_flyHeight", 300];
         _group setBehaviour "AWARE";
