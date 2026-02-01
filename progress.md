@@ -74,7 +74,30 @@ Select which group receives orders WITHOUT moving camera or cursor.
 | Mount Nearest | forEach syntax issue |
 | Dismount | forEach syntax issue |
 
-### Other Unit Types (Helicopter, Jet, Vehicle, Artillery, Static)
+### Helicopter Commands - COMPLETE (2026-01-31)
+Full suite of 12 helicopter orders implemented:
+
+| Command | Description |
+|---------|-------------|
+| Move | Fly to cursor at current altitude (combat mode) |
+| Land | Land near cursor position |
+| Stop | Cancel orders, hover in place |
+| Altitude 50m | Nap of earth / terrain masking |
+| Altitude 150m | Default tactical altitude |
+| Altitude 300m | Safe transit altitude |
+| Loiter 300m | Orbit cursor at 300m radius (counter-clockwise) |
+| Loiter 600m | Orbit cursor at 600m radius |
+| Loiter 900m | Orbit cursor at 900m radius |
+| Hunt Enemies | Roam and destroy all enemies found |
+| Attack Area | Attack targets near cursor, stay in area |
+| Attack and Return | Attack cursor area briefly, return to start |
+
+**Technical notes:**
+- Altitude persists per-helicopter via `BA_flyHeight` variable (default 150m)
+- All loiter uses CIRCLE_L for gunship operations (weapons face inward)
+- Move and Loiter set combat mode - helicopter actively engages
+
+### Other Unit Types (Jet, Vehicle, Artillery, Static)
 Only **Move** available. All other commands removed due to broken syntax.
 Add new commands one at a time, verifying against Arma 3 Wiki before adding.
 
@@ -83,7 +106,7 @@ Add new commands one at a time, verifying against Arma 3 Wiki before adding.
 | Type | Commands |
 |------|----------|
 | **Infantry** | Move, Stop, Hold Position, Sneak, Assault, Garrison, Watch, Hold Fire, Fire at Will, Mount Nearest, Dismount |
-| **Helicopter** | Fly Low/Medium/High, Land, Hover, Loiter CAS, Attack Run |
+| **Helicopter** | Move, Land, Stop, Altitude (50/150/300m), Loiter (300/600/900m), Hunt Enemies, Attack Area, Attack and Return |
 | **Jet** | Fly Low/Medium/High, Loiter, Attack Run, Bomb Run, RTB |
 | **Armed Vehicle** | Move, Offroad, Hold Position, Watch, Hold Fire, Fire at Will, Unload, Engine Off |
 | **Transport** | Move, Offroad, Unload, Engine Off |

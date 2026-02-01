@@ -40,19 +40,26 @@ private _aliveCount = {alive _x} count units _group;
 
 // Determine unit type description
 private _typeDesc = "units";
+private _altitude = -1;  // -1 means not an aircraft
 if (_aliveCount > 0) then {
     // Check if group is in vehicles
     private _inVehicle = false;
     private _vehicleType = "";
+    private _vehicle = objNull;
     {
         if (vehicle _x != _x) exitWith {
             _inVehicle = true;
-            _vehicleType = getText (configFile >> "CfgVehicles" >> typeOf vehicle _x >> "displayName");
+            _vehicle = vehicle _x;
+            _vehicleType = getText (configFile >> "CfgVehicles" >> typeOf _vehicle >> "displayName");
         };
     } forEach units _group;
 
     if (_inVehicle && _vehicleType != "") then {
         _typeDesc = _vehicleType;
+        // Check if it's an air vehicle (helicopter, plane, or UAV)
+        if (_vehicle isKindOf "Air") then {
+            _altitude = round ((getPosATL _vehicle) select 2);
+        };
     } else {
         _typeDesc = "infantry";
     };
@@ -73,6 +80,12 @@ private _aliveUnits = units _group select { alive _x };
 
 // Build final description
 private _baseDesc = format["%1, %2, %3 %4", _callsign, _leaderName, _aliveCount, _typeDesc];
+
+// Add altitude for aircraft
+if (_altitude >= 0) then {
+    _baseDesc = _baseDesc + format[", %1 meters", _altitude];
+};
+
 if (_stragglers > 0) then {
     _baseDesc = _baseDesc + format[", %1 straggler%2", _stragglers, if (_stragglers > 1) then {"s"} else {""}];
 };
