@@ -384,11 +384,6 @@ switch (_orderType) do {
         private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
         _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
 
-        // AWARE behavior (not COMBAT - jets can't take cover)
-        _group setBehaviour "AWARE";
-        _group setCombatMode "RED";
-        _group enableAttack true;
-
         private _radius = 1000;
 
         // Create 3 random SAD waypoints within radius (Rydygier's approach)
@@ -408,6 +403,19 @@ switch (_orderType) do {
 
         _group setCurrentWaypoint (waypoints _group select 0);
 
+        // Reveal enemies in patrol area to aircraft group (aircraft can't perceive ground targets from altitude)
+        [_group, _targetPos, _radius] spawn {
+            params ["_grp", "_center", "_rad"];
+            while {count units _grp > 0} do {
+                {
+                    if (side _x != side _grp && _x distance2D _center < _rad) then {
+                        _grp reveal [_x, 4];
+                    };
+                } forEach allUnits;
+                sleep 10;
+            };
+        };
+
         ["Jet patrolling 1 kilometer area"] call BA_fnc_speak;
     };
 
@@ -416,11 +424,6 @@ switch (_orderType) do {
 
         private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
         _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
-
-        // AWARE behavior (not COMBAT - jets can't take cover)
-        _group setBehaviour "AWARE";
-        _group setCombatMode "RED";
-        _group enableAttack true;
 
         private _radius = 2000;
 
@@ -441,6 +444,19 @@ switch (_orderType) do {
 
         _group setCurrentWaypoint (waypoints _group select 0);
 
+        // Reveal enemies in patrol area to aircraft group (aircraft can't perceive ground targets from altitude)
+        [_group, _targetPos, _radius] spawn {
+            params ["_grp", "_center", "_rad"];
+            while {count units _grp > 0} do {
+                {
+                    if (side _x != side _grp && _x distance2D _center < _rad) then {
+                        _grp reveal [_x, 4];
+                    };
+                } forEach allUnits;
+                sleep 10;
+            };
+        };
+
         ["Jet patrolling 2 kilometer area"] call BA_fnc_speak;
     };
 
@@ -449,11 +465,6 @@ switch (_orderType) do {
 
         private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
         _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
-
-        // AWARE behavior (not COMBAT - jets can't take cover)
-        _group setBehaviour "AWARE";
-        _group setCombatMode "RED";
-        _group enableAttack true;
 
         private _radius = 4000;
 
@@ -473,6 +484,19 @@ switch (_orderType) do {
         _wpCycle setWaypointType "CYCLE";
 
         _group setCurrentWaypoint (waypoints _group select 0);
+
+        // Reveal enemies in patrol area to aircraft group (aircraft can't perceive ground targets from altitude)
+        [_group, _targetPos, _radius] spawn {
+            params ["_grp", "_center", "_rad"];
+            while {count units _grp > 0} do {
+                {
+                    if (side _x != side _grp && _x distance2D _center < _rad) then {
+                        _grp reveal [_x, 4];
+                    };
+                } forEach allUnits;
+                sleep 10;
+            };
+        };
 
         ["Jet patrolling 4 kilometer area"] call BA_fnc_speak;
     };
