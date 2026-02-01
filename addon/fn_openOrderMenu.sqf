@@ -50,8 +50,23 @@ BA_orderMenuItems = switch (BA_orderMenuUnitType) do {
             ["Fire at Will", "fire_at_will"]
         ]
     };
+    case "helicopter": {
+        [
+            ["Move", "heli_move"],
+            ["Land", "heli_land"],
+            ["Stop", "heli_stop"],
+            ["Altitude 50m", "heli_alt_50"],
+            ["Altitude 150m", "heli_alt_150"],
+            ["Altitude 300m", "heli_alt_300"],
+            ["Loiter 300m", "heli_loiter_300"],
+            ["Loiter 600m", "heli_loiter_600"],
+            ["Loiter 900m", "heli_loiter_900"],
+            ["Defend Position", "heli_defend"],
+            ["Attack Area", "heli_attack_area"],
+            ["Attack and Return", "heli_strafe"]
+        ]
+    };
     // Other unit types - temporarily disabled, show basic move only
-    case "helicopter";
     case "jet";
     case "armed_vehicle";
     case "unarmed_vehicle";

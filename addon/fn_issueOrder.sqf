@@ -293,8 +293,8 @@ switch (_orderType) do {
         _group setCurrentWaypoint _wp;
     };
 
-    case "heli_hunt": {
-        // Hunt enemies - roam and destroy anything found
+    case "heli_defend": {
+        // Defend current position - engage enemies in the area
         while {count waypoints _group > 0} do {
             deleteWaypoint [_group, 0];
         };
@@ -303,11 +303,11 @@ switch (_orderType) do {
         _vehicle flyInHeight _flyHeight;
         _group setBehaviour "AWARE";
         _group setCombatMode "RED";
-        // SAD waypoint at current position - helicopter searches from here
+        // SAD waypoint at current position - helicopter defends this area
         private _wp = _group addWaypoint [getPos _vehicle, 0];
         _wp setWaypointType "SAD";
         _group setCurrentWaypoint _wp;
-        ["Helicopter hunting enemies"] call BA_fnc_speak;
+        ["Helicopter defending position"] call BA_fnc_speak;
     };
 
     case "heli_attack_area": {
@@ -374,7 +374,7 @@ switch (_orderType) do {
 };
 
 // Announce order issued (except for commands with custom messages or error cases)
-if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_hunt", "heli_strafe"]) then {
+if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe"]) then {
     private _message = format["%1 issued to grid %2", _label, _gridInfo];
     format["announcing: %1", _message] call _debug;
     [_message] call BA_fnc_speak;
