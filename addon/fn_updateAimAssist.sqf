@@ -53,6 +53,13 @@ if (isNull _target) then {
         ["Target lost."] call BA_fnc_speak;
     };
 
+    // Remove hit handler when target is lost
+    if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
+        BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+        BA_aimAssistHitEH = -1;
+        BA_aimAssistHitTarget = objNull;
+    };
+
     BA_aimAssistTarget = objNull;
 } else {
     // Announce new or changed target
@@ -64,6 +71,29 @@ if (isNull _target) then {
 
     // Update target reference
     BA_aimAssistTarget = _target;
+
+    // Ensure hit tracking variables are initialized (in case mission was reloaded)
+    if (isNil "BA_aimAssistHitTarget") then { BA_aimAssistHitTarget = objNull; };
+    if (isNil "BA_aimAssistHitEH") then { BA_aimAssistHitEH = -1; };
+
+    // Manage hit detection event handler
+    if (_target != BA_aimAssistHitTarget) then {
+        // Remove old hit handler
+        if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
+            BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+            BA_aimAssistHitEH = -1;
+        };
+
+        // Add hit handler to new target (inline logic to avoid function registration issues)
+        BA_aimAssistHitEH = _target addEventHandler ["Hit", {
+            params ["_unit", "_source", "_damage", "_instigator"];
+            private _shooter = if (BA_observerMode) then { BA_originalUnit } else { player };
+            if (_instigator == _shooter || _source == _shooter) then {
+                ["hit"] call BA_fnc_speak;
+            };
+        }];
+        BA_aimAssistHitTarget = _target;
+    };
 
     // Calculate audio parameters
     private _params = [_soldier, _target] call BA_fnc_calculateAimOffset;

@@ -25,6 +25,10 @@ BA_aimAssistLastUpdate = 0;        // Last update time for throttling
 BA_aimAssistUpdateInterval = 0.05; // Update every 50ms (20Hz)
 BA_aimAssistEHId = -1;             // EachFrame event handler ID
 
+// Hit detection
+BA_aimAssistHitTarget = objNull;   // Target with hit EH attached
+BA_aimAssistHitEH = -1;            // Hit event handler ID
+
 // Configuration
 BA_aimAssistMaxRange = 500;        // Maximum target acquisition range (meters)
 BA_aimAssistLockAngle = 2;         // Degrees of error for "locked" (adjusted by target size)

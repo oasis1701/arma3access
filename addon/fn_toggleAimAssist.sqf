@@ -38,6 +38,13 @@ if (BA_aimAssistEnabled) then {
     // Clear target
     BA_aimAssistTarget = objNull;
 
+    // Remove hit detection handler
+    if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
+        BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+        BA_aimAssistHitEH = -1;
+        BA_aimAssistHitTarget = objNull;
+    };
+
     ["Aim assist disabled."] call BA_fnc_speak;
     diag_log "Blind Assist: Aim assist disabled";
 
