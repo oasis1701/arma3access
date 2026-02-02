@@ -340,4 +340,28 @@ class BA {
         // Usage: [] call BA_fnc_resetAssets;
         class resetAssets {};
     };
+
+    class AimAssist {
+        file = "addon";
+
+        // Initialize aim assist state variables
+        // Usage: [] call BA_fnc_initAimAssist;
+        class initAimAssist {};
+
+        // Toggle aim assist audio on/off (End key)
+        // Usage: [] call BA_fnc_toggleAimAssist;
+        class toggleAimAssist {};
+
+        // Per-frame update for aim assist audio
+        // Usage: [] call BA_fnc_updateAimAssist;
+        class updateAimAssist {};
+
+        // Find nearest visible enemy for targeting
+        // Usage: [_soldier] call BA_fnc_findAimTarget;
+        class findAimTarget {};
+
+        // Calculate audio parameters (pan, pitch, locked)
+        // Usage: [_soldier, _target] call BA_fnc_calculateAimOffset;
+        class calculateAimOffset {};
+    };
 };

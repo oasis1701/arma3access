@@ -18,6 +18,17 @@ if (!BA_observerMode) exitWith {
     false
 };
 
+// Disable aim assist if it was enabled
+if (!isNil "BA_aimAssistEnabled" && {BA_aimAssistEnabled}) then {
+    BA_aimAssistEnabled = false;
+    "nvda_arma3_bridge" callExtension "aim_stop";
+    if (BA_aimAssistEHId >= 0) then {
+        removeMissionEventHandler ["EachFrame", BA_aimAssistEHId];
+        BA_aimAssistEHId = -1;
+    };
+    BA_aimAssistTarget = objNull;
+};
+
 // Terminate the ghost sync loop
 if (!isNil "BA_ghostSyncHandle") then {
     terminate BA_ghostSyncHandle;

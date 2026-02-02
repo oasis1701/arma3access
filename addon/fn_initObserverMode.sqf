@@ -67,6 +67,9 @@ BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 // Initialize scanner system
 [] call BA_fnc_initScanner;
 
+// Initialize aim assist system
+[] call BA_fnc_initAimAssist;
+
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]
@@ -76,6 +79,12 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // Ctrl+O (key 24) - Toggle observer mode
     if (_key == 24 && _ctrl && !_shift && !_alt) exitWith {
         [] call BA_fnc_toggleObserverMode;
+        true
+    };
+
+    // End key (207) - Toggle aiming assistance (works both in and out of observer mode)
+    if (_key == 207 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_toggleAimAssist;
         true
     };
 

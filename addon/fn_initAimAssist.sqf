@@ -1,0 +1,34 @@
+/*
+ * Function: BA_fnc_initAimAssist
+ * Initializes the aim assist audio system state variables.
+ *
+ * This should be called once at mission start (from initObserverMode).
+ * The aim assist provides audio feedback for aiming:
+ * - Stereo panning indicates horizontal offset (left/right)
+ * - Pitch indicates vertical offset (up/down)
+ * - Square wave indicates locked on target
+ *
+ * Arguments:
+ *   None
+ *
+ * Return Value:
+ *   None
+ *
+ * Example:
+ *   [] call BA_fnc_initAimAssist;
+ */
+
+// State variables
+BA_aimAssistEnabled = false;       // Whether aim assist is currently active
+BA_aimAssistTarget = objNull;      // Current target being tracked
+BA_aimAssistLastUpdate = 0;        // Last update time for throttling
+BA_aimAssistUpdateInterval = 0.05; // Update every 50ms (20Hz)
+BA_aimAssistEHId = -1;             // EachFrame event handler ID
+
+// Configuration
+BA_aimAssistMaxRange = 500;        // Maximum target acquisition range (meters)
+BA_aimAssistLockAngle = 2;         // Degrees of error for "locked" (adjusted by target size)
+BA_aimAssistMinKnowledge = 0.5;    // Minimum knowsAbout value for valid target
+
+// Log initialization
+diag_log "Blind Assist: Aim Assist system initialized";

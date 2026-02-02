@@ -316,7 +316,57 @@ Simple format with straggler count:
 
 ---
 
-## Next: Phase 8 - Potential Features
+## Phase 8: Audio Aiming Assist - COMPLETE (2026-02-02)
+Real-time audio feedback to help blind players aim at enemies.
+
+### Key Binding
+| Key | Action |
+|-----|--------|
+| **End** | Toggle aim assist on/off |
+
+Works in both observer mode (AI aims) and manual mode (player aims).
+
+### Audio Feedback
+| Audio Parameter | Meaning |
+|-----------------|---------|
+| **Stereo Pan** | Left ear = turn left, Right ear = turn right |
+| **Pitch** | Low (300 Hz) = aim up, High (800 Hz) = aim down |
+| **Sine Wave** | Tracking enemy |
+| **Square Wave** | Locked on target (harsh/buzzy tone) |
+| **Silence** | No visible enemy, or enemy behind you |
+
+### Speech Announcements
+| Event | Announcement |
+|-------|--------------|
+| **Target acquired** | "Targeting CSAT Rifleman, 50 meters." |
+| **Target changed** | "Targeting Ifrit, 120 meters." |
+| **Target lost** | "Target lost." |
+
+### Target Acquisition
+- Range: 500 meters maximum
+- Requires line of sight (no tone through walls)
+- Only targets known enemies (`knowsAbout > 0.5`)
+- Targets nearest visible hostile first
+- Supports: Infantry, Cars, Tanks, Helicopters, Planes
+
+### Technical Details
+- Update rate: 20 Hz (50ms intervals)
+- Uses miniaudio library for real-time audio synthesis
+- DLL commands: `aim_start`, `aim_update:pan,pitch,locked`, `aim_stop`
+- Mute signal: pitch = -1 (enemy behind or no target)
+
+### DLL Test Commands (Debug Console)
+```sqf
+"nvda_arma3_bridge" callExtension "aim_start"           // Initialize
+"nvda_arma3_bridge" callExtension "aim_update:0.8,550,0" // Pan right, center pitch
+"nvda_arma3_bridge" callExtension "aim_update:0,750,0"   // High pitch (aim up)
+"nvda_arma3_bridge" callExtension "aim_update:0,550,1"   // Locked (square wave)
+"nvda_arma3_bridge" callExtension "aim_stop"            // Stop
+```
+
+---
+
+## Next: Phase 9 - Potential Features
 - Formation changes
 - Waypoint queue management
 - Combat status announcements
