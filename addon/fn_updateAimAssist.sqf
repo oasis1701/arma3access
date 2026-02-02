@@ -48,19 +48,35 @@ if (isNull _target) then {
     // No valid target - mute the tone
     "nvda_arma3_bridge" callExtension "aim_update:0,-1,0";
 
-    // Announce target lost if we had one before
+    // Announce based on what happened to the target
     if (!isNull _previousTarget) then {
-        ["Target lost."] call BA_fnc_speak;
+        if (BA_aimAssistTargetDeathType == "player") then {
+            ["Target killed."] call BA_fnc_speak;
+        } else {
+            if (BA_aimAssistTargetDeathType == "other") then {
+                ["Target down."] call BA_fnc_speak;
+            } else {
+                ["Target lost."] call BA_fnc_speak;
+            };
+        };
     };
 
-    // Remove hit handler when target is lost
-    if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
-        BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
-        BA_aimAssistHitEH = -1;
+    // Remove event handlers when target is lost
+    if (!isNull BA_aimAssistHitTarget) then {
+        if (BA_aimAssistHitEH >= 0) then {
+            BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+            BA_aimAssistHitEH = -1;
+        };
+        if (BA_aimAssistKilledEH >= 0) then {
+            BA_aimAssistHitTarget removeEventHandler ["Killed", BA_aimAssistKilledEH];
+            BA_aimAssistKilledEH = -1;
+        };
         BA_aimAssistHitTarget = objNull;
     };
 
+    // Reset state
     BA_aimAssistTarget = objNull;
+    BA_aimAssistTargetDeathType = "";
 } else {
     // Announce new or changed target
     if (_target != _previousTarget) then {
@@ -75,16 +91,27 @@ if (isNull _target) then {
     // Ensure hit tracking variables are initialized (in case mission was reloaded)
     if (isNil "BA_aimAssistHitTarget") then { BA_aimAssistHitTarget = objNull; };
     if (isNil "BA_aimAssistHitEH") then { BA_aimAssistHitEH = -1; };
+    if (isNil "BA_aimAssistKilledEH") then { BA_aimAssistKilledEH = -1; };
+    if (isNil "BA_aimAssistTargetDeathType") then { BA_aimAssistTargetDeathType = ""; };
 
-    // Manage hit detection event handler
+    // Manage hit and killed detection event handlers
     if (_target != BA_aimAssistHitTarget) then {
-        // Remove old hit handler
-        if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
-            BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
-            BA_aimAssistHitEH = -1;
+        // Remove old handlers
+        if (!isNull BA_aimAssistHitTarget) then {
+            if (BA_aimAssistHitEH >= 0) then {
+                BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+                BA_aimAssistHitEH = -1;
+            };
+            if (BA_aimAssistKilledEH >= 0) then {
+                BA_aimAssistHitTarget removeEventHandler ["Killed", BA_aimAssistKilledEH];
+                BA_aimAssistKilledEH = -1;
+            };
         };
 
-        // Add hit handler to new target (inline logic to avoid function registration issues)
+        // Reset death type for new target
+        BA_aimAssistTargetDeathType = "";
+
+        // Add hit handler to new target
         BA_aimAssistHitEH = _target addEventHandler ["Hit", {
             params ["_unit", "_source", "_damage", "_instigator"];
             private _shooter = if (BA_observerMode) then { BA_originalUnit } else { player };
@@ -92,6 +119,18 @@ if (isNull _target) then {
                 ["hit"] call BA_fnc_speak;
             };
         }];
+
+        // Add killed handler to detect how target died
+        BA_aimAssistKilledEH = _target addEventHandler ["Killed", {
+            params ["_unit", "_killer", "_instigator", "_useEffects"];
+            private _shooter = if (BA_observerMode) then { BA_originalUnit } else { player };
+            if (_instigator == _shooter || _killer == _shooter) then {
+                BA_aimAssistTargetDeathType = "player";
+            } else {
+                BA_aimAssistTargetDeathType = "other";
+            };
+        }];
+
         BA_aimAssistHitTarget = _target;
     };
 
