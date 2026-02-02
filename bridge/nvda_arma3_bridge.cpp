@@ -107,8 +107,9 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
         if (active && !muted) {
             if (locked) {
-                // Square wave for "locked on target"
-                sample = (g_phase < 3.14159265358979323846) ? BASE_VOLUME : -BASE_VOLUME;
+                // Rounded square wave for "locked on target" - tanh smooths the sharp edges
+                float sharpness = 3.0f;
+                sample = (float)(tanh(sin(g_phase) * sharpness) / tanh(sharpness) * BASE_VOLUME);
             } else {
                 // Sine wave for "tracking"
                 sample = (float)(sin(g_phase) * BASE_VOLUME);
