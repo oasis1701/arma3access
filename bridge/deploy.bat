@@ -1,7 +1,15 @@
 @echo off
 REM Deploy NVDA-Arma 3 Bridge to Arma 3 directory
 
-set ARMA3_DIR=F:\Steam\steamapps\common\Arma 3
+REM Load local.env if it exists (check repo root)
+if exist "%~dp0..\local.env" (
+    for /f "usebackq tokens=1,* delims==" %%a in ("%~dp0..\local.env") do (
+        if not "%%a"=="" if not "%%a:~0,1%"=="#" set "%%a=%%b"
+    )
+)
+
+REM Fall back to default if not set by local.env
+if not defined ARMA3_DIR set ARMA3_DIR=F:\Steam\steamapps\common\Arma 3
 
 echo Deploying NVDA-Arma 3 Bridge...
 
