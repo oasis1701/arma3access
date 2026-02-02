@@ -69,7 +69,7 @@ static double g_phase = 0.0;
 
 // Audio constants
 static const int SAMPLE_RATE = 44100;
-static const float BASE_VOLUME = 0.05f;  // Very quiet
+static const float BASE_VOLUME = 0.01f;  // Quiet but audible
 
 // Shutdown flag for clean exit
 static std::atomic<bool> g_shuttingDown(false);
@@ -156,14 +156,16 @@ bool init_audio() {
 // Shutdown audio device
 void shutdown_audio() {
     if (g_audioInitialized) {
-        g_shuttingDown.store(true);   // Tell callback to exit fast
+        g_shuttingDown.store(true);
         g_aimActive.store(false);
         g_aimMuted.store(true);
-        Sleep(150);                    // Give callback time to see flag and finish
+
+        // Just stop the device, don't uninitialize
+        // Let the OS clean up on process exit to avoid deadlock
         ma_device_stop(&g_audioDevice);
-        ma_device_uninit(&g_audioDevice);
-        g_audioInitialized = false;
-        g_shuttingDown.store(false);  // Reset for potential re-init
+
+        // DON'T call ma_device_uninit() - it can deadlock during shutdown
+        // g_audioInitialized stays true but that's fine, process is exiting
     }
 }
 
