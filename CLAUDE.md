@@ -10,24 +10,18 @@ Update `progress.md` briefly when completing milestones or changing direction.
 
 ## Key Paths
 
+### Setup
+Copy `local.env.example` to `local.env` and set your machine-specific paths.
+`local.env` is gitignored and never committed. Read it at the start of a session
+to get `ARMA3_DIR`, `ARMA3_MISSION_DIR`, and `ARMA3_LOG_DIR`.
+
 ### Project Directory (Source - edit files here)
-D:\arma3 access\
+This repo root. All source files are version controlled here.
 
-### Arma 3 Installation
-F:\Steam\steamapps\common\Arma 3\
-
-### Test Mission (Deploy target - don't edit directly)
-F:\Steam\steamapps\common\Arma 3\Missions\AutoTest2.Stratis\
-
-**IMPORTANT:** All source files live in the project directory and are version controlled with git.
-The test mission folder is for deployment/testing only. Always edit files in `D:\arma3 access\`
-then deploy to the game folder.
-
-### Arma 3 Log Files
-C:\Users\rhadi\AppData\Local\Arma 3\
+**IMPORTANT:** Always edit files in the repo, then deploy to the game folder.
 
 ### NVDA Controller Client SDK
-D:\arma3 access\nvda controllerClient\x64\
+`nvda controllerClient/x64/`
 - nvdaController.h (header)
 - nvdaControllerClient.lib (link library)
 - nvdaControllerClient.dll (runtime)
@@ -129,29 +123,29 @@ private _vehicle = vehicle _groupLeader;
 
 Build the bridge DLL:
 ```bash
-powershell -Command "& { cmd /c '\"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat\" x64 && cd /d \"D:\arma3 access\bridge\" && cl /LD /EHsc /O2 /Fe:nvda_arma3_bridge_x64.dll nvda_arma3_bridge.cpp nvdaControllerClient.lib' }"
+powershell -Command "& { cmd /c '\"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat\" x64 && cd /d \"%CD%\bridge\" && cl /LD /EHsc /O2 /Fe:nvda_arma3_bridge_x64.dll nvda_arma3_bridge.cpp nvdaControllerClient.lib' }"
 ```
 
-Deploy DLLs to Arma 3:
+Deploy DLLs to Arma 3 (paths from `local.env`):
 ```bash
-cp "D:/arma3 access/bridge/nvda_arma3_bridge_x64.dll" "F:/Steam/steamapps/common/Arma 3/" && cp "D:/arma3 access/nvda controllerClient/x64/nvdaControllerClient.dll" "F:/Steam/steamapps/common/Arma 3/"
+cp "bridge/nvda_arma3_bridge_x64.dll" "$ARMA3_DIR/" && cp "nvda controllerClient/x64/nvdaControllerClient.dll" "$ARMA3_DIR/"
 ```
 
 Deploy SQF scripts to test mission:
 ```bash
-cp "D:/arma3 access/addon/"*.sqf "F:/Steam/steamapps/common/Arma 3/Missions/AutoTest2.Stratis/addon/"
+cp "addon/"*.sqf "$ARMA3_MISSION_DIR/addon/"
 ```
 
 Verify DLL deployment:
 ```bash
-ls -la "F:/Steam/steamapps/common/Arma 3/"*nvda*
+ls -la "$ARMA3_DIR/"*nvda*
 ```
 
 ### For Manual Use (Developer Command Prompt)
 
 Open "Developer Command Prompt for VS 2022" and run:
 ```cmd
-cd "D:\arma3 access\bridge"
+cd bridge
 build.bat
 deploy.bat
 ```
@@ -179,8 +173,9 @@ deploy.bat
 ## Project Structure
 
 ```
-D:\arma3 access\                    (SOURCE - all edits here, git controlled)
+./                                  (repo root - all edits here, git controlled)
 ├── CLAUDE.md                       (this file - project context)
+├── local.env.example               (copy to local.env, set your paths)
 ├── progress.md                     (current status - update this!)
 ├── bridge/
 │   ├── nvda_arma3_bridge.cpp       (main source)
@@ -194,10 +189,10 @@ D:\arma3 access\                    (SOURCE - all edits here, git controlled)
 └── test_mission/
     └── init.sqf                    (test the bridge)
 
-F:\Steam\...\Missions\AutoTest2.Stratis\  (DEPLOY TARGET - don't edit here)
-├── addon/                          (copy of D:\arma3 access\addon\)
+$ARMA3_MISSION_DIR/                     (DEPLOY TARGET - don't edit here)
+├── addon/                          (copy of repo addon/)
 ├── description.ext                 (mission config)
 └── init.sqf                        (mission init)
 ```
 
-**Workflow:** Edit in `D:\arma3 access\` → Deploy to test mission → Test in Arma 3
+**Workflow:** Edit in repo → Deploy to test mission → Test in Arma 3

@@ -16,6 +16,9 @@ nvda controllerClient/
 # Claude Code local settings
 .claude/
 
+# Local machine config (paths, etc.)
+local.env
+
 # Windows artifacts
 Thumbs.db
 Desktop.ini
