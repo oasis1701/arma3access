@@ -92,7 +92,7 @@ static const float CLICK_FREQ = 1000.0f;        // Secondary click tone frequenc
 static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slightly quieter)
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
-static const float HORIZ_ACTIVATE_THRESHOLD = 1.0f; // Secondary tone activates when abs(pan) < this
+static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates when abs(pan) < this (close to target)
 static const double PI = 3.14159265358979323846;
 // Note: VERT_CENTER_THRESHOLD and HORIZ_CENTER_THRESHOLD are now adaptive (passed from SQF)
 
