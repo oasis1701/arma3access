@@ -2,7 +2,14 @@
  * NVDA-Arma 3 Bridge DLL
  *
  * This DLL bridges Arma 3's callExtension system to NVDA screen reader
- * and provides real-time audio feedback for aiming assistance.
+ * and provides real-time two-tone audio feedback for precision aiming assistance.
+ *
+ * Two-Tone Precision System:
+ *   - Primary tone: Stereo-panned sine wave (300-800 Hz) for coarse aiming
+ *     Pulses based on vertical error (slow=far, fast=close, steady=centered)
+ *   - Secondary tone: 1000 Hz click in left/right ear for fine horizontal adjustment
+ *     Activates when roughly facing target, pulses based on horizontal error
+ *   - Both tones steady = dead center = FIRE!
  *
  * Build with Visual Studio 2022 Developer Command Prompt:
  *   cl /LD /EHsc /O2 /Fe:nvda_arma3_bridge_x64.dll nvda_arma3_bridge.cpp nvdaControllerClient.lib
@@ -13,7 +20,7 @@
  *   "nvda_arma3_bridge" callExtension "braille:Message"
  *   "nvda_arma3_bridge" callExtension "test"
  *   "nvda_arma3_bridge" callExtension "aim_start"
- *   "nvda_arma3_bridge" callExtension "aim_update:-0.5,600,0"
+ *   "nvda_arma3_bridge" callExtension "aim_update:-0.5,600,0.2,0.5"  // pan,pitch,vertErr,horizErr
  *   "nvda_arma3_bridge" callExtension "aim_stop"
  */
 
@@ -49,23 +56,27 @@ extern "C" {
 }
 
 // DLL version string
-static const char* VERSION = "1.1.0";
+static const char* VERSION = "1.2.0";
 
 // ============================================================================
 // Audio Synthesis State (for aim assist)
 // ============================================================================
 
 // Audio parameters (atomic for thread-safe access from audio callback)
-static std::atomic<float> g_aimPan(0.0f);       // -1.0 (left) to +1.0 (right)
-static std::atomic<float> g_aimPitch(550.0f);   // Frequency in Hz (300-800)
-static std::atomic<int> g_aimLocked(0);         // 0 = sine wave, 1 = square wave
-static std::atomic<bool> g_aimActive(false);    // Whether aim assist is active
-static std::atomic<bool> g_aimMuted(false);     // Mute when no target
+static std::atomic<float> g_aimPan(0.0f);         // -1.0 (left) to +1.0 (right)
+static std::atomic<float> g_aimPitch(550.0f);     // Frequency in Hz (300-800)
+static std::atomic<float> g_aimVertError(1.0f);   // Vertical error 0-1 (0 = centered)
+static std::atomic<float> g_aimHorizError(1.0f);  // Horizontal error 0-1 (0 = centered)
+static std::atomic<bool> g_aimActive(false);      // Whether aim assist is active
+static std::atomic<bool> g_aimMuted(false);       // Mute when no target
 
 // Audio device state
 static ma_device g_audioDevice;
 static bool g_audioInitialized = false;
-static double g_phase = 0.0;
+static double g_phase = 0.0;           // Primary tone phase
+static double g_pulsePhase = 0.0;      // Primary tone pulse envelope phase
+static double g_clickPhase = 0.0;      // Secondary click tone phase
+static double g_clickPulsePhase = 0.0; // Secondary click pulse envelope phase
 
 // Audio constants
 static const int SAMPLE_RATE = 44100;
@@ -74,7 +85,17 @@ static const float BASE_VOLUME = 0.01f;  // Quiet but audible
 // Shutdown flag for clean exit
 static std::atomic<bool> g_shuttingDown(false);
 
-// Audio callback - generates the tone in real-time
+// Constants for two-tone audio
+static const float CLICK_FREQ = 1000.0f;        // Secondary click tone frequency
+static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slightly quieter)
+static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
+static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
+static const float VERT_CENTER_THRESHOLD = 0.02f;   // Vertical dead center threshold
+static const float HORIZ_CENTER_THRESHOLD = 0.02f;  // Horizontal dead center threshold
+static const float HORIZ_ACTIVATE_THRESHOLD = 1.0f; // Secondary tone activates when abs(pan) < this
+static const double PI = 3.14159265358979323846;
+
+// Audio callback - generates two-tone precision feedback in real-time
 void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
     (void)pInput;
     (void)pDevice;
@@ -90,40 +111,109 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     // Read current parameters atomically
     float pan = g_aimPan.load();
     float freq = g_aimPitch.load();
-    int locked = g_aimLocked.load();
+    float vertError = g_aimVertError.load();
+    float horizError = g_aimHorizError.load();
     bool active = g_aimActive.load();
     bool muted = g_aimMuted.load();
 
-    // Calculate per-channel gains for stereo panning
+    // Calculate per-channel gains for primary tone stereo panning
     // Pan: -1 = full left, 0 = center, +1 = full right
     float leftGain = (pan <= 0.0f) ? 1.0f : (1.0f - pan);
     float rightGain = (pan >= 0.0f) ? 1.0f : (1.0f + pan);
 
-    // Phase increment per sample
-    double phaseInc = (2.0 * 3.14159265358979323846 * freq) / SAMPLE_RATE;
+    // Calculate primary tone pulse rate based on vertical error
+    // At dead center (vertError < threshold): continuous tone (pulseRate = 0)
+    // At max error: slow pulse (2 Hz)
+    // At min error: fast pulse (15 Hz)
+    float primaryPulseRate = 0.0f;
+    if (vertError >= VERT_CENTER_THRESHOLD) {
+        // Linear interpolation: high error = slow, low error = fast
+        primaryPulseRate = MIN_PULSE_RATE + (1.0f - vertError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
+    }
+
+    // Calculate secondary click pulse rate based on horizontal error
+    // Only active when roughly facing target (abs(pan) < 1.0)
+    bool secondaryActive = (fabsf(pan) < HORIZ_ACTIVATE_THRESHOLD);
+    float secondaryPulseRate = 0.0f;
+    if (secondaryActive && horizError >= HORIZ_CENTER_THRESHOLD) {
+        secondaryPulseRate = MIN_PULSE_RATE + (1.0f - horizError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
+    }
+
+    // Phase increments per sample
+    double primaryPhaseInc = (2.0 * PI * freq) / SAMPLE_RATE;
+    double primaryPulseInc = (2.0 * PI * primaryPulseRate) / SAMPLE_RATE;
+    double clickPhaseInc = (2.0 * PI * CLICK_FREQ) / SAMPLE_RATE;
+    double clickPulseInc = (2.0 * PI * secondaryPulseRate) / SAMPLE_RATE;
 
     for (ma_uint32 i = 0; i < frameCount; i++) {
-        float sample = 0.0f;
+        float leftSample = 0.0f;
+        float rightSample = 0.0f;
 
         if (active && !muted) {
-            if (locked) {
-                // Rounded square wave for "locked on target" - tanh smooths the sharp edges
-                float sharpness = 3.0f;
-                sample = (float)(tanh(sin(g_phase) * sharpness) / tanh(sharpness) * BASE_VOLUME);
-            } else {
-                // Sine wave for "tracking"
-                sample = (float)(sin(g_phase) * BASE_VOLUME);
+            // ================================================================
+            // Primary tone (vertical precision) - panned stereo sine wave
+            // ================================================================
+            float primarySample = (float)sin(g_phase) * BASE_VOLUME;
+
+            // Apply pulse envelope if not at dead center
+            if (primaryPulseRate > 0.0f) {
+                // Square wave envelope: on when sin > 0, off when sin < 0
+                float envelope = (sin(g_pulsePhase) > 0.0f) ? 1.0f : 0.0f;
+                primarySample *= envelope;
+            }
+            // else: continuous tone (no envelope)
+
+            // Apply stereo panning to primary tone
+            leftSample += primarySample * leftGain;
+            rightSample += primarySample * rightGain;
+
+            // ================================================================
+            // Secondary tone (horizontal precision) - mono click in L or R ear
+            // ================================================================
+            if (secondaryActive) {
+                float clickSample = (float)sin(g_clickPhase) * CLICK_VOLUME;
+
+                // Apply pulse envelope if not at dead center
+                if (secondaryPulseRate > 0.0f) {
+                    float clickEnvelope = (sin(g_clickPulsePhase) > 0.0f) ? 1.0f : 0.0f;
+                    clickSample *= clickEnvelope;
+                }
+                // else: continuous tone (no envelope)
+
+                // Pan click to left or right ear based on target direction
+                if (pan < 0.0f) {
+                    // Target is to the left - click in left ear
+                    leftSample += clickSample;
+                } else {
+                    // Target is to the right - click in right ear
+                    rightSample += clickSample;
+                }
             }
         }
 
-        // Output stereo with panning
-        *output++ = sample * leftGain;  // Left channel
-        *output++ = sample * rightGain; // Right channel
+        // Output stereo
+        *output++ = leftSample;
+        *output++ = rightSample;
 
-        // Advance phase
-        g_phase += phaseInc;
-        if (g_phase >= 2.0 * 3.14159265358979323846) {
-            g_phase -= 2.0 * 3.14159265358979323846;
+        // Advance phases
+        g_phase += primaryPhaseInc;
+        if (g_phase >= 2.0 * PI) g_phase -= 2.0 * PI;
+
+        if (primaryPulseRate > 0.0f) {
+            g_pulsePhase += primaryPulseInc;
+            if (g_pulsePhase >= 2.0 * PI) g_pulsePhase -= 2.0 * PI;
+        } else {
+            g_pulsePhase = 0.0;  // Reset when continuous
+        }
+
+        g_clickPhase += clickPhaseInc;
+        if (g_clickPhase >= 2.0 * PI) g_clickPhase -= 2.0 * PI;
+
+        if (secondaryPulseRate > 0.0f) {
+            g_clickPulsePhase += clickPulseInc;
+            if (g_clickPulsePhase >= 2.0 * PI) g_clickPulsePhase -= 2.0 * PI;
+        } else {
+            g_clickPulsePhase = 0.0;  // Reset when continuous
         }
     }
 }
@@ -291,8 +381,9 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
         if (init_audio()) {
             g_aimPan.store(0.0f);
             g_aimPitch.store(550.0f);
-            g_aimLocked.store(0);
-            g_aimMuted.store(true);  // Start muted until we have a target
+            g_aimVertError.store(1.0f);   // Start at max error
+            g_aimHorizError.store(1.0f);  // Start at max error
+            g_aimMuted.store(true);       // Start muted until we have a target
             g_aimActive.store(true);
             safe_output(output, outputSize, "OK");
         } else {
@@ -301,18 +392,20 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
         return;
     }
 
-    // Command: aim_update:pan,pitch,locked - Update audio parameters
+    // Command: aim_update:pan,pitch,vertError,horizError - Update audio parameters
     // pan: -1.0 to 1.0 (left to right)
-    // pitch: frequency in Hz (typically 300-800)
-    // locked: 0 or 1 (sine wave vs square wave)
+    // pitch: frequency in Hz (typically 300-800, 550 = vertically centered)
+    // vertError: 0.0 to 1.0 (0 = dead center vertically)
+    // horizError: 0.0 to 1.0 (0 = dead center horizontally)
     // Special: pitch of -1 means mute (no target)
     if (cmd.rfind("aim_update:", 0) == 0) {
         std::string params = cmd.substr(11);
 
-        // Parse comma-separated values: pan,pitch,locked
+        // Parse comma-separated values: pan,pitch,vertError,horizError
         float pan = 0.0f;
         float pitch = 550.0f;
-        int locked = 0;
+        float vertError = 1.0f;
+        float horizError = 1.0f;
 
         size_t pos1 = params.find(',');
         if (pos1 != std::string::npos) {
@@ -321,7 +414,14 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
             size_t pos2 = params.find(',', pos1 + 1);
             if (pos2 != std::string::npos) {
                 pitch = parse_float(params.substr(pos1 + 1, pos2 - pos1 - 1).c_str(), 550.0f);
-                locked = parse_int(params.substr(pos2 + 1).c_str(), 0);
+
+                size_t pos3 = params.find(',', pos2 + 1);
+                if (pos3 != std::string::npos) {
+                    vertError = parse_float(params.substr(pos2 + 1, pos3 - pos2 - 1).c_str(), 1.0f);
+                    horizError = parse_float(params.substr(pos3 + 1).c_str(), 1.0f);
+                } else {
+                    vertError = parse_float(params.substr(pos2 + 1).c_str(), 1.0f);
+                }
             } else {
                 pitch = parse_float(params.substr(pos1 + 1).c_str(), 550.0f);
             }
@@ -336,11 +436,13 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
             // Clamp values to valid ranges
             pan = (pan < -1.0f) ? -1.0f : (pan > 1.0f) ? 1.0f : pan;
             pitch = (pitch < 100.0f) ? 100.0f : (pitch > 2000.0f) ? 2000.0f : pitch;
-            locked = (locked != 0) ? 1 : 0;
+            vertError = (vertError < 0.0f) ? 0.0f : (vertError > 1.0f) ? 1.0f : vertError;
+            horizError = (horizError < 0.0f) ? 0.0f : (horizError > 1.0f) ? 1.0f : horizError;
 
             g_aimPan.store(pan);
             g_aimPitch.store(pitch);
-            g_aimLocked.store(locked);
+            g_aimVertError.store(vertError);
+            g_aimHorizError.store(horizError);
         }
 
         safe_output(output, outputSize, "OK");

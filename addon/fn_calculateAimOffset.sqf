@@ -1,21 +1,22 @@
 /*
  * Function: BA_fnc_calculateAimOffset
- * Calculates the audio parameters (pan, pitch, locked) for aim assist.
+ * Calculates the audio parameters for two-tone precision aim assist.
  *
  * Algorithm:
  * 1. Get soldier's weapon direction
  * 2. Get direction to target center mass
  * 3. Check if target is behind (dot product < 0) -> mute
  * 4. Calculate horizontal offset -> pan (-1 to +1)
- * 5. Calculate vertical offset -> pitch (300-800 Hz)
- * 6. Check if locked (angular error < threshold)
+ * 5. Calculate vertical offset -> pitch (300-800 Hz, 550 = centered)
+ * 6. Calculate vertical error (0-1, 0 = centered) for pulse rate
+ * 7. Calculate horizontal error (0-1, 0 = centered) for click rate
  *
  * Arguments:
  *   0: Object - The soldier doing the aiming
  *   1: Object - The target enemy
  *
  * Return Value:
- *   Array - [pan, pitch, locked] or [-1, -1, 0] if should mute
+ *   Array - [pan, pitch, vertError, horizError] or [0, -1, 1, 1] if should mute
  *
  * Example:
  *   private _params = [player, _enemy] call BA_fnc_calculateAimOffset;
@@ -25,7 +26,7 @@ params [["_soldier", objNull, [objNull]], ["_target", objNull, [objNull]]];
 
 // Return mute signal if invalid inputs
 if (isNull _soldier || isNull _target || !alive _soldier || !alive _target) exitWith {
-    [0, -1, 0]  // pitch -1 = mute signal
+    [0, -1, 1, 1]  // pitch -1 = mute signal, max errors
 };
 
 // Get aim direction - use weapon barrel direction (where bullet actually goes)
@@ -68,7 +69,7 @@ private _dotProduct = _aimDirNorm vectorDotProduct _toTargetNorm;
 
 if (_dotProduct < 0) exitWith {
     // Target is behind the soldier - mute to prevent confusing left/right flip
-    [0, -1, 0]
+    [0, -1, 1, 1]  // pitch -1 = mute signal, max errors
 };
 
 // ============================================================================
@@ -123,33 +124,18 @@ private _pitch = 550 + (_elevDiff / 45 * 250);
 _pitch = (_pitch max 300) min 800;
 
 // ============================================================================
-// Calculate lock status
+// Calculate error values for two-tone precision feedback
 // ============================================================================
-// Total angular error between aim and target
 
-// Full 3D dot product gives cosine of angle
-// _dotProduct already calculated above
+// Vertical error: how far pitch is from center (550 Hz)
+// Range: 0 (dead center) to 1 (max error at 300 or 800 Hz)
+private _vertError = (abs (_pitch - 550)) / 250;
+_vertError = (_vertError max 0) min 1;
 
-// Angle in degrees
-private _angleError = acos (_dotProduct min 1);  // Clamp to handle floating point errors
-
-// Adjust lock threshold based on target size at distance
-// Larger targets (vehicles) or closer targets have larger apparent size
-private _targetSize = if (_target isKindOf "Man") then { 1.8 } else {
-    // Estimate vehicle size from bounding box
-    private _bb = boundingBoxReal _target;
-    private _dims = (_bb select 1) vectorDiff (_bb select 0);
-    ((_dims select 0) max (_dims select 1) max (_dims select 2)) * 0.5
-};
-
-// Angular size of target in degrees: atan(size / distance)
-private _targetAngularSize = atan (_targetSize / (_distance max 1));
-
-// Lock threshold: use user's setting directly (no override)
-private _lockThreshold = BA_aimAssistLockAngle;
-
-// Locked if within threshold
-private _locked = if (_angleError <= _lockThreshold) then { 1 } else { 0 };
+// Horizontal error: how far pan is from center (0)
+// Range: 0 (dead center) to 1 (max error at -1 or +1)
+private _horizError = abs _pan;
+_horizError = (_horizError max 0) min 1;
 
 // Return parameters
-[_pan, _pitch, _locked]
+[_pan, _pitch, _vertError, _horizError]
