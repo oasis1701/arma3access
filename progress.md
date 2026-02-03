@@ -460,3 +460,36 @@ Prefix: blind_assist (from $PBOPREFIX$ file)
 3. Launch with `-mod=@BlindAssist`
 4. Works with ANY mission - no description.ext edits needed
 
+---
+
+## Phase 11: Direction Snap - COMPLETE (2026-02-03)
+Compass direction snapping for blind manual gameplay.
+Cycles through 8 cardinal directions with smooth interpolation.
+
+### Controls
+| Key | Action |
+|-----|--------|
+| **Delete** | Cycle counter-clockwise (left) |
+| **Page Down** | Cycle clockwise (right) |
+
+**Note:** Only works in manual mode (NOT observer or focus mode).
+In observer/focus mode, Page Down is used for scanner navigation.
+
+### 8 Cardinal Directions
+North (0°) → Northeast (45°) → East (90°) → Southeast (135°) →
+South (180°) → Southwest (225°) → West (270°) → Northwest (315°)
+
+### Behavior
+- Finds closest cardinal direction to current facing
+- Snaps to next direction in chosen rotation
+- Smooth interpolation over 0.15 seconds (smoothstep easing)
+- Levels view both horizontally and vertically (looks at horizon)
+- Announces target direction via TTS (e.g., "northeast")
+
+### Technical Notes
+- Uses `setDir` for body direction + `setVectorDir [sin, cos, 0]` for level view
+- Smoothstep formula: `t*t*(3-2*t)` for natural easing
+- Angle wraparound handled correctly (315° → 0°, 0° → 315°)
+- EachFrame handler provides precise timing
+- Cancels in-progress interpolation if key pressed again quickly
+

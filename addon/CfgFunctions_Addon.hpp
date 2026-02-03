@@ -394,4 +394,22 @@ class BA {
         // Usage: [] call BA_fnc_exitFocusMode;
         class exitFocusMode {};
     };
+
+    class DirectionSnap {
+        file = "\blind_assist";
+
+        // Initialize direction snap state variables
+        // Usage: [] call BA_fnc_initDirectionSnap;
+        class initDirectionSnap {};
+
+        // Cycle player direction to next cardinal compass point
+        // Usage: [true] call BA_fnc_cycleDirection;  // clockwise
+        // Usage: [false] call BA_fnc_cycleDirection; // counter-clockwise
+        // Hotkeys: Delete = counter-clockwise, PageDown = clockwise (manual mode only)
+        class cycleDirection {};
+
+        // Per-frame update for smooth direction interpolation
+        // Usage: [] call BA_fnc_updateDirectionSnap;
+        class updateDirectionSnap {};
+    };
 };

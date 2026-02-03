@@ -78,6 +78,9 @@ BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 // Initialize terrain radar system
 [] call BA_fnc_initTerrainRadar;
 
+// Initialize direction snap system
+[] call BA_fnc_initDirectionSnap;
+
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]
@@ -119,6 +122,21 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         if (!BA_observerMode) then {
             [] call BA_fnc_toggleFocusMode;
         };
+        true
+    };
+
+    // Delete key (211) - Cycle direction counter-clockwise (only in manual mode)
+    if (_key == 211 && !_ctrl && !_shift && !_alt) exitWith {
+        if (!BA_observerMode && !BA_focusMode) then {
+            [false] call BA_fnc_cycleDirection;  // false = counter-clockwise
+        };
+        true
+    };
+
+    // Page Down (209) without modifiers - Cycle direction clockwise (only in manual mode)
+    // Note: In observer/focus mode, PageDown is used for scanner navigation
+    if (_key == 209 && !_ctrl && !_shift && !_alt && !BA_observerMode && !BA_focusMode) exitWith {
+        [true] call BA_fnc_cycleDirection;  // true = clockwise
         true
     };
 
