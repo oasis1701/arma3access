@@ -70,6 +70,9 @@ BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 // Initialize aim assist system
 [] call BA_fnc_initAimAssist;
 
+// Initialize terrain radar system
+[] call BA_fnc_initTerrainRadar;
+
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]
@@ -85,6 +88,23 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // End key (207) - Toggle aiming assistance (works both in and out of observer mode)
     if (_key == 207 && !_ctrl && !_shift && !_alt) exitWith {
         [] call BA_fnc_toggleAimAssist;
+        true
+    };
+
+    // Ctrl+W (key 17) - Toggle terrain radar (only when observer mode OFF)
+    if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
+        if (!BA_observerMode) then {
+            [] call BA_fnc_toggleTerrainRadar;
+        } else {
+            ["Terrain radar only available in manual mode."] call BA_fnc_speak;
+        };
+        true
+    };
+
+    // Ctrl+Shift+W (key 17) - Toggle terrain radar debug output
+    if (_key == 17 && _ctrl && _shift && !_alt) exitWith {
+        BA_terrainRadarDebug = !BA_terrainRadarDebug;
+        [format ["Radar debug %1", if (BA_terrainRadarDebug) then {"on"} else {"off"}]] call BA_fnc_speak;
         true
     };
 

@@ -364,4 +364,20 @@ class BA {
         // Usage: [_soldier, _target] call BA_fnc_calculateAimOffset;
         class calculateAimOffset {};
     };
+
+    class TerrainRadar {
+        file = "addon";
+
+        // Initialize terrain radar state variables
+        // Usage: [] call BA_fnc_initTerrainRadar;
+        class initTerrainRadar {};
+
+        // Toggle terrain radar on/off (Ctrl+W, only when observer mode OFF)
+        // Usage: [] call BA_fnc_toggleTerrainRadar;
+        class toggleTerrainRadar {};
+
+        // Per-frame update for terrain radar sweep
+        // Usage: [] call BA_fnc_updateTerrainRadar;
+        class updateTerrainRadar {};
+    };
 };

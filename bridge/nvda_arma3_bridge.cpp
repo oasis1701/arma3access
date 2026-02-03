@@ -56,7 +56,7 @@ extern "C" {
 }
 
 // DLL version string
-static const char* VERSION = "1.3.0";
+static const char* VERSION = "1.4.0";
 
 // ============================================================================
 // Audio Synthesis State (for aim assist)
@@ -71,6 +71,53 @@ static std::atomic<float> g_aimVertThreshold(0.02f);  // Adaptive vertical thres
 static std::atomic<float> g_aimHorizThreshold(0.005f); // Adaptive horizontal threshold
 static std::atomic<bool> g_aimActive(false);        // Whether aim assist is active
 static std::atomic<bool> g_aimMuted(false);         // Mute when no target
+
+// ============================================================================
+// Terrain Radar Audio State
+// ============================================================================
+
+// Radar active flag
+static std::atomic<bool> g_radarActive(false);
+
+// Ring buffer for pending beeps (producer: command handler, consumer: audio callback)
+struct RadarBeep {
+    float pan;
+    float volume;
+    int material;
+};
+static const int RADAR_QUEUE_SIZE = 64;  // Power of 2 for efficient modulo
+static RadarBeep g_radarQueue[RADAR_QUEUE_SIZE];
+static std::atomic<int> g_radarQueueHead(0);  // Next write position (command handler)
+static std::atomic<int> g_radarQueueTail(0);  // Next read position (audio callback)
+
+// Currently playing beep parameters (consumed from queue)
+static float g_radarPlayingPan = 0.0f;
+static float g_radarPlayingVol = 0.5f;
+static int g_radarPlayingMat = 0;
+
+// Radar beep state (non-atomic, only accessed in audio callback)
+static double g_radarPhase = 0.0;           // Beep oscillator phase
+static float g_radarEnvelope = 0.0f;        // Current envelope level
+static int g_radarEnvState = 0;             // 0=idle, 1=attack, 2=sustain, 3=release
+static int g_radarSustainSamples = 0;       // Samples remaining in sustain
+
+// Radar material frequencies (Hz)
+static const float RADAR_FREQ_GRASS = 200.0f;
+static const float RADAR_FREQ_CONCRETE = 400.0f;
+static const float RADAR_FREQ_WOOD = 300.0f;
+static const float RADAR_FREQ_METAL = 600.0f;
+static const float RADAR_FREQ_WATER = 150.0f;
+static const float RADAR_FREQ_MAN = 800.0f;
+static const float RADAR_FREQ_GLASS = 700.0f;
+static const float RADAR_FREQ_DEFAULT = 350.0f;
+
+// Radar envelope timing (in samples at 44100 Hz)
+static const int RADAR_ATTACK_SAMPLES = 88;    // 2ms attack
+static const int RADAR_SUSTAIN_SAMPLES = 882;  // 20ms sustain
+static const int RADAR_RELEASE_SAMPLES = 132;  // 3ms release
+
+// Radar volume
+static const float RADAR_BASE_VOLUME = 0.015f;  // Base volume for radar beeps
 
 // Audio device state
 static ma_device g_audioDevice;
@@ -263,6 +310,126 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                     // Target is to the right - click in right ear
                     rightSample += clickSample;
                 }
+            }
+        }
+
+        // ================================================================
+        // Terrain Radar audio (mutually exclusive with aim assist)
+        // ================================================================
+        if (g_radarActive.load() && !active) {
+            // Check for pending beeps in queue (only when idle)
+            if (g_radarEnvState == 0) {
+                int tail = g_radarQueueTail.load(std::memory_order_relaxed);
+                int head = g_radarQueueHead.load(std::memory_order_acquire);
+
+                if (tail != head) {
+                    // Consume beep from queue
+                    g_radarPlayingPan = g_radarQueue[tail].pan;
+                    g_radarPlayingVol = g_radarQueue[tail].volume;
+                    g_radarPlayingMat = g_radarQueue[tail].material;
+
+                    // Advance tail
+                    g_radarQueueTail.store((tail + 1) % RADAR_QUEUE_SIZE, std::memory_order_release);
+
+                    // Start envelope
+                    g_radarEnvState = 1;  // Start attack phase
+                    g_radarEnvelope = 0.0f;
+                    g_radarPhase = 0.0;
+                    g_radarSustainSamples = RADAR_SUSTAIN_SAMPLES;
+                }
+            }
+
+            // Process envelope state machine
+            if (g_radarEnvState > 0) {
+                // Use playing parameters (consumed from queue at beep start)
+                float radarPan = g_radarPlayingPan;
+                float radarVol = g_radarPlayingVol;
+                int radarMat = g_radarPlayingMat;
+
+                // Select frequency based on material
+                float radarFreq;
+                switch (radarMat) {
+                    case 1: radarFreq = RADAR_FREQ_GRASS; break;
+                    case 2: radarFreq = RADAR_FREQ_CONCRETE; break;
+                    case 3: radarFreq = RADAR_FREQ_WOOD; break;
+                    case 4: radarFreq = RADAR_FREQ_METAL; break;
+                    case 5: radarFreq = RADAR_FREQ_WATER; break;
+                    case 6: radarFreq = RADAR_FREQ_MAN; break;
+                    case 7: radarFreq = RADAR_FREQ_GLASS; break;
+                    default: radarFreq = RADAR_FREQ_DEFAULT; break;
+                }
+
+                // Generate waveform based on material
+                float radarSample = 0.0f;
+                double radarPhaseInc = (2.0 * PI * radarFreq) / SAMPLE_RATE;
+
+                switch (radarMat) {
+                    case 1:  // grass - sine (soft)
+                        radarSample = (float)sin(g_radarPhase);
+                        break;
+                    case 2:  // concrete - square (harsh)
+                        radarSample = (sin(g_radarPhase) > 0.0) ? 1.0f : -1.0f;
+                        break;
+                    case 3:  // wood - triangle (organic)
+                        {
+                            float normPhase = (float)(g_radarPhase / (2.0 * PI));
+                            radarSample = 4.0f * fabsf(normPhase - 0.5f) - 1.0f;
+                        }
+                        break;
+                    case 4:  // metal - sawtooth (buzzy)
+                        radarSample = (float)(2.0 * (g_radarPhase / (2.0 * PI)) - 1.0);
+                        break;
+                    case 5:  // water - filtered noise approximation (low sine with harmonics)
+                        radarSample = (float)(sin(g_radarPhase) * 0.7 + sin(g_radarPhase * 2.3) * 0.3);
+                        break;
+                    case 6:  // man - pulse (25% duty cycle, distinct alert)
+                        radarSample = (g_radarPhase < PI * 0.5) ? 1.0f : -0.3f;
+                        break;
+                    case 7:  // glass - sine + harmonic (bright)
+                        radarSample = (float)(sin(g_radarPhase) * 0.8 + sin(g_radarPhase * 2.0) * 0.2);
+                        break;
+                    default:  // default - sine
+                        radarSample = (float)sin(g_radarPhase);
+                        break;
+                }
+
+                // Update envelope
+                switch (g_radarEnvState) {
+                    case 1:  // Attack
+                        g_radarEnvelope += 1.0f / RADAR_ATTACK_SAMPLES;
+                        if (g_radarEnvelope >= 1.0f) {
+                            g_radarEnvelope = 1.0f;
+                            g_radarEnvState = 2;  // Move to sustain
+                        }
+                        break;
+                    case 2:  // Sustain
+                        g_radarSustainSamples--;
+                        if (g_radarSustainSamples <= 0) {
+                            g_radarEnvState = 3;  // Move to release
+                        }
+                        break;
+                    case 3:  // Release
+                        g_radarEnvelope -= 1.0f / RADAR_RELEASE_SAMPLES;
+                        if (g_radarEnvelope <= 0.0f) {
+                            g_radarEnvelope = 0.0f;
+                            g_radarEnvState = 0;  // Done
+                        }
+                        break;
+                }
+
+                // Apply volume and envelope
+                radarSample *= g_radarEnvelope * radarVol * RADAR_BASE_VOLUME;
+
+                // Apply stereo panning
+                float radarLeftGain = (radarPan <= 0.0f) ? 1.0f : (1.0f - radarPan);
+                float radarRightGain = (radarPan >= 0.0f) ? 1.0f : (1.0f + radarPan);
+
+                leftSample += radarSample * radarLeftGain;
+                rightSample += radarSample * radarRightGain;
+
+                // Advance radar phase
+                g_radarPhase += radarPhaseInc;
+                if (g_radarPhase >= 2.0 * PI) g_radarPhase -= 2.0 * PI;
             }
         }
 
@@ -550,6 +717,119 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
     if (cmd == "aim_stop") {
         g_aimActive.store(false);
         g_aimMuted.store(true);
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // ========================================================================
+    // Terrain Radar Audio Commands
+    // ========================================================================
+
+    // Command: radar_start - Initialize audio for terrain radar
+    if (cmd == "radar_start") {
+        if (init_audio()) {
+            // Reset queue
+            g_radarQueueHead.store(0);
+            g_radarQueueTail.store(0);
+            // Reset playback state
+            g_radarPlayingPan = 0.0f;
+            g_radarPlayingVol = 0.5f;
+            g_radarPlayingMat = 0;
+            g_radarEnvState = 0;
+            g_radarEnvelope = 0.0f;
+            g_radarActive.store(true);
+            safe_output(output, outputSize, "OK");
+        } else {
+            safe_output(output, outputSize, "AUDIO_INIT_FAILED");
+        }
+        return;
+    }
+
+    // Command: radar_beep:pan,distance,material
+    // pan: -1.0 to 1.0 (left to right stereo position)
+    // distance: meters to target (used for volume calculation)
+    // material: grass, concrete, wood, metal, water, man, glass, default, none
+    if (cmd.rfind("radar_beep:", 0) == 0) {
+        std::string params = cmd.substr(11);
+
+        // Parse comma-separated values: pan,distance,material
+        float pan = 0.0f;
+        float distance = 50.0f;
+        std::string material = "default";
+
+        size_t pos1 = params.find(',');
+        if (pos1 != std::string::npos) {
+            pan = parse_float(params.substr(0, pos1).c_str(), 0.0f);
+
+            size_t pos2 = params.find(',', pos1 + 1);
+            if (pos2 != std::string::npos) {
+                distance = parse_float(params.substr(pos1 + 1, pos2 - pos1 - 1).c_str(), 50.0f);
+                material = params.substr(pos2 + 1);
+            } else {
+                distance = parse_float(params.substr(pos1 + 1).c_str(), 50.0f);
+            }
+        }
+
+        // Clamp pan
+        pan = (pan < -1.0f) ? -1.0f : (pan > 1.0f) ? 1.0f : pan;
+
+        // Calculate volume using logarithmic distance falloff
+        // Volume is loud at 0.5m, very quiet at 100m
+        float loudDist = 0.5f;
+        float quietDist = 100.0f;
+        float clampedDist = (distance < loudDist) ? loudDist : (distance > quietDist) ? quietDist : distance;
+        float logRange = logf(quietDist) - logf(loudDist);  // ~5.3
+        float volume = 1.0f - (logf(clampedDist) - logf(loudDist)) / logRange;
+        volume = (volume < 0.02f) ? 0.02f : volume;  // Floor at 2% for audibility
+
+        // Map material string to code
+        // 0=default, 1=grass, 2=concrete, 3=wood, 4=metal, 5=water, 6=man, 7=glass, -1=none (silent)
+        int matCode = 0;
+        if (material == "grass" || material == "soil" || material == "sand" || material == "dirt") {
+            matCode = 1;
+        } else if (material == "concrete" || material == "asphalt" || material == "rock" || material == "stone") {
+            matCode = 2;
+        } else if (material == "wood" || material == "wood_planks") {
+            matCode = 3;
+        } else if (material == "metal" || material == "metal_plate") {
+            matCode = 4;
+        } else if (material == "water") {
+            matCode = 5;
+        } else if (material == "man") {
+            matCode = 6;
+        } else if (material == "glass") {
+            matCode = 7;
+        } else if (material == "none") {
+            matCode = -1;  // Silent - no beep
+        }
+
+        // Only queue beep if not "none" and radar is active
+        if (matCode >= 0 && g_radarActive.load()) {
+            // Add beep to queue
+            int head = g_radarQueueHead.load(std::memory_order_relaxed);
+            int nextHead = (head + 1) % RADAR_QUEUE_SIZE;
+
+            // Store beep parameters in queue
+            g_radarQueue[head].pan = pan;
+            g_radarQueue[head].volume = volume;
+            g_radarQueue[head].material = matCode;
+
+            // Publish the new head (makes beep visible to audio callback)
+            g_radarQueueHead.store(nextHead, std::memory_order_release);
+        }
+
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // Command: radar_stop - Stop terrain radar audio
+    if (cmd == "radar_stop") {
+        g_radarActive.store(false);
+        // Clear queue
+        g_radarQueueHead.store(0);
+        g_radarQueueTail.store(0);
+        g_radarEnvState = 0;
+        g_radarEnvelope = 0.0f;
         safe_output(output, outputSize, "OK");
         return;
     }
