@@ -80,6 +80,8 @@ static double g_pulsePhase = 0.0;      // Primary tone pulse envelope phase
 static double g_clickPhase = 0.0;      // Secondary click tone phase
 static double g_clickPulsePhase = 0.0; // Secondary click pulse envelope phase
 static float g_clickLpfState = 0.0f;   // Low pass filter state for click tone
+static float g_clickEnvelopeState = 0.0f;  // Current envelope level (0-1) for smooth attack/release
+static float g_primaryEnvelopeState = 0.0f;  // Current envelope level for primary tone
 
 // Audio constants
 static const int SAMPLE_RATE = 44100;
@@ -93,6 +95,10 @@ static const float CLICK_FREQ_MIN = 500.0f;     // Frequency at activation thres
 static const float CLICK_FREQ_MAX = 560.0f;     // Frequency at center (pan = 0)
 static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slightly quieter)
 static const float CLICK_LPF_CUTOFF = 4100.0f;  // Low pass filter cutoff frequency
+static const float CLICK_ATTACK_MS = 5.0f;      // Attack time in milliseconds
+static const float CLICK_RELEASE_MS = 5.0f;     // Release time in milliseconds
+static const float PRIMARY_ATTACK_MS = 5.0f;    // Attack time for primary tone
+static const float PRIMARY_RELEASE_MS = 5.0f;   // Release time for primary tone
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
 static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates when abs(pan) < this (close to target)
@@ -160,6 +166,13 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     // Low pass filter coefficient for click tone (one-pole filter)
     static const float clickLpfAlpha = 1.0f - expf(-2.0f * (float)PI * CLICK_LPF_CUTOFF / SAMPLE_RATE);
 
+    // Attack/release coefficients for smooth envelope transitions
+    static const float samplesPerMs = SAMPLE_RATE / 1000.0f;
+    static const float clickAttackCoef = 1.0f / (CLICK_ATTACK_MS * samplesPerMs);
+    static const float clickReleaseCoef = 1.0f / (CLICK_RELEASE_MS * samplesPerMs);
+    static const float primaryAttackCoef = 1.0f / (PRIMARY_ATTACK_MS * samplesPerMs);
+    static const float primaryReleaseCoef = 1.0f / (PRIMARY_RELEASE_MS * samplesPerMs);
+
     // Phase increments per sample
     double primaryPhaseInc = (2.0 * PI * freq) / SAMPLE_RATE;
     double primaryPulseInc = (2.0 * PI * primaryPulseRate) / SAMPLE_RATE;
@@ -176,13 +189,22 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
             // ================================================================
             float primarySample = (float)sin(g_phase) * BASE_VOLUME;
 
-            // Apply pulse envelope if not at dead center
+            // Apply pulse envelope with smooth attack/release ramps
+            float targetPrimaryEnvelope = 1.0f;  // Default: full on (continuous tone)
             if (primaryPulseRate > 0.0f) {
-                // Square wave envelope: on when sin > 0, off when sin < 0
-                float envelope = (sin(g_pulsePhase) > 0.0f) ? 1.0f : 0.0f;
-                primarySample *= envelope;
+                targetPrimaryEnvelope = (sin(g_pulsePhase) > 0.0f) ? 1.0f : 0.0f;
             }
-            // else: continuous tone (no envelope)
+
+            // Smooth envelope transition
+            if (g_primaryEnvelopeState < targetPrimaryEnvelope) {
+                g_primaryEnvelopeState += primaryAttackCoef;
+                if (g_primaryEnvelopeState > targetPrimaryEnvelope) g_primaryEnvelopeState = targetPrimaryEnvelope;
+            } else if (g_primaryEnvelopeState > targetPrimaryEnvelope) {
+                g_primaryEnvelopeState -= primaryReleaseCoef;
+                if (g_primaryEnvelopeState < targetPrimaryEnvelope) g_primaryEnvelopeState = targetPrimaryEnvelope;
+            }
+
+            primarySample *= g_primaryEnvelopeState;
 
             // Apply stereo panning to primary tone
             leftSample += primarySample * leftGain;
@@ -202,12 +224,23 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                 g_clickLpfState += clickLpfAlpha * (clickSample - g_clickLpfState);
                 clickSample = g_clickLpfState;
 
-                // Apply pulse envelope if not at dead center
+                // Apply pulse envelope with smooth attack/release ramps
+                float targetEnvelope = 1.0f;  // Default: full on (continuous tone)
                 if (secondaryPulseRate > 0.0f) {
-                    float clickEnvelope = (sin(g_clickPulsePhase) > 0.0f) ? 1.0f : 0.0f;
-                    clickSample *= clickEnvelope;
+                    // Pulsing mode: target is 1 when sin > 0, else 0
+                    targetEnvelope = (sin(g_clickPulsePhase) > 0.0f) ? 1.0f : 0.0f;
                 }
-                // else: continuous tone (no envelope)
+
+                // Smooth envelope transition using attack/release
+                if (g_clickEnvelopeState < targetEnvelope) {
+                    g_clickEnvelopeState += clickAttackCoef;
+                    if (g_clickEnvelopeState > targetEnvelope) g_clickEnvelopeState = targetEnvelope;
+                } else if (g_clickEnvelopeState > targetEnvelope) {
+                    g_clickEnvelopeState -= clickReleaseCoef;
+                    if (g_clickEnvelopeState < targetEnvelope) g_clickEnvelopeState = targetEnvelope;
+                }
+
+                clickSample *= g_clickEnvelopeState;
 
                 // Pan click based on target direction, or center when at dead center
                 if (horizError < horizThreshold) {
