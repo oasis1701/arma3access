@@ -16,7 +16,8 @@
  *   1: Object - The target enemy
  *
  * Return Value:
- *   Array - [pan, pitch, vertError, horizError] or [0, -1, 1, 1] if should mute
+ *   Array - [pan, pitch, vertError, horizError, vertThreshold, horizThreshold]
+ *   Thresholds are adaptive based on target angular size at distance
  *
  * Example:
  *   private _params = [player, _enemy] call BA_fnc_calculateAimOffset;
@@ -26,7 +27,7 @@ params [["_soldier", objNull, [objNull]], ["_target", objNull, [objNull]]];
 
 // Return mute signal if invalid inputs
 if (isNull _soldier || isNull _target || !alive _soldier || !alive _target) exitWith {
-    [0, -1, 1, 1]  // pitch -1 = mute signal, max errors
+    [0, -1, 1, 1, 0.02, 0.005]  // pitch -1 = mute signal, max errors, default thresholds
 };
 
 // Get aim direction - use weapon barrel direction (where bullet actually goes)
@@ -43,16 +44,24 @@ private _aimDirNorm = vectorNormalized _aimDir;
 // Get origin point (eye position)
 private _eyePos = eyePos _soldier;
 private _targetPos = if (_target isKindOf "Man") then {
-    // Use model selection for actual torso position (works for all stances)
-    private _spinePos = _target selectionPosition "spine3";
-    if (_spinePos isEqualTo [0,0,0]) then {
-        // Fallback: estimate based on bounding box center
-        private _bb = boundingBoxReal _target;
-        private _centerZ = (((_bb select 0) select 2) + ((_bb select 1) select 2)) / 2;
-        (getPosASL _target) vectorAdd [0, 0, _centerZ max 0.5]
+    // Calculate vertical center of body (between head and feet)
+    // This ensures the threshold extends equally to head and feet
+    private _headPos = _target selectionPosition "head";
+    private _footPos = _target selectionPosition "leftfoot";
+
+    if !(_headPos isEqualTo [0,0,0] || _footPos isEqualTo [0,0,0]) then {
+        // Center point between head and feet in model space
+        private _centerZ = ((_headPos select 2) + (_footPos select 2)) / 2;
+        private _centerPos = [0, 0, _centerZ];
+        AGLToASL (_target modelToWorldVisual _centerPos)
     } else {
-        // Convert model-space to world-space, then AGL to ASL to match eyePos
-        AGLToASL (_target modelToWorldVisual _spinePos)
+        // Fallback to spine3 if selections don't exist
+        private _spinePos = _target selectionPosition "spine3";
+        if (_spinePos isEqualTo [0,0,0]) then {
+            (getPosASL _target) vectorAdd [0, 0, 0.9]
+        } else {
+            AGLToASL (_target modelToWorldVisual _spinePos)
+        }
     }
 } else {
     getPosASL _target  // Vehicle center
@@ -63,13 +72,65 @@ private _toTarget = _targetPos vectorDiff _eyePos;
 private _toTargetNorm = vectorNormalized _toTarget;
 private _distance = vectorMagnitude _toTarget;
 
+// Calculate target's angular size for adaptive thresholds
+// Use realistic hit radii, not bounding box (which includes gear/backpacks)
+private _horizRadius = 0.0;
+private _vertRadius = 0.0;
+
+if (_target isKindOf "Man") then {
+    // Infantry: calculate actual body coverage from skeleton positions
+
+    // Horizontal: calculate from actual shoulder width
+    private _leftShoulder = _target selectionPosition "leftshoulder";
+    private _rightShoulder = _target selectionPosition "rightshoulder";
+
+    if !(_leftShoulder isEqualTo [0,0,0] || _rightShoulder isEqualTo [0,0,0]) then {
+        // Calculate actual shoulder width
+        private _shoulderWidth = vectorMagnitude (_rightShoulder vectorDiff _leftShoulder);
+        _horizRadius = _shoulderWidth / 2;
+    } else {
+        // Fallback
+        _horizRadius = 0.2;
+    };
+
+    // Vertical: half the body height (since we target the center)
+    private _headPos = _target selectionPosition "head";
+    private _footPos = _target selectionPosition "leftfoot";
+
+    if !(_headPos isEqualTo [0,0,0] || _footPos isEqualTo [0,0,0]) then {
+        // Half the body height = radius from center to head/feet
+        private _bodyHeight = abs((_headPos select 2) - (_footPos select 2));
+        _vertRadius = _bodyHeight / 2;
+    } else {
+        // Fallback if selections don't exist on this model
+        _vertRadius = 0.9;
+    };
+} else {
+    // Vehicles: use bounding box but scaled down (60% to account for non-hittable parts)
+    private _bb = boundingBoxReal _target;
+    private _dims = (_bb select 1) vectorDiff (_bb select 0);
+    _horizRadius = (((_dims select 0) max (_dims select 1)) / 2) * 0.6;
+    _vertRadius = ((_dims select 2) / 2) * 0.6;
+};
+
+// Convert to threshold values that match how errors are calculated
+// horizError = sin(angle), so: horizThreshold = sin(atan(radius/dist)) = radius/sqrt(dist²+radius²)
+// vertError = elevDiff/45, so: vertThreshold = atan(radius/dist)/45
+private _distSq = _distance * _distance;
+private _horizThreshold = _horizRadius / sqrt(_distSq + _horizRadius * _horizRadius);
+private _vertThreshold = (atan (_vertRadius / (_distance max 1))) / 45;
+
+// Minimum thresholds (for very far targets)
+_horizThreshold = _horizThreshold max 0.003;
+_vertThreshold = _vertThreshold max 0.005;
+
 // CRITICAL: Check if target is behind using dot product
 // dot < 0 means target is more than 90 degrees away (behind)
 private _dotProduct = _aimDirNorm vectorDotProduct _toTargetNorm;
 
 if (_dotProduct < 0) exitWith {
     // Target is behind the soldier - mute to prevent confusing left/right flip
-    [0, -1, 1, 1]  // pitch -1 = mute signal, max errors
+    [0, -1, 1, 1, 0.02, 0.005]  // pitch -1 = mute signal, max errors, default thresholds
 };
 
 // ============================================================================
@@ -137,5 +198,5 @@ _vertError = (_vertError max 0) min 1;
 private _horizError = abs _pan;
 _horizError = (_horizError max 0) min 1;
 
-// Return parameters
-[_pan, _pitch, _vertError, _horizError]
+// Return parameters with adaptive thresholds
+[_pan, _pitch, _vertError, _horizError, _vertThreshold, _horizThreshold]

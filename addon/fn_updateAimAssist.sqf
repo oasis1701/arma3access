@@ -136,10 +136,10 @@ if (isNull _target) then {
 
     // Calculate audio parameters
     private _params = [_soldier, _target] call BA_fnc_calculateAimOffset;
-    _params params ["_pan", "_pitch", "_vertError", "_horizError"];
+    _params params ["_pan", "_pitch", "_vertError", "_horizError", "_vertThreshold", "_horizThreshold"];
 
     // Send to DLL
-    // Format: "aim_update:pan,pitch,vertError,horizError"
-    private _cmd = format ["aim_update:%1,%2,%3,%4", _pan, _pitch, _vertError, _horizError];
+    // Format: "aim_update:pan,pitch,vertError,horizError,vertThreshold,horizThreshold"
+    private _cmd = format ["aim_update:%1,%2,%3,%4,%5,%6", _pan, _pitch, _vertError, _horizError, _vertThreshold, _horizThreshold];
     "nvda_arma3_bridge" callExtension _cmd;
 };

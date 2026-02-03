@@ -56,19 +56,21 @@ extern "C" {
 }
 
 // DLL version string
-static const char* VERSION = "1.2.0";
+static const char* VERSION = "1.3.0";
 
 // ============================================================================
 // Audio Synthesis State (for aim assist)
 // ============================================================================
 
 // Audio parameters (atomic for thread-safe access from audio callback)
-static std::atomic<float> g_aimPan(0.0f);         // -1.0 (left) to +1.0 (right)
-static std::atomic<float> g_aimPitch(550.0f);     // Frequency in Hz (300-800)
-static std::atomic<float> g_aimVertError(1.0f);   // Vertical error 0-1 (0 = centered)
-static std::atomic<float> g_aimHorizError(1.0f);  // Horizontal error 0-1 (0 = centered)
-static std::atomic<bool> g_aimActive(false);      // Whether aim assist is active
-static std::atomic<bool> g_aimMuted(false);       // Mute when no target
+static std::atomic<float> g_aimPan(0.0f);           // -1.0 (left) to +1.0 (right)
+static std::atomic<float> g_aimPitch(550.0f);       // Frequency in Hz (300-800)
+static std::atomic<float> g_aimVertError(1.0f);     // Vertical error 0-1 (0 = centered)
+static std::atomic<float> g_aimHorizError(1.0f);    // Horizontal error 0-1 (0 = centered)
+static std::atomic<float> g_aimVertThreshold(0.02f);  // Adaptive vertical threshold
+static std::atomic<float> g_aimHorizThreshold(0.005f); // Adaptive horizontal threshold
+static std::atomic<bool> g_aimActive(false);        // Whether aim assist is active
+static std::atomic<bool> g_aimMuted(false);         // Mute when no target
 
 // Audio device state
 static ma_device g_audioDevice;
@@ -90,10 +92,9 @@ static const float CLICK_FREQ = 1000.0f;        // Secondary click tone frequenc
 static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slightly quieter)
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
-static const float VERT_CENTER_THRESHOLD = 0.02f;   // Vertical dead center threshold
-static const float HORIZ_CENTER_THRESHOLD = 0.005f; // Horizontal dead center threshold (tighter for accuracy)
 static const float HORIZ_ACTIVATE_THRESHOLD = 1.0f; // Secondary tone activates when abs(pan) < this
 static const double PI = 3.14159265358979323846;
+// Note: VERT_CENTER_THRESHOLD and HORIZ_CENTER_THRESHOLD are now adaptive (passed from SQF)
 
 // Audio callback - generates two-tone precision feedback in real-time
 void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
@@ -113,6 +114,8 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     float freq = g_aimPitch.load();
     float vertError = g_aimVertError.load();
     float horizError = g_aimHorizError.load();
+    float vertThreshold = g_aimVertThreshold.load();    // Adaptive threshold from SQF
+    float horizThreshold = g_aimHorizThreshold.load();  // Adaptive threshold from SQF
     bool active = g_aimActive.load();
     bool muted = g_aimMuted.load();
 
@@ -125,17 +128,19 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     // At dead center (vertError < threshold): continuous tone (pulseRate = 0)
     // At max error: slow pulse (2 Hz)
     // At min error: fast pulse (15 Hz)
+    // Threshold is adaptive based on target angular size
     float primaryPulseRate = 0.0f;
-    if (vertError >= VERT_CENTER_THRESHOLD) {
+    if (vertError >= vertThreshold) {
         // Linear interpolation: high error = slow, low error = fast
         primaryPulseRate = MIN_PULSE_RATE + (1.0f - vertError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
     }
 
     // Calculate secondary click pulse rate based on horizontal error
     // Only active when roughly facing target (abs(pan) < 1.0)
+    // Threshold is adaptive based on target angular size
     bool secondaryActive = (fabsf(pan) < HORIZ_ACTIVATE_THRESHOLD);
     float secondaryPulseRate = 0.0f;
-    if (secondaryActive && horizError >= HORIZ_CENTER_THRESHOLD) {
+    if (secondaryActive && horizError >= horizThreshold) {
         secondaryPulseRate = MIN_PULSE_RATE + (1.0f - horizError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
     }
 
@@ -181,7 +186,7 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                 // else: continuous tone (no envelope)
 
                 // Pan click based on target direction, or center when at dead center
-                if (horizError < HORIZ_CENTER_THRESHOLD) {
+                if (horizError < horizThreshold) {
                     // Dead center - play in both ears (centered)
                     leftSample += clickSample;
                     rightSample += clickSample;
@@ -396,20 +401,24 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
         return;
     }
 
-    // Command: aim_update:pan,pitch,vertError,horizError - Update audio parameters
+    // Command: aim_update:pan,pitch,vertError,horizError,vertThreshold,horizThreshold
     // pan: -1.0 to 1.0 (left to right)
     // pitch: frequency in Hz (typically 300-800, 550 = vertically centered)
     // vertError: 0.0 to 1.0 (0 = dead center vertically)
     // horizError: 0.0 to 1.0 (0 = dead center horizontally)
+    // vertThreshold: adaptive threshold based on target angular size
+    // horizThreshold: adaptive threshold based on target angular size
     // Special: pitch of -1 means mute (no target)
     if (cmd.rfind("aim_update:", 0) == 0) {
         std::string params = cmd.substr(11);
 
-        // Parse comma-separated values: pan,pitch,vertError,horizError
+        // Parse comma-separated values: pan,pitch,vertError,horizError,vertThreshold,horizThreshold
         float pan = 0.0f;
         float pitch = 550.0f;
         float vertError = 1.0f;
         float horizError = 1.0f;
+        float vertThreshold = 0.02f;   // Default fallback
+        float horizThreshold = 0.005f; // Default fallback
 
         size_t pos1 = params.find(',');
         if (pos1 != std::string::npos) {
@@ -422,7 +431,21 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
                 size_t pos3 = params.find(',', pos2 + 1);
                 if (pos3 != std::string::npos) {
                     vertError = parse_float(params.substr(pos2 + 1, pos3 - pos2 - 1).c_str(), 1.0f);
-                    horizError = parse_float(params.substr(pos3 + 1).c_str(), 1.0f);
+
+                    size_t pos4 = params.find(',', pos3 + 1);
+                    if (pos4 != std::string::npos) {
+                        horizError = parse_float(params.substr(pos3 + 1, pos4 - pos3 - 1).c_str(), 1.0f);
+
+                        size_t pos5 = params.find(',', pos4 + 1);
+                        if (pos5 != std::string::npos) {
+                            vertThreshold = parse_float(params.substr(pos4 + 1, pos5 - pos4 - 1).c_str(), 0.02f);
+                            horizThreshold = parse_float(params.substr(pos5 + 1).c_str(), 0.005f);
+                        } else {
+                            vertThreshold = parse_float(params.substr(pos4 + 1).c_str(), 0.02f);
+                        }
+                    } else {
+                        horizError = parse_float(params.substr(pos3 + 1).c_str(), 1.0f);
+                    }
                 } else {
                     vertError = parse_float(params.substr(pos2 + 1).c_str(), 1.0f);
                 }
@@ -442,11 +465,15 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
             pitch = (pitch < 100.0f) ? 100.0f : (pitch > 2000.0f) ? 2000.0f : pitch;
             vertError = (vertError < 0.0f) ? 0.0f : (vertError > 1.0f) ? 1.0f : vertError;
             horizError = (horizError < 0.0f) ? 0.0f : (horizError > 1.0f) ? 1.0f : horizError;
+            vertThreshold = (vertThreshold < 0.001f) ? 0.001f : (vertThreshold > 0.5f) ? 0.5f : vertThreshold;
+            horizThreshold = (horizThreshold < 0.001f) ? 0.001f : (horizThreshold > 0.5f) ? 0.5f : horizThreshold;
 
             g_aimPan.store(pan);
             g_aimPitch.store(pitch);
             g_aimVertError.store(vertError);
             g_aimHorizError.store(horizError);
+            g_aimVertThreshold.store(vertThreshold);
+            g_aimHorizThreshold.store(horizThreshold);
         }
 
         safe_output(output, outputSize, "OK");
