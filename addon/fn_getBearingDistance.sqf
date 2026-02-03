@@ -21,16 +21,18 @@ if (count _pos == 0) then {
     _pos = BA_cursorPos;
 };
 
-// Need observed unit as reference point
-if (isNull BA_observedUnit) exitWith { "Unknown bearing" };
+// Use observed unit if in observer mode, otherwise use player
+private _referenceUnit = if (BA_observerMode) then { BA_observedUnit } else { player };
+if (isNull _referenceUnit) exitWith { "Unknown bearing" };
 
-private _unitPos = getPos BA_observedUnit;
+private _unitPos = getPos _referenceUnit;
+private _unitLabel = if (BA_observerMode) then { "observed unit" } else { "you" };
 
 // Calculate distance
 private _distance = round (_unitPos distance2D _pos);
 
 // If at same position, return early
-if (_distance < 1) exitWith { "At observed unit" };
+if (_distance < 1) exitWith { format["At %1", _unitLabel] };
 
 // Calculate bearing from unit to cursor
 private _bearing = _unitPos getDir _pos;
@@ -49,4 +51,4 @@ private _compassDir = switch (true) do {
     default { "unknown direction" };
 };
 
-format["%1 meters %2 of observed unit", _distance, _compassDir]
+format["%1 meters %2 of %3", _distance, _compassDir, _unitLabel]

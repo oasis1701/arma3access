@@ -26,9 +26,10 @@
 
 params [["_category", 0, [0]]];
 
-private _unit = BA_observedUnit;
+// Use observed unit if in observer mode, otherwise use player
+private _unit = if (BA_observerMode) then { BA_observedUnit } else { player };
 if (isNull _unit || !alive _unit) exitWith {
-    ["No unit observed"] call BA_fnc_speak;
+    ["No unit available"] call BA_fnc_speak;
 };
 
 private _announcement = "";
