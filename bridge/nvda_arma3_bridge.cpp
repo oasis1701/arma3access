@@ -7,8 +7,8 @@
  * Two-Tone Precision System:
  *   - Primary tone: Stereo-panned sine wave (300-800 Hz) for coarse aiming
  *     Pulses based on vertical error (slow=far, fast=close, steady=centered)
- *   - Secondary tone: 1000 Hz click in left/right ear for fine horizontal adjustment
- *     Activates when roughly facing target, pulses based on horizontal error
+ *   - Secondary tone: Triangle wave (500-560 Hz) with 4100 Hz LPF for fine horizontal
+ *     Activates when roughly facing target, frequency sweeps from 500 Hz (edge) to 560 Hz (center)
  *   - Both tones steady = dead center = FIRE!
  *
  * Build with Visual Studio 2022 Developer Command Prompt:
@@ -79,6 +79,7 @@ static double g_phase = 0.0;           // Primary tone phase
 static double g_pulsePhase = 0.0;      // Primary tone pulse envelope phase
 static double g_clickPhase = 0.0;      // Secondary click tone phase
 static double g_clickPulsePhase = 0.0; // Secondary click pulse envelope phase
+static float g_clickLpfState = 0.0f;   // Low pass filter state for click tone
 
 // Audio constants
 static const int SAMPLE_RATE = 44100;
@@ -88,8 +89,10 @@ static const float BASE_VOLUME = 0.01f;  // Quiet but audible
 static std::atomic<bool> g_shuttingDown(false);
 
 // Constants for two-tone audio
-static const float CLICK_FREQ = 1000.0f;        // Secondary click tone frequency
+static const float CLICK_FREQ_MIN = 500.0f;     // Frequency at activation threshold
+static const float CLICK_FREQ_MAX = 560.0f;     // Frequency at center (pan = 0)
 static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slightly quieter)
+static const float CLICK_LPF_CUTOFF = 4100.0f;  // Low pass filter cutoff frequency
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
 static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates when abs(pan) < this (close to target)
@@ -144,10 +147,23 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         secondaryPulseRate = MIN_PULSE_RATE + (1.0f - horizError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
     }
 
+    // Calculate click frequency: sweep from 500 Hz (at threshold) to 560 Hz (at center)
+    // Uses HORIZ_ACTIVATE_THRESHOLD so it auto-scales if threshold changes
+    float clickFreq = CLICK_FREQ_MAX;  // Default to center frequency
+    if (secondaryActive) {
+        float panMagnitude = fabsf(pan);
+        // Map pan from [0, threshold] to frequency [560, 500]
+        float t = panMagnitude / HORIZ_ACTIVATE_THRESHOLD;  // 0 at center, 1 at threshold
+        clickFreq = CLICK_FREQ_MAX + t * (CLICK_FREQ_MIN - CLICK_FREQ_MAX);
+    }
+
+    // Low pass filter coefficient for click tone (one-pole filter)
+    static const float clickLpfAlpha = 1.0f - expf(-2.0f * (float)PI * CLICK_LPF_CUTOFF / SAMPLE_RATE);
+
     // Phase increments per sample
     double primaryPhaseInc = (2.0 * PI * freq) / SAMPLE_RATE;
     double primaryPulseInc = (2.0 * PI * primaryPulseRate) / SAMPLE_RATE;
-    double clickPhaseInc = (2.0 * PI * CLICK_FREQ) / SAMPLE_RATE;
+    double clickPhaseInc = (2.0 * PI * clickFreq) / SAMPLE_RATE;
     double clickPulseInc = (2.0 * PI * secondaryPulseRate) / SAMPLE_RATE;
 
     for (ma_uint32 i = 0; i < frameCount; i++) {
@@ -174,9 +190,17 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
             // ================================================================
             // Secondary tone (horizontal precision) - mono click in L or R ear
+            // Triangle wave with low pass filter, frequency sweeps 500-560 Hz
             // ================================================================
             if (secondaryActive) {
-                float clickSample = (float)sin(g_clickPhase) * CLICK_VOLUME;
+                // Triangle wave: map phase [0, 2*PI] to triangle [-1, +1]
+                float normalizedPhase = (float)(g_clickPhase / (2.0 * PI));  // 0 to 1
+                float triangleValue = 4.0f * fabsf(normalizedPhase - 0.5f) - 1.0f;  // Triangle wave
+                float clickSample = triangleValue * CLICK_VOLUME;
+
+                // Apply one-pole low pass filter (4100 Hz cutoff)
+                g_clickLpfState += clickLpfAlpha * (clickSample - g_clickLpfState);
+                clickSample = g_clickLpfState;
 
                 // Apply pulse envelope if not at dead center
                 if (secondaryPulseRate > 0.0f) {
