@@ -366,8 +366,28 @@ Works in both observer mode (AI aims) and manual mode (player aims).
 
 ---
 
-## Next: Phase 9 - Potential Features
-- Formation changes
-- Waypoint queue management
-- Combat status announcements
-- Audio beacons for orientation
+## Phase 9: Audio Terrain Radar - COMPLETE (2026-02-03)
+Spatial awareness via audio tones. 45 rays sweep 90° in front (±45° from center).
+
+### Controls
+| Key | Action |
+|-----|--------|
+| **Ctrl+W** | Toggle radar (manual mode only) |
+| **Ctrl+Shift+W** | Toggle debug logging |
+
+### Audio Feedback
+| Material | Frequency | Waveform |
+|----------|-----------|----------|
+| Grass/dirt/sand | 200 Hz | Sine |
+| Concrete/rock | 400 Hz | Square |
+| Wood | 300 Hz | Triangle |
+| Metal | 600 Hz | Sawtooth |
+| Water | 150 Hz | Sine+harmonic |
+| Human | 800 Hz | Pulse |
+| Glass | 700 Hz | Sine+harmonic |
+| Unknown | 350 Hz | Sine |
+
+- **Stereo pan** = direction (-45° left to +45° right)
+- **Volume** = distance (loud at 0.5m, quiet at 100m)
+- **Silence** = nothing detected in that direction
+
