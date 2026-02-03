@@ -28,22 +28,31 @@ if (isNull _soldier || isNull _target || !alive _soldier || !alive _target) exit
     [0, -1, 0]  // pitch -1 = mute signal
 };
 
-// Get soldier's current aim direction (weapon direction)
+// Get aim direction - use weapon barrel direction (where bullet actually goes)
 private _weapon = currentWeapon _soldier;
 private _aimDir = if (_weapon != "") then {
     _soldier weaponDirection _weapon
 } else {
-    // No weapon - use facing direction
     vectorDir _soldier
 };
 
 // Normalize aim direction (should already be, but be safe)
 private _aimDirNorm = vectorNormalized _aimDir;
 
-// Get target position (center mass)
+// Get origin point (eye position)
 private _eyePos = eyePos _soldier;
 private _targetPos = if (_target isKindOf "Man") then {
-    (getPosASL _target) vectorAdd [0, 0, 1.2]  // Torso height
+    // Use model selection for actual torso position (works for all stances)
+    private _spinePos = _target selectionPosition "spine3";
+    if (_spinePos isEqualTo [0,0,0]) then {
+        // Fallback: estimate based on bounding box center
+        private _bb = boundingBoxReal _target;
+        private _centerZ = (((_bb select 0) select 2) + ((_bb select 1) select 2)) / 2;
+        (getPosASL _target) vectorAdd [0, 0, _centerZ max 0.5]
+    } else {
+        // Convert model-space to world-space, then AGL to ASL to match eyePos
+        AGLToASL (_target modelToWorldVisual _spinePos)
+    }
 } else {
     getPosASL _target  // Vehicle center
 };
@@ -136,8 +145,8 @@ private _targetSize = if (_target isKindOf "Man") then { 1.8 } else {
 // Angular size of target in degrees: atan(size / distance)
 private _targetAngularSize = atan (_targetSize / (_distance max 1));
 
-// Lock threshold: base angle or target angular size, whichever is larger
-private _lockThreshold = BA_aimAssistLockAngle max _targetAngularSize;
+// Lock threshold: use user's setting directly (no override)
+private _lockThreshold = BA_aimAssistLockAngle;
 
 // Locked if within threshold
 private _locked = if (_angleError <= _lockThreshold) then { 1 } else { 0 };

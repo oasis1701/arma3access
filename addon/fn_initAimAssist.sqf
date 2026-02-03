@@ -31,7 +31,7 @@ BA_aimAssistHitEH = -1;            // Hit event handler ID
 
 // Configuration
 BA_aimAssistMaxRange = 500;        // Maximum target acquisition range (meters)
-BA_aimAssistLockAngle = 2;         // Degrees of error for "locked" (adjusted by target size)
+BA_aimAssistLockAngle = 1.0;       // Degrees of error for "locked" - testing camera direction
 BA_aimAssistMinKnowledge = 0.5;    // Minimum knowsAbout value for valid target
 
 // Log initialization
