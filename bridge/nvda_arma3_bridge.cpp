@@ -91,7 +91,7 @@ static const float CLICK_VOLUME = 0.008f;       // Secondary tone volume (slight
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
 static const float VERT_CENTER_THRESHOLD = 0.02f;   // Vertical dead center threshold
-static const float HORIZ_CENTER_THRESHOLD = 0.02f;  // Horizontal dead center threshold
+static const float HORIZ_CENTER_THRESHOLD = 0.005f; // Horizontal dead center threshold (tighter for accuracy)
 static const float HORIZ_ACTIVATE_THRESHOLD = 1.0f; // Secondary tone activates when abs(pan) < this
 static const double PI = 3.14159265358979323846;
 
@@ -180,8 +180,12 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                 }
                 // else: continuous tone (no envelope)
 
-                // Pan click to left or right ear based on target direction
-                if (pan < 0.0f) {
+                // Pan click based on target direction, or center when at dead center
+                if (horizError < HORIZ_CENTER_THRESHOLD) {
+                    // Dead center - play in both ears (centered)
+                    leftSample += clickSample;
+                    rightSample += clickSample;
+                } else if (pan < 0.0f) {
                     // Target is to the left - click in left ear
                     leftSample += clickSample;
                 } else {
