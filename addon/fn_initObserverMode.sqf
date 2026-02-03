@@ -1,8 +1,8 @@
 /*
  * Function: BA_fnc_initObserverMode
- * Initializes the Observer Mode system with hotkeys.
+ * Initializes the Observer Mode and Focus Mode systems with hotkeys.
  *
- * Hotkeys:
+ * Hotkeys (Observer Mode):
  *   Ctrl+O       - Toggle observer mode
  *   Tab          - Next unit in current group
  *   Shift+Tab    - Previous unit in current group
@@ -34,6 +34,10 @@
  *   Alt+9        - Announce role
  *   Alt+0        - Announce full status summary
  *
+ * Hotkeys (Focus Mode - handled by dialog):
+ *   ~ (Backtick) - Toggle focus mode (cursor/scanner without observer)
+ *   All cursor/scanner keys work in focus mode via dialog overlay
+ *
  * Arguments:
  *   None
  *
@@ -46,6 +50,7 @@
 
 // Initialize state variables
 BA_observerMode = false;
+BA_focusMode = false;          // Focus mode: cursor/scanner without observer mode
 BA_originalUnit = objNull;
 BA_ghostUnit = objNull;
 BA_observerCamera = objNull;
@@ -108,10 +113,20 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         true
     };
 
+    // Backtick/Tilde (key 41) - Toggle focus mode (only when NOT in observer mode)
+    // Note: Focus mode has its own key handler via dialog, but we need this to enter focus mode
+    if (_key == 41 && !_ctrl && !_shift && !_alt) exitWith {
+        if (!BA_observerMode) then {
+            [] call BA_fnc_toggleFocusMode;
+        };
+        true
+    };
+
     // Only process other hotkeys if in observer mode
+    // Focus mode keys are handled by the dialog overlay (fn_enterFocusMode.sqf)
     if (!BA_observerMode) exitWith { false };
 
-    // G key (34) - Group selection menu (only in observer mode)
+    // G key (34) - Group selection menu
     if (_key == 34 && !_ctrl && !_shift && !_alt) exitWith {
         if (BA_groupMenuActive) then {
             [] call BA_fnc_closeGroupMenu;
@@ -123,31 +138,16 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
 
     // Group menu navigation (when active) - takes priority over order menu
     if (BA_groupMenuActive) exitWith {
-        // Up arrow (200)
-        if (_key == 200) exitWith {
-            [-1] call BA_fnc_navigateGroupMenu;
-            true
-        };
-        // Down arrow (208)
-        if (_key == 208) exitWith {
-            [1] call BA_fnc_navigateGroupMenu;
-            true
-        };
-        // Enter (28)
-        if (_key == 28) exitWith {
-            [] call BA_fnc_selectGroupMenuItem;
-            true
-        };
-        // Escape (1)
-        if (_key == 1) exitWith {
-            [] call BA_fnc_closeGroupMenu;
-            true
-        };
-        // Block other keys while menu is open
-        true
+        switch (_key) do {
+            case 200: { [-1] call BA_fnc_navigateGroupMenu; true };
+            case 208: { [1] call BA_fnc_navigateGroupMenu; true };
+            case 28: { [] call BA_fnc_selectGroupMenuItem; true };
+            case 1: { [] call BA_fnc_closeGroupMenu; true };
+            default { true };  // Block all other keys while menu open
+        }
     };
 
-    // L key (38) - Open/close landmarks menu (only in observer mode)
+    // L key (38) - Open/close landmarks menu
     if (_key == 38 && !_ctrl && !_shift && !_alt) exitWith {
         if (BA_landmarksMenuActive) then {
             [] call BA_fnc_closeLandmarksMenu;
@@ -159,67 +159,29 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
 
     // Landmarks menu navigation (when active) - takes priority over cursor movement
     if (BA_landmarksMenuActive) exitWith {
-        // Up arrow (200)
-        if (_key == 200) exitWith {
-            ["up"] call BA_fnc_navigateLandmarksMenu;
-            true
-        };
-        // Down arrow (208)
-        if (_key == 208) exitWith {
-            ["down"] call BA_fnc_navigateLandmarksMenu;
-            true
-        };
-        // Left arrow (203)
-        if (_key == 203) exitWith {
-            ["left"] call BA_fnc_navigateLandmarksMenu;
-            true
-        };
-        // Right arrow (205)
-        if (_key == 205) exitWith {
-            ["right"] call BA_fnc_navigateLandmarksMenu;
-            true
-        };
-        // Enter (28)
-        if (_key == 28) exitWith {
-            [] call BA_fnc_selectLandmarksMenuItem;
-            true
-        };
-        // Escape (1)
-        if (_key == 1) exitWith {
-            [] call BA_fnc_closeLandmarksMenu;
-            true
-        };
-        // Block other keys while menu is open
-        true
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateLandmarksMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateLandmarksMenu; true };
+            case 203: { ["left"] call BA_fnc_navigateLandmarksMenu; true };
+            case 205: { ["right"] call BA_fnc_navigateLandmarksMenu; true };
+            case 28: { [] call BA_fnc_selectLandmarksMenuItem; true };
+            case 1: { [] call BA_fnc_closeLandmarksMenu; true };
+            default { true };  // Block all other keys while menu open
+        }
     };
 
     // Intersection menu navigation (when active) - takes priority
     if (BA_intersectionMenuActive) exitWith {
-        // Up arrow (200)
-        if (_key == 200) exitWith {
-            [-1] call BA_fnc_navigateIntersectionMenu;
-            true
-        };
-        // Down arrow (208)
-        if (_key == 208) exitWith {
-            [1] call BA_fnc_navigateIntersectionMenu;
-            true
-        };
-        // Enter (28)
-        if (_key == 28) exitWith {
-            [] call BA_fnc_selectIntersectionMenuItem;
-            true
-        };
-        // Escape (1)
-        if (_key == 1) exitWith {
-            [] call BA_fnc_closeIntersectionMenu;
-            true
-        };
-        // Block other keys while menu is open
-        true
+        switch (_key) do {
+            case 200: { [-1] call BA_fnc_navigateIntersectionMenu; true };
+            case 208: { [1] call BA_fnc_navigateIntersectionMenu; true };
+            case 28: { [] call BA_fnc_selectIntersectionMenuItem; true };
+            case 1: { [] call BA_fnc_closeIntersectionMenu; true };
+            default { true };  // Block all other keys while menu open
+        }
     };
 
-    // O key (24) without Ctrl - Open/close orders menu (only in observer mode)
+    // O key (24) without Ctrl - Open/close orders menu
     if (_key == 24 && !_ctrl && !_shift && !_alt) exitWith {
         if (BA_orderMenuActive) then {
             [] call BA_fnc_closeOrderMenu;
@@ -231,28 +193,13 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
 
     // When order menu is active, intercept navigation keys
     if (BA_orderMenuActive) exitWith {
-        // Up arrow (200)
-        if (_key == 200) exitWith {
-            ["up"] call BA_fnc_navigateOrderMenu;
-            true
-        };
-        // Down arrow (208)
-        if (_key == 208) exitWith {
-            ["down"] call BA_fnc_navigateOrderMenu;
-            true
-        };
-        // Enter (28)
-        if (_key == 28) exitWith {
-            [] call BA_fnc_selectOrderMenuItem;
-            true
-        };
-        // Escape (1)
-        if (_key == 1) exitWith {
-            [] call BA_fnc_closeOrderMenu;
-            true
-        };
-        // Block other keys while menu is open
-        false
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateOrderMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateOrderMenu; true };
+            case 28: { [] call BA_fnc_selectOrderMenuItem; true };
+            case 1: { [] call BA_fnc_closeOrderMenu; true };
+            default { true };  // Block all other keys while menu open
+        }
     };
 
     // R key (19) - Toggle road exploration mode
@@ -285,19 +232,20 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
             // Road mode arrow key handling
             if (_alt && !_ctrl && !_shift) then {
                 // Alt+Arrow = Follow road in compass direction
-                // All arrow keys now work based on compass direction
                 [_direction] call BA_fnc_followRoad;
-                true
             } else {
                 if (_shift && !_ctrl && !_alt) then {
                     // Shift+Arrow = Turn at intersection
                     [_direction] call BA_fnc_selectRoadAtIntersection;
-                    true
                 } else {
-                    // No modifier or Ctrl = do nothing in road mode (reserve for future)
-                    false
+                    // No valid modifier in road mode
+                    if (_alt || _shift || _ctrl) then {
+                        ["Road mode: Alt to follow, Shift to turn."] call BA_fnc_speak;
+                    };
                 };
             };
+            // Always return true to block arrow keys
+            true
         };
 
         // Normal cursor movement (road mode disabled)
@@ -307,8 +255,14 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
             else { if (_ctrl && !_shift && !_alt) then { 1000 } else { 0 } } };
         if (_distance > 0) then {
             [_direction, _distance] call BA_fnc_moveCursor;
+        } else {
+            // No valid modifier combination
+            if (_alt || _shift || _ctrl) then {
+                ["Use Alt for 10m, Shift for 100m, Ctrl for 1000m."] call BA_fnc_speak;
+            };
         };
-        _distance > 0
+        // Always return true to block arrow keys in observer mode
+        true
     };
 
     // I key (23) - Detailed scan at cursor
@@ -402,4 +356,4 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
 }];
 
 // Log initialization
-systemChat "Blind Assist: Observer Mode initialized. Press Ctrl+O to toggle.";
+systemChat "Blind Assist: Initialized. Ctrl+O for observer mode, ~ for focus mode.";

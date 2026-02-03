@@ -13,9 +13,9 @@
  *   [] call BA_fnc_toggleRoadMode;
  */
 
-// Must be in observer mode
-if (!BA_observerMode) exitWith {
-    ["Observer mode required."] call BA_fnc_speak;
+// Must be in observer mode or focus mode
+if (!BA_observerMode && !BA_focusMode) exitWith {
+    ["Observer or focus mode required."] call BA_fnc_speak;
     false
 };
 

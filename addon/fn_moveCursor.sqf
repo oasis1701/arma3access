@@ -19,8 +19,8 @@ params [
     ["_distance", 0, [0]]
 ];
 
-// Must be in observer mode with active cursor
-if (!BA_observerMode || !BA_cursorActive) exitWith {
+// Must be in observer mode or focus mode with active cursor
+if ((!BA_observerMode && !BA_focusMode) || !BA_cursorActive) exitWith {
     ["Cursor not active."] call BA_fnc_speak;
     false
 };

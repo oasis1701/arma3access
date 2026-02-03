@@ -17,8 +17,8 @@ params [
     ["_direction", "", [""]]
 ];
 
-// Must be in observer mode with road mode enabled and on a road
-if (!BA_observerMode || !BA_cursorActive || !BA_roadModeEnabled) exitWith { false };
+// Must be in observer/focus mode with road mode enabled and on a road
+if ((!BA_observerMode && !BA_focusMode) || !BA_cursorActive || !BA_roadModeEnabled) exitWith { false };
 
 if (isNull BA_currentRoad) exitWith {
     ["Not on a road."] call BA_fnc_speak;

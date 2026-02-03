@@ -18,8 +18,8 @@
  *   [] call BA_fnc_openIntersectionMenu;
  */
 
-// Must be in observer mode with road mode enabled
-if (!BA_observerMode || !BA_cursorActive || !BA_roadModeEnabled) exitWith {
+// Must be in observer/focus mode with road mode enabled
+if ((!BA_observerMode && !BA_focusMode) || !BA_cursorActive || !BA_roadModeEnabled) exitWith {
     ["Road mode not active."] call BA_fnc_speak;
     false
 };

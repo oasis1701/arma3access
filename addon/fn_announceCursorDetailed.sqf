@@ -15,9 +15,9 @@
  *   //          2 known enemies. 320 meters northeast of observed unit."
  */
 
-// Must be in observer mode
-if (!BA_observerMode) exitWith {
-    ["Not in observer mode."] call BA_fnc_speak;
+// Must be in observer mode or focus mode
+if (!BA_observerMode && !BA_focusMode) exitWith {
+    ["Not in observer or focus mode."] call BA_fnc_speak;
 };
 
 // Get basic info

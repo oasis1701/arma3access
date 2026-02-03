@@ -17,8 +17,8 @@ params [
     ["_direction", "", [""]]
 ];
 
-// Must be in observer mode with cursor active
-if (!BA_observerMode || !BA_cursorActive) exitWith { false };
+// Must be in observer/focus mode with cursor active
+if ((!BA_observerMode && !BA_focusMode) || !BA_cursorActive) exitWith { false };
 
 private _searchRadius = 200; // meters
 private _cursorPos2D = [BA_cursorPos select 0, BA_cursorPos select 1];

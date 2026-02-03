@@ -391,3 +391,72 @@ Spatial awareness via audio tones. 45 rays sweep 90° in front (±45° from cent
 - **Volume** = distance (loud at 0.5m, quiet at 100m)
 - **Silence** = nothing detected in that direction
 
+---
+
+## Phase 10: Focus Mode - COMPLETE (2026-02-03)
+Accessibility features (cursor, scanner, landmarks) without observer mode.
+Allows exploration while keeping direct control of the soldier.
+
+### Controls
+| Key | Action |
+|-----|--------|
+| **~ (Backtick)** | Toggle focus mode on/off |
+| **WASD** | Auto-exits focus mode (movement) |
+| **ESC** | Exit focus mode |
+
+### Features Available in Focus Mode
+- Virtual cursor movement (Alt/Shift/Ctrl + arrows)
+- Landmarks menu (L key)
+- Object scanner (PageUp/Down, Ctrl+PageUp/Down, U, J)
+- Road exploration (R key, Ctrl+R)
+- Status announcements (Alt+1-9, Alt+0)
+- Detailed scan (I key)
+- Snap cursor to self (Home/Backspace)
+
+### Features NOT Available (Observer-only)
+- Group selection menu (G) - requires observer mode
+- Orders menu (O) - requires selected group
+- Unit/group cycling (Tab) - conflicts with Arma default
+
+### Technical Notes
+- Uses transparent dialog overlay (`BA_FocusModeDialog`) to block engine inputs
+- This prevents L from toggling flashlight, R from reloading, arrows from turning soldier
+- Dialog's `enableSimulation = true` keeps game world running normally
+- Mouse cursor becomes visible while dialog open (minimal impact for blind players)
+- Dialog's `onUnload` cleans up state as safety net
+- Focus mode cursor anchors to `player` position (observer uses `BA_observedUnit`)
+- Entering observer mode (Ctrl+O) auto-exits focus mode
+- Focus mode cannot be toggled while in observer mode (not needed - full features available)
+
+---
+
+## Addon Packaging - COMPLETE (2026-02-03)
+Self-contained addon structure for distribution as PBO.
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| `addon/config.cpp` | Master addon config - includes CfgPatches, CfgFunctions, dialogs |
+| `addon/$PBOPREFIX$` | Addon root marker - contains `blind_assist` |
+| `addon/CfgFunctions_Addon.hpp` | PBO function paths (`\blind_assist` instead of `addon`) |
+
+### Two Workflows Supported
+| Workflow | CfgFunctions File | Path Style |
+|----------|-------------------|------------|
+| **Development** | `CfgFunctions.hpp` | `file = "addon"` (mission-relative) |
+| **Distribution** | `CfgFunctions_Addon.hpp` | `file = "\blind_assist"` (absolute addon path) |
+
+### PBO Packing Instructions
+Using Arma 3 Tools (AddonBuilder):
+```
+Source: D:\arma3 access\addon\
+Output: blind_assist.pbo
+Prefix: blind_assist (from $PBOPREFIX$ file)
+```
+
+### Usage as Addon
+1. Pack `addon/` folder into `blind_assist.pbo`
+2. Place in `Arma 3\@BlindAssist\addons\blind_assist.pbo`
+3. Launch with `-mod=@BlindAssist`
+4. Works with ANY mission - no description.ext edits needed
+

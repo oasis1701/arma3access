@@ -17,8 +17,8 @@ params [
     ["_direction", "North", [""]]
 ];
 
-// Must be in observer mode with cursor active and road mode enabled
-if (!BA_observerMode || !BA_cursorActive || !BA_roadModeEnabled) exitWith { false };
+// Must be in observer/focus mode with cursor active and road mode enabled
+if ((!BA_observerMode && !BA_focusMode) || !BA_cursorActive || !BA_roadModeEnabled) exitWith { false };
 
 // If at a dead end, handle specially
 if (BA_atRoadEnd) then {

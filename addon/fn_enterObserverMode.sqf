@@ -18,6 +18,11 @@ if (BA_observerMode) exitWith {
     false
 };
 
+// Exit focus mode if active (observer mode supersedes it)
+if (BA_focusMode) then {
+    [] call BA_fnc_exitFocusMode;
+};
+
 // Store reference to original player unit
 BA_originalUnit = player;
 BA_observedUnit = player;
