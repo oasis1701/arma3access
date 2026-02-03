@@ -102,6 +102,7 @@ static const float PRIMARY_RELEASE_MS = 5.0f;   // Release time for primary tone
 static const float MIN_PULSE_RATE = 2.0f;       // Slowest pulse rate (Hz) at max error
 static const float MAX_PULSE_RATE = 15.0f;      // Fastest pulse rate (Hz) at min error
 static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates when abs(pan) < this (close to target)
+static const float VERT_ACTIVATE_THRESHOLD = 0.4f;  // vertError above this = slow clicks (edge of useful range)
 static const double PI = 3.14159265358979323846;
 // Note: VERT_CENTER_THRESHOLD and HORIZ_CENTER_THRESHOLD are now adaptive (passed from SQF)
 
@@ -135,29 +136,37 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
     // Calculate primary tone pulse rate based on vertical error
     // At dead center (vertError < threshold): continuous tone (pulseRate = 0)
-    // At max error: slow pulse (2 Hz)
-    // At min error: fast pulse (15 Hz)
-    // Threshold is adaptive based on target angular size
+    // Near target: fast clicks, far from target: slow clicks
+    // Full dynamic range spread across useful aiming area [vertThreshold, VERT_ACTIVATE_THRESHOLD]
     float primaryPulseRate = 0.0f;
     if (vertError >= vertThreshold) {
-        // Linear interpolation: high error = slow, low error = fast
-        primaryPulseRate = MIN_PULSE_RATE + (1.0f - vertError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
+        // Map vertError from [vertThreshold, VERT_ACTIVATE_THRESHOLD] to [MAX_PULSE_RATE, MIN_PULSE_RATE]
+        // Near target = fast clicks, far = slow clicks
+        float t = (vertError - vertThreshold) / (VERT_ACTIVATE_THRESHOLD - vertThreshold);
+        t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;  // Clamp to [0,1]
+        primaryPulseRate = MAX_PULSE_RATE + t * (MIN_PULSE_RATE - MAX_PULSE_RATE);
     }
+    // When vertError < vertThreshold (on target), pulseRate stays 0 = continuous smooth tone
 
-    // Calculate secondary click pulse rate based on horizontal error
-    // Only active when roughly facing target (abs(pan) < 1.0)
-    // Threshold is adaptive based on target angular size
-    bool secondaryActive = (fabsf(pan) < HORIZ_ACTIVATE_THRESHOLD);
+    // Calculate secondary click pulse rate based on pan magnitude (distance from center)
+    // Only active when roughly facing target (abs(pan) < 0.2)
+    // Clicks speed up as you approach target, then go smooth when on target
+    float panMagnitude = fabsf(pan);
+    bool secondaryActive = (panMagnitude < HORIZ_ACTIVATE_THRESHOLD);
     float secondaryPulseRate = 0.0f;
-    if (secondaryActive && horizError >= horizThreshold) {
-        secondaryPulseRate = MIN_PULSE_RATE + (1.0f - horizError) * (MAX_PULSE_RATE - MIN_PULSE_RATE);
+    if (secondaryActive && panMagnitude >= horizThreshold) {
+        // Map pan from [horizThreshold, HORIZ_ACTIVATE_THRESHOLD] to [MAX_PULSE_RATE, MIN_PULSE_RATE]
+        // Near target = fast clicks, near edge of activation = slow clicks
+        float t = (panMagnitude - horizThreshold) / (HORIZ_ACTIVATE_THRESHOLD - horizThreshold);
+        t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;  // Clamp to [0,1]
+        secondaryPulseRate = MAX_PULSE_RATE + t * (MIN_PULSE_RATE - MAX_PULSE_RATE);
     }
+    // When panMagnitude < horizThreshold (on target), pulseRate stays 0 = continuous smooth tone
 
     // Calculate click frequency: sweep from 500 Hz (at threshold) to 560 Hz (at center)
     // Uses HORIZ_ACTIVATE_THRESHOLD so it auto-scales if threshold changes
     float clickFreq = CLICK_FREQ_MAX;  // Default to center frequency
     if (secondaryActive) {
-        float panMagnitude = fabsf(pan);
         // Map pan from [0, threshold] to frequency [560, 500]
         float t = panMagnitude / HORIZ_ACTIVATE_THRESHOLD;  // 0 at center, 1 at threshold
         clickFreq = CLICK_FREQ_MAX + t * (CLICK_FREQ_MIN - CLICK_FREQ_MAX);
@@ -242,9 +251,9 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
                 clickSample *= g_clickEnvelopeState;
 
-                // Pan click based on target direction, or center when at dead center
-                if (horizError < horizThreshold) {
-                    // Dead center - play in both ears (centered)
+                // Pan click based on target direction, or center when on target
+                if (panMagnitude < horizThreshold) {
+                    // On target - play in both ears (centered)
                     leftSample += clickSample;
                     rightSample += clickSample;
                 } else if (pan < 0.0f) {
