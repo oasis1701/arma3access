@@ -1,0 +1,78 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Sector Funds Payoff">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-900.000000,25.000000,-850.000000,0.000000,"INIT"};
+item1[] = {"timeout",6,250,-75.000000,-825.000000,25.000000,-775.000000,0.000000,"timeout"};
+item2[] = {"generate_funds",2,4346,-75.000000,-750.000000,25.000000,-700.000000,0.000000,"generate" \n "funds"};
+link0[] = {0,1};
+link1[] = {1,2};
+link2[] = {2,1};
+globals[] = {0.000000,0,0,0,0,640,480,1,227,6316128,1,-236.838745,254.536102,-456.918762,-1118.242920,665,1004,1};
+window[] = {2,-1,-1,-1,-1,793,1946,3160,26,3,683};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Sector Funds Payoff";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"_t = time + BIS_WL_fundsPayoffTimeout;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "timeout">*/
+                                class timeout
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="generate_funds";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "generate_funds">*/
+                class generate_funds
+                {
+                        name = "generate_funds";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"_add = _this call BIS_fnc_WLcalculateIncome;" \n
+                         "" \n
+                         "{" \n
+                         "	if ((side group _x) == _this) then {" \n
+                         "		_x setVariable [""BIS_WL_funds"", ((_x getVariable ""BIS_WL_funds"") + _add) min BIS_WL_maxCP, TRUE];" \n
+                         "	};" \n
+                         "} forEach BIS_WL_allWarlords;" \n
+                         "" \n
+                         "_t = time + BIS_WL_fundsPayoffTimeout;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "timeout">*/
+                                class timeout
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="generate_funds";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+        };
+};
+/*%FSM</COMPILE>*/

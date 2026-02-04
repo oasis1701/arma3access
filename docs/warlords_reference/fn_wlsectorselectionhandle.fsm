@@ -1,0 +1,545 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Sector Selection Handle">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-1050.000000,25.000000,-1000.000000,0.000000,"INIT"};
+item1[] = {"no_sector_select",4,4314,-75.000000,-975.000000,25.000000,-925.000000,0.000000,"no sector" \n "selected"};
+item2[] = {"initialize_sector",2,250,-75.000000,-900.000000,25.000000,-850.000000,0.000000,"initialize sector" \n "selection"};
+item3[] = {"sector_selected",4,218,-75.000000,-675.000000,25.000000,-625.000000,1.000000,"sector" \n "selected"};
+item4[] = {"disable_sector_s",2,250,-75.000000,-600.000000,25.000000,-550.000000,0.000000,"disable sector" \n "selection"};
+item5[] = {"sector_seized",4,218,-75.000000,-375.000000,25.000000,-325.000000,3.000000,"sector seized"};
+item6[] = {"",7,210,-154.000000,-279.000000,-145.999985,-271.000000,0.000000,""};
+item7[] = {"",7,210,71.000000,-279.000000,79.000000,-271.000000,0.000000,""};
+item8[] = {"",7,210,-154.000000,-1028.999878,-146.000000,-1021.000122,0.000000,""};
+item9[] = {"",7,210,-154.000000,-654.000000,-146.000000,-646.000000,0.000000,""};
+item10[] = {"game_over",4,218,-200.000000,-600.000000,-100.000000,-550.000000,2.000000,"game over"};
+item11[] = {"terminate",1,250,-325.000000,-600.000000,-225.000000,-550.000000,0.000000,"terminate"};
+item12[] = {"hide_timeout",2,250,-75.000000,-300.000000,25.000000,-250.000000,0.000000,"hide timeout"};
+item13[] = {"",7,210,71.000000,-954.000000,79.000000,-946.000000,0.000000,""};
+item14[] = {"timeout_started",4,218,-75.000000,-525.000000,25.000000,-475.000000,1.000000,"timeout" \n "started"};
+item15[] = {"show_timeout",2,250,-75.000000,-450.000000,25.000000,-400.000000,0.000000,"show timeout"};
+item16[] = {"timeout_stopped",4,218,-325.000000,-450.000000,-225.000000,-400.000000,0.000000,"timeout" \n "stopped"};
+item17[] = {"hide_timeout_1",2,250,-325.000000,-525.000000,-225.000000,-475.000000,0.000000,"hide timeout"};
+item18[] = {"interrupted",4,218,-275.000000,-900.000000,-175.000000,-850.000000,0.000000,"interrupted"};
+item19[] = {"reset",2,250,-400.000000,-900.000000,-300.000000,-850.000000,0.000000,"reset"};
+item20[] = {"",7,210,-353.999969,-953.999878,-346.000031,-946.000122,0.000000,""};
+item21[] = {"",7,210,45.999989,-579.000000,54.000011,-571.000000,0.000000,""};
+item22[] = {"",7,210,45.999989,-354.000000,54.000011,-346.000000,0.000000,""};
+item23[] = {"someone_voted",4,218,-75.000000,-825.000000,25.000000,-775.000000,0.000000,"someone" \n "voted"};
+item24[] = {"show_countdown",2,250,-75.000000,-750.000000,25.000000,-700.000000,0.000000,"show" \n "countdown"};
+item25[] = {"voting_reset",4,218,100.000000,-600.000000,200.000000,-550.000000,3.000000,"voting reset"};
+item26[] = {"",7,210,146.000000,-229.000000,154.000000,-221.000000,0.000000,""};
+item27[] = {"",7,210,-29.000000,-229.000000,-21.000000,-221.000000,0.000000,""};
+item28[] = {"popup_msg",2,250,100.000000,-525.000000,200.000000,-475.000000,0.000000,"popup msg"};
+item29[] = {"always",8,218,100.000000,-450.000000,200.000000,-400.000000,0.000000,"always"};
+link0[] = {0,1};
+link1[] = {0,8};
+link2[] = {1,2};
+link3[] = {2,18};
+link4[] = {2,23};
+link5[] = {3,4};
+link6[] = {4,10};
+link7[] = {4,14};
+link8[] = {4,21};
+link9[] = {5,12};
+link10[] = {6,10};
+link11[] = {7,13};
+link12[] = {8,9};
+link13[] = {9,3};
+link14[] = {9,10};
+link15[] = {10,11};
+link16[] = {12,6};
+link17[] = {12,7};
+link18[] = {13,1};
+link19[] = {14,15};
+link20[] = {15,5};
+link21[] = {15,10};
+link22[] = {15,14};
+link23[] = {15,16};
+link24[] = {15,25};
+link25[] = {16,17};
+link26[] = {17,5};
+link27[] = {17,10};
+link28[] = {17,14};
+link29[] = {17,25};
+link30[] = {18,19};
+link31[] = {19,20};
+link32[] = {20,1};
+link33[] = {21,22};
+link34[] = {21,25};
+link35[] = {22,5};
+link36[] = {23,24};
+link37[] = {24,3};
+link38[] = {24,18};
+link39[] = {25,28};
+link40[] = {26,27};
+link41[] = {27,12};
+link42[] = {28,29};
+link43[] = {29,26};
+globals[] = {0.000000,0,0,0,0,640,480,1,267,6316128,1,-541.695374,297.441925,-337.464478,-1330.972290,848,1004,1};
+window[] = {2,-1,-1,-1,-1,975,2128,3342,208,3,866};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Sector Selection Handle";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"_currentSectorVarID = format [""BIS_WL_currentSector_%1"", side group player];" \n
+                         "_conqueredSectorsVarID = format [""BIS_WL_conqueredSectors_%1"", side group player];" \n
+                         "_tmoutVarID =  format [""BIS_WL_timeoutCur_%1"", side group player];" \n
+                         "_sectorVotingResetVarID = format [""BIS_WL_sectorVotingReset_%1"", side group player];" \n
+                         "_sectorVotingResetNameVarID = format [""BIS_WL_sectorVotingResetName_%1"", side group player];" \n
+                         "_barShown = FALSE;" \n
+                         "_tClaim = time;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "game_over">*/
+                                class game_over
+                                {
+                                        itemno = 10;
+                                        priority = 2.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(BIS_WL_base_WEST getVariable ""BIS_WL_sectorSide"") != WEST || (BIS_WL_base_EAST getVariable ""BIS_WL_sectorSide"") != EAST"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_selected">*/
+                                class sector_selected
+                                {
+                                        itemno = 3;
+                                        priority = 1.000000;
+                                        to="disable_sector_s";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"!isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no_sector_select">*/
+                                class no_sector_select
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="initialize_sector";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"isNull (missionNamespace getVariable _currentSectorVarID) && BIS_WL_currentSelection == """""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "initialize_sector">*/
+                class initialize_sector
+                {
+                        name = "initialize_sector";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"BIS_WL_resetVoting = FALSE;" \n
+                         "" \n
+                         "[] spawn BIS_fnc_WLsectorSelectionStart;" \n
+                         "" \n
+                         "[] spawn {" \n
+                         "	sleep 2.5;" \n
+                         "	if !(visibleMap) then {" \n
+                         "		""Voting"" call BIS_fnc_WLSoundMsg;" \n
+                         "	};" \n
+                         "	[toUpper localize ""STR_A3_WL_popup_voting""] spawn BIS_fnc_WLSmoothText;" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "someone_voted">*/
+                                class someone_voted
+                                {
+                                        itemno = 23;
+                                        priority = 0.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"/*{" \n
+                                         "	side _x == side group player && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} count BIS_WL_allWarlords > 0*/" \n
+                                         "BIS_WL_allWarlords findIf" \n
+                                         "{" \n
+                                         "	side _x == side group player && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "interrupted">*/
+                                class interrupted
+                                {
+                                        itemno = 18;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"BIS_WL_resetVoting"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "disable_sector_s">*/
+                class disable_sector_s
+                {
+                        name = "disable_sector_s";
+                        itemno = 4;
+                        init = /*%FSM<STATEINIT""">*/"_curSector = missionNamespace getVariable _currentSectorVarID;" \n
+                         "" \n
+                         "{_x setMarkerAlphaLocal 0} forEach (_curSector getVariable ""BIS_WL_sectorLockMrkrs"");" \n
+                         "missionNamespace setVariable [format [""BIS_WL_selectionTime_%1"", side group player], -1];" \n
+                         "[_curSector, ""seize"", ""create""] call BIS_fnc_WLSectorTaskHandle;" \n
+                         "[toUpper format [localize ""STR_A3_WL_popup_voting_done"", _curSector getVariable ""Name""]] spawn BIS_fnc_WLSmoothText;" \n
+                         """Selected"" call BIS_fnc_WLSoundMsg;" \n
+                         "call BIS_fnc_WLRecalculateServices;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_seized">*/
+                                class sector_seized
+                                {
+                                        itemno = 5;
+                                        priority = 3.000000;
+                                        to="hide_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_curSector getVariable ""BIS_WL_sectorSide"") == side group player && isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "voting_reset">*/
+                                class voting_reset
+                                {
+                                        itemno = 25;
+                                        priority = 3.000000;
+                                        to="popup_msg";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"missionNamespace getVariable [_sectorVotingResetVarID, FALSE];"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "game_over">*/
+                                class game_over
+                                {
+                                        itemno = 10;
+                                        priority = 2.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(BIS_WL_base_WEST getVariable ""BIS_WL_sectorSide"") != WEST || (BIS_WL_base_EAST getVariable ""BIS_WL_sectorSide"") != EAST"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "timeout_started">*/
+                                class timeout_started
+                                {
+                                        itemno = 14;
+                                        priority = 1.000000;
+                                        to="show_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_curSector getVariable [_x, -1]) >= 0} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "terminate">*/
+                class terminate
+                {
+                        name = "terminate";
+                        itemno = 11;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "hide_timeout">*/
+                class hide_timeout
+                {
+                        name = "hide_timeout";
+                        itemno = 12;
+                        init = /*%FSM<STATEINIT""">*/"[] call BIS_fnc_WLSeizingBarHandle;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "game_over">*/
+                                class game_over
+                                {
+                                        itemno = 10;
+                                        priority = 2.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(BIS_WL_base_WEST getVariable ""BIS_WL_sectorSide"") != WEST || (BIS_WL_base_EAST getVariable ""BIS_WL_sectorSide"") != EAST"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no_sector_select">*/
+                                class no_sector_select
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="initialize_sector";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"isNull (missionNamespace getVariable _currentSectorVarID) && BIS_WL_currentSelection == """""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "show_timeout">*/
+                class show_timeout
+                {
+                        name = "show_timeout";
+                        itemno = 15;
+                        init = /*%FSM<STATEINIT""">*/"if ([player, _curSector, TRUE] call BIS_fnc_WLInSectorArea  && !(_curSector in (missionNamespace getVariable _conqueredSectorsVarID))) then {" \n
+                         "	if (time > _tClaim + 0.5) then {" \n
+                         "		[_curSector, 1] call BIS_fnc_WLSeizingBarHandle;" \n
+                         "		_tClaim = time;" \n
+                         "	};" \n
+                         "	_barShown = TRUE;" \n
+                         "} else {" \n
+                         "	if (_barShown) then {" \n
+                         "		_barShown = FALSE;" \n
+                         "		[] call BIS_fnc_WLSeizingBarHandle;" \n
+                         "	};" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "voting_reset">*/
+                                class voting_reset
+                                {
+                                        itemno = 25;
+                                        priority = 3.000000;
+                                        to="popup_msg";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"missionNamespace getVariable [_sectorVotingResetVarID, FALSE];"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_seized">*/
+                                class sector_seized
+                                {
+                                        itemno = 5;
+                                        priority = 3.000000;
+                                        to="hide_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_curSector getVariable ""BIS_WL_sectorSide"") == side group player && isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "game_over">*/
+                                class game_over
+                                {
+                                        itemno = 10;
+                                        priority = 2.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(BIS_WL_base_WEST getVariable ""BIS_WL_sectorSide"") != WEST || (BIS_WL_base_EAST getVariable ""BIS_WL_sectorSide"") != EAST"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "timeout_started">*/
+                                class timeout_started
+                                {
+                                        itemno = 14;
+                                        priority = 1.000000;
+                                        to="show_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_curSector getVariable [_x, -1]) >= 0} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "timeout_stopped">*/
+                                class timeout_stopped
+                                {
+                                        itemno = 16;
+                                        priority = 0.000000;
+                                        to="hide_timeout_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_curSector getVariable [_x, -1]) >= 0} == -1 && ((_curSector getVariable ""BIS_WL_sectorSide"") != side group player)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "hide_timeout_1">*/
+                class hide_timeout_1
+                {
+                        name = "hide_timeout_1";
+                        itemno = 17;
+                        init = /*%FSM<STATEINIT""">*/"[] call BIS_fnc_WLSeizingBarHandle;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "voting_reset">*/
+                                class voting_reset
+                                {
+                                        itemno = 25;
+                                        priority = 3.000000;
+                                        to="popup_msg";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"missionNamespace getVariable [_sectorVotingResetVarID, FALSE];"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_seized">*/
+                                class sector_seized
+                                {
+                                        itemno = 5;
+                                        priority = 3.000000;
+                                        to="hide_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_curSector getVariable ""BIS_WL_sectorSide"") == side group player && isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "game_over">*/
+                                class game_over
+                                {
+                                        itemno = 10;
+                                        priority = 2.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(BIS_WL_base_WEST getVariable ""BIS_WL_sectorSide"") != WEST || (BIS_WL_base_EAST getVariable ""BIS_WL_sectorSide"") != EAST"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "timeout_started">*/
+                                class timeout_started
+                                {
+                                        itemno = 14;
+                                        priority = 1.000000;
+                                        to="show_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_curSector getVariable [_x, -1]) >= 0} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "reset">*/
+                class reset
+                {
+                        name = "reset";
+                        itemno = 19;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "no_sector_select">*/
+                                class no_sector_select
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="initialize_sector";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"isNull (missionNamespace getVariable _currentSectorVarID) && BIS_WL_currentSelection == """""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "show_countdown">*/
+                class show_countdown
+                {
+                        name = "show_countdown";
+                        itemno = 24;
+                        init = /*%FSM<STATEINIT""">*/"[FALSE] spawn BIS_fnc_WLsectorSelectionStart;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_selected">*/
+                                class sector_selected
+                                {
+                                        itemno = 3;
+                                        priority = 1.000000;
+                                        to="disable_sector_s";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"!isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "interrupted">*/
+                                class interrupted
+                                {
+                                        itemno = 18;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"BIS_WL_resetVoting"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "popup_msg">*/
+                class popup_msg
+                {
+                        name = "popup_msg";
+                        itemno = 28;
+                        init = /*%FSM<STATEINIT""">*/"if !(isServer) then {" \n
+                         "	missionNamespace setVariable [_sectorVotingResetVarID, FALSE];" \n
+                         "};" \n
+                         """Reset"" call BIS_fnc_WLSoundMsg;" \n
+                         "" \n
+                         "_conqueredSectorsVarID = format [""BIS_WL_conqueredSectors_%1"", side group player];" \n
+                         "" \n
+                         "if !(_curSector in (missionNamespace getVariable _conqueredSectorsVarID)) then {" \n
+                         "	{_x setMarkerAlphaLocal 0.35} forEach (_curSector getVariable ""BIS_WL_sectorLockMrkrs"");" \n
+                         "};" \n
+                         "" \n
+                         "if (_barShown) then {" \n
+                         "	_barShown = FALSE;" \n
+                         "	[] call BIS_fnc_WLSeizingBarHandle;" \n
+                         "};" \n
+                         "" \n
+                         "[_curSector, ""seize"", ""delete""] call BIS_fnc_WLSectorTaskHandle;" \n
+                         "_trgZR = _curSector getVariable [""BIS_WL_sectorZR"", objNull];" \n
+                         "_trgZR setTriggerTimeout [60, 60, 60, TRUE];" \n
+                         "_trgZR spawn {" \n
+                         "	sleep 60;" \n
+                         "	_this setTriggerTimeout [20, 20, 20, TRUE];" \n
+                         "};" \n
+                         "" \n
+                         "_sectorVotingResetNameVarID spawn {" \n
+                         "	waitUntil {(missionNamespace getVariable [_this, """"]) != """"};" \n
+                         "	[toUpper format [localize ""STR_A3_WL_popup_voting_reset_user"", missionNamespace getVariable _this]] spawn BIS_fnc_WLSmoothText;" \n
+                         "	missionNamespace setVariable [_this, """"];" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "always">*/
+                                class always
+                                {
+                                        itemno = 29;
+                                        priority = 0.000000;
+                                        to="hide_timeout";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+                "terminate",
+        };
+};
+/*%FSM</COMPILE>*/

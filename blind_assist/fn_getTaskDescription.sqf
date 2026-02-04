@@ -3,7 +3,7 @@
  * Gets a formatted description of a task for speech output.
  *
  * Arguments:
- *   0: _task - Task object
+ *   0: _task - Task object OR Warlords array ["warlords", name, pos]
  *
  * Return Value:
  *   String - Formatted description: "Title, state, distance direction"
@@ -13,31 +13,73 @@
  *   // Returns: "Destroy the Radar, active, 450 meters northwest"
  */
 
-params [["_task", taskNull, [taskNull]]];
+params [["_task", taskNull, [taskNull, []]]];
 
-// Get task info using native commands on Task object
-private _desc = taskDescription _task;
-// taskDescription returns [description, title, marker] - get the title
-private _title = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
-if (_title == "") then { _title = str _task };
+// Handle Warlords objective (array format: ["type", name, pos])
+if (_task isEqualType []) then {
+    _task params ["_type", "_name", "_pos"];
 
-private _state = taskState _task;
-private _pos = taskDestination _task;
+    // Handle different Warlords entry types
+    switch (_type) do {
+        case "warlords_status": {
+            // Status message (no position)
+            _name
+        };
+        case "warlords_vote": {
+            // Voteable sector during voting phase
+            private _distance = round (BA_cursorPos distance2D _pos);
+            private _bearing = BA_cursorPos getDir _pos;
+            private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+            format ["VOTE: %1, %2 meters %3", _name, _distance, _compassDir]
+        };
+        case "warlords_attack": {
+            // Active attack target
+            private _distance = round (BA_cursorPos distance2D _pos);
+            private _bearing = BA_cursorPos getDir _pos;
+            private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+            format ["%1, %2 meters %3", _name, _distance, _compassDir]
+        };
+        case "warlords_sector": {
+            // Sector with ownership (FRIENDLY/ENEMY/NEUTRAL: name)
+            private _distance = round (BA_cursorPos distance2D _pos);
+            private _bearing = BA_cursorPos getDir _pos;
+            private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+            format ["%1, %2 meters %3", _name, _distance, _compassDir]
+        };
+        default {
+            // Legacy "warlords" type
+            private _distance = round (BA_cursorPos distance2D _pos);
+            private _bearing = BA_cursorPos getDir _pos;
+            private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+            format ["OBJECTIVE: %1, %2 meters %3", _name, _distance, _compassDir]
+        };
+    }
+} else {
+    // Standard task object handling
+    // Get task info using native commands on Task object
+    private _desc = taskDescription _task;
+    // taskDescription returns [description, title, marker] - get the title
+    private _title = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
+    if (_title == "") then { _title = str _task };
 
-// Format state for speech (use toUpper for case-insensitive matching)
-private _stateText = switch (toUpper _state) do {
-    case "CREATED": { "new" };
-    case "ASSIGNED": { "active" };
-    case "SUCCEEDED": { "completed" };
-    case "FAILED": { "failed" };
-    case "CANCELED": { "canceled" };
-    default { _state };
-};
+    private _state = taskState _task;
+    private _pos = taskDestination _task;
 
-// Distance and direction from cursor
-private _distance = round (BA_cursorPos distance2D _pos);
-private _bearing = BA_cursorPos getDir _pos;
-private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+    // Format state for speech (use toUpper for case-insensitive matching)
+    private _stateText = switch (toUpper _state) do {
+        case "CREATED": { "new" };
+        case "ASSIGNED": { "active" };
+        case "SUCCEEDED": { "completed" };
+        case "FAILED": { "failed" };
+        case "CANCELED": { "canceled" };
+        default { _state };
+    };
 
-// Format: "Destroy the Radar, active, 450 meters northwest"
-format ["%1, %2, %3 meters %4", _title, _stateText, _distance, _compassDir]
+    // Distance and direction from cursor
+    private _distance = round (BA_cursorPos distance2D _pos);
+    private _bearing = BA_cursorPos getDir _pos;
+    private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+
+    // Format: "Destroy the Radar, active, 450 meters northwest"
+    format ["%1, %2, %3 meters %4", _title, _stateText, _distance, _compassDir]
+}

@@ -29,12 +29,44 @@ private _locPos = [];
 private _name = "";
 
 if (BA_landmarksCategoryIndex == 5) then {
-    // It's a Task object
-    _locPos = taskDestination _selectedItem;
-    private _desc = taskDescription _selectedItem;
-    // taskDescription returns [desc, title, marker] - get the title
-    _name = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
-    if (_name == "") then { _name = str _selectedItem };
+    // Tasks category - could be Task object OR Warlords array
+    if (_selectedItem isEqualType []) then {
+        // Warlords entry: ["type", "name", [pos], sectorNum, canVote]
+        private _type = _selectedItem select 0;
+        _name = _selectedItem select 1;
+        _locPos = _selectedItem select 2;
+
+        // Skip status entries with no position
+        if (_locPos isEqualTo [0,0,0]) exitWith {
+            ["Cannot move to status item."] call BA_fnc_speak;
+        };
+
+        // Handle voting for sectors
+        if (_type == "warlords_sector" && {count _selectedItem >= 5}) then {
+            private _sectorObj = _selectedItem select 3;  // Sector object stored directly from BIS_WL_allSectors
+            private _canVote = _selectedItem select 4;
+
+            if (_canVote && {!isNull _sectorObj}) then {
+                // Cast the vote using the correct Warlords variable (found in fn_wlsectorselectionstart.sqf)
+                player setVariable ["BIS_WL_selectedSector", _sectorObj, true];
+                BIS_WL_currentSelection = "voted";
+                // Sector name is in bis_wl_sectortext variable
+                private _voteName = _sectorObj getVariable ["bis_wl_sectortext", "sector"];
+                diag_log format ["BA_VOTE: Voted for %1 (object: %2, type: %3)", _voteName, _sectorObj, typeOf _sectorObj];
+                _name = format ["VOTED: %1", _voteName];
+            } else {
+                if (isNull _sectorObj) then {
+                    diag_log "BA_VOTE: Cannot vote - sector object not available";
+                };
+            };
+        };
+    } else {
+        // Standard Task object
+        _locPos = taskDestination _selectedItem;
+        private _desc = taskDescription _selectedItem;
+        _name = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
+        if (_name == "") then { _name = str _selectedItem };
+    };
 } else {
     if (_selectedItem isEqualType "") then {
         // It's a marker name (string)

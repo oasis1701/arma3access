@@ -1,0 +1,452 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Sector Selection Handle (Server)">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-825.000000,25.000000,-775.000000,0.000000,"INIT"};
+item1[] = {"",7,210,-104.000000,-804.000000,-96.000000,-796.000000,0.000000,""};
+item2[] = {"run_timer",2,250,-75.000000,-750.000000,25.000000,-700.000000,0.000000,"run timer"};
+item3[] = {"timeout",6,250,-75.000000,-675.000000,25.000000,-625.000000,0.000000,"timeout"};
+item4[] = {"evaluate_sector",2,4346,-75.000000,-600.000000,25.000000,-550.000000,0.000000,"evaluate sector"};
+item5[] = {"sector_seized",4,218,-75.000000,-525.000000,25.000000,-475.000000,0.000000,"sector seized"};
+item6[] = {"",7,210,46.000000,-304.000000,54.000000,-296.000000,0.000000,""};
+item7[] = {"",7,210,46.000000,-729.000000,54.000000,-721.000000,0.000000,""};
+item8[] = {"update_vars",2,250,-75.000000,-450.000000,25.000000,-400.000000,0.000000,"update vars"};
+item9[] = {"at_least_one_vot",4,218,-75.000000,-325.000000,25.000000,-275.000000,0.000000,"at least" \n "one vote"};
+item10[] = {"",7,210,-104.000000,-254.000000,-96.000000,-246.000000,0.000000,""};
+item11[] = {"sector_compromis",4,218,-350.000000,-450.000000,-250.000000,-400.000000,0.000000,"sector" \n "compromised"};
+item12[] = {"reset",2,250,-350.000000,-375.000000,-250.000000,-325.000000,0.000000,"reset"};
+item13[] = {"",7,210,-303.999817,-254.000000,-296.000183,-246.000000,0.000000,""};
+item14[] = {"sector_null",4,218,-225.000000,-600.000000,-125.000000,-550.000000,0.000000,"sector" \n "null"};
+item15[] = {"loaded",4,218,75.000000,-825.000000,175.000000,-775.000000,1.000000,"loaded"};
+item16[] = {"process_sector",2,250,75.000000,-675.000000,175.000000,-625.000000,0.000000,"process" \n "sector"};
+item17[] = {"voting_reset",4,218,75.000000,-600.000000,175.000000,-550.000000,0.000000,"voting" \n "reset"};
+item18[] = {"reset_1",2,250,75.000000,-375.000000,175.000000,-325.000000,0.000000,"reset"};
+item19[] = {"",7,210,-179.000000,-354.000000,-171.000000,-346.000000,0.000000,""};
+item20[] = {"",7,210,-179.000000,-654.000000,-171.000000,-646.000000,0.000000,""};
+item21[] = {"",7,210,-304.000000,-729.000000,-296.000000,-721.000000,0.000000,""};
+item22[] = {"",7,210,-29.000000,-254.000000,-21.000000,-246.000000,0.000000,""};
+item23[] = {"",7,210,196.000000,-654.000000,204.000000,-646.000000,0.000000,""};
+item24[] = {"",7,210,196.000000,-504.000000,204.000000,-496.000000,0.000000,""};
+item25[] = {"",7,210,-154.000000,-354.000000,-146.000000,-346.000000,0.000000,""};
+item26[] = {"",7,210,-154.000000,-429.000000,-146.000000,-421.000000,0.000000,""};
+item27[] = {"",7,210,-154.000000,-429.000000,-145.999985,-421.000000,0.000000,""};
+item28[] = {"",7,210,121.000000,-254.000000,129.000000,-246.000000,0.000000,""};
+link0[] = {0,1};
+link1[] = {0,15};
+link2[] = {1,10};
+link3[] = {2,3};
+link4[] = {2,21};
+link5[] = {3,4};
+link6[] = {4,5};
+link7[] = {4,14};
+link8[] = {4,17};
+link9[] = {5,8};
+link10[] = {6,7};
+link11[] = {7,2};
+link12[] = {8,9};
+link13[] = {8,26};
+link14[] = {9,6};
+link15[] = {10,22};
+link16[] = {11,12};
+link17[] = {12,11};
+link18[] = {12,13};
+link19[] = {13,10};
+link20[] = {14,19};
+link21[] = {15,16};
+link22[] = {16,17};
+link23[] = {16,20};
+link24[] = {16,23};
+link25[] = {17,18};
+link26[] = {18,25};
+link27[] = {18,28};
+link28[] = {19,12};
+link29[] = {20,14};
+link30[] = {21,11};
+link31[] = {22,9};
+link32[] = {23,24};
+link33[] = {24,5};
+link34[] = {25,27};
+link35[] = {26,11};
+link36[] = {28,22};
+globals[] = {0.000000,0,0,0,0,640,480,1,15,6316128,1,-334.885498,238.835236,21.511902,-844.677063,665,1004,1};
+window[] = {2,-1,-1,-1,-1,845,1998,3212,78,3,683};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Sector Selection Handle (Server)";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"_currentSectorVarID = format [""BIS_WL_currentSector_%1"", _this];" \n
+                         "_leadingSectorVarID = format [""BIS_WL_leadingSector_%1"", _this];" \n
+                         "_conqueredSectorsVarID = format [""BIS_WL_conqueredSectors_%1"", _this];" \n
+                         "_selectionTimeVarID = format [""BIS_WL_selectionTime_%1"", _this];" \n
+                         "_ownedPrevVarID = format [""BIS_WL_lastSectorCnt_%1"", _this];" \n
+                         "_sectorSelectedTimestampVarID = format [""BIS_WL_sectorSelectedTimestamp_%1"", _this];" \n
+                         "_sectorVotingResetVarID = format [""BIS_WL_sectorVotingReset_%1"", _this];"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "loaded">*/
+                                class loaded
+                                {
+                                        itemno = 15;
+                                        priority = 1.000000;
+                                        to="process_sector";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"!isNull (missionNamespace getVariable _currentSectorVarID)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "at_least_one_vot">*/
+                                class at_least_one_vot
+                                {
+                                        itemno = 9;
+                                        priority = 0.000000;
+                                        to="run_timer";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"/*{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} count BIS_WL_allWarlords > 0*/" \n
+                                         "BIS_WL_allWarlords findIf" \n
+                                         "{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "run_timer">*/
+                class run_timer
+                {
+                        name = "run_timer";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"_t = (call BIS_fnc_WLSyncedTime) + BIS_WL_selectionTimeout;" \n
+                         "" \n
+                         "missionNamespace setVariable [_selectionTimeVarID, _t];" \n
+                         "publicVariable _selectionTimeVarID;" \n
+                         "" \n
+                         "_ownedPrev = missionNamespace getVariable _ownedPrevVarID;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_compromis">*/
+                                class sector_compromis
+                                {
+                                        itemno = 11;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_ownedPrev != (missionNamespace getVariable _ownedPrevVarID);"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "timeout">*/
+                                class timeout
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="evaluate_sector";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(call BIS_fnc_WLSyncedTime) > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "evaluate_sector">*/
+                class evaluate_sector
+                {
+                        name = "evaluate_sector";
+                        itemno = 4;
+                        init = /*%FSM<STATEINIT""">*/"missionNamespace setVariable [_currentSectorVarID, _this call BIS_fnc_WLmostVotedSector];" \n
+                         "missionNamespace setVariable [format [""BIS_WL_disconnectedVotes_%1"", _this], [], TRUE];" \n
+                         "_curSector = missionNamespace getVariable _currentSectorVarID;" \n
+                         "publicVariable _currentSectorVarID;" \n
+                         "" \n
+                         "[""%1 is now attacking %2"", _this, _curSector getVariable ""Name""] call BIS_fnc_WLdebug;" \n
+                         "" \n
+                         "if !(_curSector getVariable ""BIS_WL_handleServerRunning"") then {_curSector call BIS_fnc_WLsectorHandleServer};" \n
+                         "_curSector setVariable [""BIS_WL_sectorActivated"", TRUE, TRUE];" \n
+                         "BIS_WL_newlySelectedSector = _curSector;" \n
+                         "publicVariable ""BIS_WL_newlySelectedSector"";" \n
+                         "missionNamespace setVariable [_sectorSelectedTimestampVarID, (call BIS_fnc_WLSyncedTime), TRUE];" \n
+                         "" \n
+                         "if !(isDedicated) then {" \n
+                         "	if !(_curSector getVariable ""BIS_WL_handleClientRunning"") then {" \n
+                         "		_curSector call BIS_fnc_WLsectorHandle;" \n
+                         "		[_curSector, side group player] call BIS_fnc_WLsectorScanHandle;" \n
+                         "	};" \n
+                         "};" \n
+                         "" \n
+                         "if (BIS_WL_scanEnabled == 1) then {[_curSector, _this] spawn BIS_fnc_WLAISectorScan};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_null">*/
+                                class sector_null
+                                {
+                                        itemno = 14;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"isNull (missionNamespace getVariable _currentSectorVarID);"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "voting_reset">*/
+                                class voting_reset
+                                {
+                                        itemno = 17;
+                                        priority = 0.000000;
+                                        to="reset_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"missionNamespace getVariable [_sectorVotingResetVarID, FALSE];"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_seized">*/
+                                class sector_seized
+                                {
+                                        itemno = 5;
+                                        priority = 0.000000;
+                                        to="update_vars";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_curSector getVariable ""BIS_WL_sectorSide"") == _this"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "update_vars">*/
+                class update_vars
+                {
+                        name = "update_vars";
+                        itemno = 8;
+                        init = /*%FSM<STATEINIT""">*/"if !(_curSector in (missionNamespace getVariable _conqueredSectorsVarID)) then {" \n
+                         "	missionNamespace setVariable [_conqueredSectorsVarID, (missionNamespace getVariable _conqueredSectorsVarID) + [_curSector]];" \n
+                         "	_curSector setVariable [""BIS_WL_responseArr"", []];" \n
+                         "	publicVariable _conqueredSectorsVarID;" \n
+                         "};" \n
+                         "" \n
+                         "missionNamespace setVariable [_currentSectorVarID, objNull];" \n
+                         "publicVariable _currentSectorVarID;" \n
+                         "" \n
+                         "call BIS_fnc_WLUpdateAO;" \n
+                         "" \n
+                         "_ownedPrev = missionNamespace getVariable _ownedPrevVarID;" \n
+                         "" \n
+                         "if (BIS_WL_scanEnabled == 1) then {[_curSector, _this] spawn BIS_fnc_WLAISectorScan};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_compromis">*/
+                                class sector_compromis
+                                {
+                                        itemno = 11;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_ownedPrev != (missionNamespace getVariable _ownedPrevVarID);"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "at_least_one_vot">*/
+                                class at_least_one_vot
+                                {
+                                        itemno = 9;
+                                        priority = 0.000000;
+                                        to="run_timer";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"/*{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} count BIS_WL_allWarlords > 0*/" \n
+                                         "BIS_WL_allWarlords findIf" \n
+                                         "{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "reset">*/
+                class reset
+                {
+                        name = "reset";
+                        itemno = 12;
+                        init = /*%FSM<STATEINIT""">*/"BIS_WL_resetVoting = TRUE;" \n
+                         "publicVariable ""BIS_WL_resetVoting"";" \n
+                         "" \n
+                         "missionNamespace setVariable [format [""BIS_WL_disconnectedVotes_%1"", _this], [], TRUE];" \n
+                         "" \n
+                         "[""Sector selection voting reset for %1"", _this] call BIS_fnc_WLdebug;" \n
+                         "" \n
+                         "_ownedPrev = missionNamespace getVariable _ownedPrevVarID;" \n
+                         "missionNamespace setVariable [_selectionTimeVarID, -1];" \n
+                         "{" \n
+                         "	if (side _x == _this) then {_x setVariable [""BIS_WL_selectedSector"", objNull]};" \n
+                         "} forEach BIS_WL_allWarlords;" \n
+                         "" \n
+                         "[] spawn {" \n
+                         "	scriptName ""WLSectorSelectionHandle (voting reset check)"";" \n
+                         "	//if ({!isPlayer _x && alive _x} count BIS_WL_allWarlords > 0) then {" \n
+                         "	if (BIS_WL_allWarlords findIf {!isPlayer _x && alive _x} >= 0) then {" \n
+                         "		waitUntil {BIS_WL_AIVotingReset};" \n
+                         "	} else {" \n
+                         "		sleep 0.5;" \n
+                         "	};" \n
+                         "	BIS_WL_AIVotingReset = FALSE;" \n
+                         "	if (isDedicated) then {" \n
+                         "		BIS_WL_resetVoting = FALSE;" \n
+                         "	};" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "at_least_one_vot">*/
+                                class at_least_one_vot
+                                {
+                                        itemno = 9;
+                                        priority = 0.000000;
+                                        to="run_timer";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"/*{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} count BIS_WL_allWarlords > 0*/" \n
+                                         "BIS_WL_allWarlords findIf" \n
+                                         "{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_compromis">*/
+                                class sector_compromis
+                                {
+                                        itemno = 11;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_ownedPrev != (missionNamespace getVariable _ownedPrevVarID);"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "process_sector">*/
+                class process_sector
+                {
+                        name = "process_sector";
+                        itemno = 16;
+                        init = /*%FSM<STATEINIT""">*/"_curSector = missionNamespace getVariable _currentSectorVarID;" \n
+                         "publicVariable _currentSectorVarID;" \n
+                         "" \n
+                         "[""%1 is now attacking %2"", _this, _curSector getVariable ""Name""] call BIS_fnc_WLdebug;" \n
+                         "" \n
+                         "if !(_curSector getVariable ""BIS_WL_handleServerRunning"") then {_curSector call BIS_fnc_WLsectorHandleServer};" \n
+                         "_curSector setVariable [""BIS_WL_sectorActivated"", TRUE, TRUE];" \n
+                         "BIS_WL_newlySelectedSector = _curSector;" \n
+                         "publicVariable ""BIS_WL_newlySelectedSector"";" \n
+                         "" \n
+                         "if !(isDedicated) then {" \n
+                         "	if !(_curSector getVariable ""BIS_WL_handleClientRunning"") then {" \n
+                         "		_curSector call BIS_fnc_WLsectorHandle;" \n
+                         "		[_curSector, side group player] call BIS_fnc_WLsectorScanHandle;" \n
+                         "	};" \n
+                         "};" \n
+                         "" \n
+                         "if (BIS_WL_scanEnabled == 1) then {[_curSector, _this] spawn BIS_fnc_WLAISectorScan};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "sector_null">*/
+                                class sector_null
+                                {
+                                        itemno = 14;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"isNull (missionNamespace getVariable _currentSectorVarID);"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_seized">*/
+                                class sector_seized
+                                {
+                                        itemno = 5;
+                                        priority = 0.000000;
+                                        to="update_vars";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_curSector getVariable ""BIS_WL_sectorSide"") == _this"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "voting_reset">*/
+                                class voting_reset
+                                {
+                                        itemno = 17;
+                                        priority = 0.000000;
+                                        to="reset_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"missionNamespace getVariable [_sectorVotingResetVarID, FALSE];"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "reset_1">*/
+                class reset_1
+                {
+                        name = "reset_1";
+                        itemno = 18;
+                        init = /*%FSM<STATEINIT""">*/"_sectorVotingResetVarID spawn {" \n
+                         "	sleep 1;" \n
+                         "	missionNamespace setVariable [_this, FALSE];" \n
+                         "};" \n
+                         "" \n
+                         "" \n
+                         "missionNamespace setVariable [_currentSectorVarID, objNull];" \n
+                         "publicVariable _currentSectorVarID;" \n
+                         "" \n
+                         "call BIS_fnc_WLUpdateAO;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "at_least_one_vot">*/
+                                class at_least_one_vot
+                                {
+                                        itemno = 9;
+                                        priority = 0.000000;
+                                        to="run_timer";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"/*{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} count BIS_WL_allWarlords > 0*/" \n
+                                         "BIS_WL_allWarlords findIf" \n
+                                         "{" \n
+                                         "	side _x == _this && !isNull (_x getVariable ""BIS_WL_selectedSector"")" \n
+                                         "} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+        };
+};
+/*%FSM</COMPILE>*/

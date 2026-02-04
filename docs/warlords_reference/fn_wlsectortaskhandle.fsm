@@ -1,0 +1,327 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Sector Task Handle">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-750.000000,25.000000,-700.000000,0.000000,"INIT"};
+item1[] = {"no_task",4,218,-175.000000,-825.000000,-75.000000,-775.000000,2.000000,"no task"};
+item2[] = {"debug",1,250,-175.000000,-900.000000,-75.000000,-850.000000,0.000000,"debug"};
+item3[] = {"succeed",4,218,-75.000000,-675.000000,25.000000,-625.000000,0.000000,"succeed"};
+item4[] = {"process",2,250,-75.000000,-600.000000,25.000000,-550.000000,0.000000,"process"};
+item5[] = {"create",4,218,-175.000000,-675.000000,-75.000000,-625.000000,0.000000,"create"};
+item6[] = {"create",1,250,-175.000000,-600.000000,-75.000000,-550.000000,0.000000,"create"};
+item7[] = {"delete",4,218,125.000000,-675.000000,225.000000,-625.000000,0.000000,"delete"};
+item8[] = {"existing_task",4,218,-275.000000,-675.000000,-175.000000,-625.000000,1.000000,"existing task"};
+item9[] = {"reset",1,4346,-275.000000,-600.000000,-175.000000,-550.000000,0.000000,"reset"};
+item10[] = {"wrong_input",4,218,25.000000,-825.000000,125.000000,-775.000000,3.000000,"wrong input"};
+item11[] = {"debug_1",1,250,25.000000,-900.000000,125.000000,-850.000000,0.000000,"debug"};
+item12[] = {"delete",1,250,125.000000,-600.000000,215.000031,-550.000000,0.000000,"delete"};
+item13[] = {"fail",4,218,25.000000,-675.000000,125.000000,-625.000000,0.000000,"fail"};
+item14[] = {"process_1",2,250,25.000000,-600.000000,125.000000,-550.000000,0.000000,"process"};
+item15[] = {"timeout",6,250,25.000000,-525.000000,125.000000,-475.000000,0.000000,"timeout"};
+item16[] = {"delete_1",1,250,25.000000,-450.000000,125.000000,-400.000000,0.000000,"delete"};
+link0[] = {0,1};
+link1[] = {0,3};
+link2[] = {0,5};
+link3[] = {0,7};
+link4[] = {0,8};
+link5[] = {0,10};
+link6[] = {0,13};
+link7[] = {1,2};
+link8[] = {3,4};
+link9[] = {4,15};
+link10[] = {5,6};
+link11[] = {7,12};
+link12[] = {8,9};
+link13[] = {10,11};
+link14[] = {13,14};
+link15[] = {14,15};
+link16[] = {15,16};
+globals[] = {0.000000,0,0,0,0,640,480,1,249,6316128,1,-279.218994,280.550415,-204.765472,-958.137207,1074,1004,1};
+window[] = {2,-1,-1,-1,-1,975,208,1422,208,3,1092};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Sector Task Handle";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"private [""_sector"", ""_type"", ""_action"", ""_sectorID"", ""_sectorName"", ""_taskID"", ""_title"", ""_wp""];" \n
+                         "" \n
+                         "_sector = _this # 0;" \n
+                         "_type = _this # 1;" \n
+                         "_action = _this # 2;" \n
+                         "" \n
+                         "_sectorID = BIS_WL_sectors find _sector;" \n
+                         "_sectorName = _sector getVariable ""Name"";" \n
+                         "" \n
+                         "_taskID = """";" \n
+                         "_title = """";" \n
+                         "" \n
+                         "switch (_type) do {" \n
+                         "	case ""seize"": {_title = localize ""STR_A3_WL_task_seize_title""; _taskID = format [""BIS_WL_seize_%2_%1"", _sectorID, name player]};" \n
+                         "	case ""reclaim"": {_title = localize ""STR_A3_WL_task_reclaim_title""; _taskID = format [""BIS_WL_%2_reclaim_%1"", _sectorID, name player]};" \n
+                         "	case ""defend"": {_title = localize ""STR_A3_WL_task_defend_title""; _taskID = format [""BIS_WL_%2_defend_%1"", _sectorID, name player]};" \n
+                         "};" \n
+                         "" \n
+                         "_wp = toUpper _title;" \n
+                         "" \n
+                         "_t = time + 60;" \n
+                         "" \n
+                         "_setCurrent = FALSE;" \n
+                         "" \n
+                         "if (_type == ""seize"") then {" \n
+                         "	if (side group player == WEST) then {" \n
+                         "		if (_sector != BIS_WL_base_WEST) then {" \n
+                         "			_setCurrent = TRUE;" \n
+                         "		};" \n
+                         "	} else {" \n
+                         "		if (_sector != BIS_WL_base_EAST) then {" \n
+                         "			_setCurrent = TRUE;" \n
+                         "		};" \n
+                         "	};" \n
+                         "};" \n
+                         "" \n
+                         "_currentTasks = player getVariable [""BIS_fnc_setTaskLocal_tasks"", []];"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "wrong_input">*/
+                                class wrong_input
+                                {
+                                        itemno = 10;
+                                        priority = 3.000000;
+                                        to="debug_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"!(_type in [""seize"", ""reclaim"", ""defend""]) || !(_action in [""create"", ""succeed"", ""fail"", ""delete""])"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no_task">*/
+                                class no_task
+                                {
+                                        itemno = 1;
+                                        priority = 2.000000;
+                                        to="debug";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action != ""create"" && !(_taskID call BIS_fnc_taskExists)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "existing_task">*/
+                                class existing_task
+                                {
+                                        itemno = 8;
+                                        priority = 1.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action == ""create"" && (_taskID in _currentTasks)"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "delete">*/
+                                class delete
+                                {
+                                        itemno = 7;
+                                        priority = 0.000000;
+                                        to="delete";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action == ""delete"""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "create">*/
+                                class create
+                                {
+                                        itemno = 5;
+                                        priority = 0.000000;
+                                        to="create";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action == ""create"""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "fail">*/
+                                class fail
+                                {
+                                        itemno = 13;
+                                        priority = 0.000000;
+                                        to="process_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action == ""fail"""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "succeed">*/
+                                class succeed
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="process";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_action == ""succeed"""/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "debug">*/
+                class debug
+                {
+                        name = "debug";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"[""Error: Task %1 does not exist for %2!"", _taskID, name player] call BIS_fnc_WLdebug;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "process">*/
+                class process
+                {
+                        name = "process";
+                        itemno = 4;
+                        init = /*%FSM<STATEINIT""">*/"[_taskID, ""Succeeded"", FALSE] call BIS_fnc_taskSetState;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "timeout">*/
+                                class timeout
+                                {
+                                        itemno = 15;
+                                        priority = 0.000000;
+                                        to="delete_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "create">*/
+                class create
+                {
+                        name = "create";
+                        itemno = 6;
+                        init = /*%FSM<STATEINIT""">*/"_yes = localize ""STR_lib_info_yes"";" \n
+                         "_no = localize ""STR_lib_info_no"";" \n
+                         "" \n
+                         "_taskTextLong = switch (_type) do {" \n
+                         "	case ""defend"": {localize ""STR_A3_WL_task_defend_text""};" \n
+                         "	default {(format [localize ""STR_A3_WL_task_seize_text"", _sectorName]) + (format [""<br/><br/>%6%10: %2<br/>%7%10: %3<br/>%8%10: %4<br/>%9%10: %5"", _sectorName, (_sector getVariable ""BIS_WL_value"") * BIS_WL_CPIncomeMult, if (""A"" in (_sector getVariable ""BIS_WL_sectorSpecial"")) then {_yes} else {_no}, if (""H"" in (_sector getVariable ""BIS_WL_sectorSpecial"")) then {_yes} else {_no}, if (""W"" in (_sector getVariable ""BIS_WL_sectorSpecial"")) then {_yes} else {_no}, localize ""STR_A3_WL_param28_title"", localize ""STR_A3_WL_param32_title"", localize ""STR_A3_WL_module_service_helipad"", localize ""STR_A3_WL_param30_title"", if (toLower language == ""french"") then {"" ""} else {""""}])};" \n
+                         "};" \n
+                         "" \n
+                         "[" \n
+                         "	player," \n
+                         "	_taskID," \n
+                         "	[" \n
+                         "		_taskTextLong," \n
+                         "		format [_title, _sectorName]," \n
+                         "		""""" \n
+                         "	]," \n
+                         "	nil," \n
+                         "	_setCurrent," \n
+                         "	nil," \n
+                         "	FALSE" \n
+                         "] call BIS_fnc_taskCreate;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "reset">*/
+                class reset
+                {
+                        name = "reset";
+                        itemno = 9;
+                        init = /*%FSM<STATEINIT""">*/"[_taskID, ""Created"", FALSE] call BIS_fnc_taskSetState;" \n
+                         "" \n
+                         "[_taskID, FALSE] call BIS_fnc_taskSetCurrent;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "debug_1">*/
+                class debug_1
+                {
+                        name = "debug_1";
+                        itemno = 11;
+                        init = /*%FSM<STATEINIT""">*/"[""Error: Wrong task input! %1"", _this] call BIS_fnc_WLdebug;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "delete">*/
+                class delete
+                {
+                        name = "delete";
+                        itemno = 12;
+                        init = /*%FSM<STATEINIT""">*/"[_taskID] call BIS_fnc_deleteTask;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "process_1">*/
+                class process_1
+                {
+                        name = "process_1";
+                        itemno = 14;
+                        init = /*%FSM<STATEINIT""">*/"[_taskID, ""Failed"", FALSE] call BIS_fnc_taskSetState;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "timeout">*/
+                                class timeout
+                                {
+                                        itemno = 15;
+                                        priority = 0.000000;
+                                        to="delete_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "delete_1">*/
+                class delete_1
+                {
+                        name = "delete_1";
+                        itemno = 16;
+                        init = /*%FSM<STATEINIT""">*/"if (_taskID call BIS_fnc_taskExists) then {" \n
+                         "	if (_taskID call BIS_fnc_taskCompleted) then {" \n
+                         "		[_taskID] call BIS_fnc_deleteTask;" \n
+                         "	};" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+                "debug",
+                "create",
+                "reset",
+                "debug_1",
+                "delete",
+                "delete_1",
+        };
+};
+/*%FSM</COMPILE>*/

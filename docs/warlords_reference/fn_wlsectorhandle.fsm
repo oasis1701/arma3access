@@ -1,0 +1,606 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Sector Handle">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-900.000000,25.000000,-850.000000,0.000000,"INIT"};
+item1[] = {"changed",4,218,-75.000000,-175.000000,25.000000,-125.000000,0.000000,"changed"};
+item2[] = {"update",2,250,-75.000000,-100.000000,25.000000,-50.000000,0.000000,"update"};
+item3[] = {"in_conflict",4,218,-75.000000,-325.000000,25.000000,-275.000000,0.000000,"in conflict"};
+item4[] = {"text",2,250,-75.000000,-250.000000,25.000000,-200.000000,0.000000,"text"};
+item5[] = {"",7,210,45.999985,-79.000000,54.000015,-71.000000,0.000000,""};
+item6[] = {"",7,210,45.999985,-304.000031,54.000015,-296.000000,0.000000,""};
+item7[] = {"",7,210,45.999985,-154.000000,54.000015,-146.000000,0.000000,""};
+item8[] = {"nothing",2,250,75.000000,-400.000000,175.000000,-350.000000,0.000000,"nothing"};
+item9[] = {"",7,210,-104.000000,-429.000000,-96.000000,-421.000000,0.000000,""};
+item10[] = {"reclaiming",4,218,75.000000,-250.000000,175.000000,-200.000000,1.000000,"reclaiming"};
+item11[] = {"",7,210,-104.000000,-154.000000,-96.000008,-146.000000,0.000000,""};
+item12[] = {"",7,210,121.000023,-79.000000,128.999985,-71.000000,0.000000,""};
+item13[] = {"show_countdown",2,250,200.000000,-250.000000,300.000000,-200.000000,0.000000,"show countdown"};
+item14[] = {"always",8,218,325.000000,-250.000000,425.000000,-200.000000,0.000000,"always"};
+item15[] = {"wait",2,250,450.000000,-250.000000,550.000000,-200.000000,0.000000,"wait"};
+item16[] = {"",7,210,496.000000,-154.000000,504.000000,-146.000000,0.000000,""};
+item17[] = {"",7,210,496.000000,-304.000031,504.000000,-296.000000,0.000000,""};
+item18[] = {"",7,210,496.000000,-79.000000,504.000000,-71.000000,0.000000,""};
+item19[] = {"JIP_",2,250,-75.000000,-600.000000,25.000000,-550.000000,0.000000,"JIP?"};
+item20[] = {"nothing_1",2,250,-200.000000,-675.000000,-100.000000,-625.000000,0.000000,"nothing"};
+item21[] = {"vulnerable",4,218,-200.000000,-600.000000,-100.000000,-550.000000,0.000000,"vulnerable"};
+item22[] = {"warn",2,250,-200.000000,-525.000000,-100.000000,-475.000000,0.000000,"warn"};
+item23[] = {"always",8,218,-75.000000,-825.000000,25.000000,-775.000000,0.000000,"always"};
+item24[] = {"my_base_",2,250,-75.000000,-750.000000,25.000000,-700.000000,0.000000,"my base?"};
+item25[] = {"yes",4,218,-200.000000,-750.000000,-100.000000,-700.000000,1.000000,"yes"};
+item26[] = {"no",4,218,-75.000000,-675.000000,25.000000,-625.000000,0.000000,"no"};
+item27[] = {"yes",4,218,75.000000,-600.000000,175.000000,-550.000000,1.000000,"yes"};
+item28[] = {"no",4,218,-75.000000,-525.000000,25.000000,-475.000000,0.000000,"no"};
+item29[] = {"nothing_2",2,250,-75.000000,-450.000000,25.000000,-400.000000,0.000000,"nothing"};
+item30[] = {"",7,210,-104.000000,-379.000000,-96.000000,-371.000000,0.000000,""};
+item31[] = {"selected_by_other",4,218,-225.000000,-250.000000,-125.000000,-200.000000,0.000000,"selected by" \n "other side"};
+item32[] = {"safe",4,218,-325.000000,-525.000000,-225.000000,-475.000000,0.000000,"safe"};
+item33[] = {"reset",2,4346,-325.000000,-600.000000,-225.000000,-550.000000,0.000000,"reset"};
+link0[] = {0,23};
+link1[] = {1,2};
+link2[] = {2,5};
+link3[] = {3,4};
+link4[] = {4,1};
+link5[] = {4,10};
+link6[] = {4,31};
+link7[] = {5,7};
+link8[] = {5,12};
+link9[] = {6,3};
+link10[] = {7,1};
+link11[] = {7,6};
+link12[] = {8,6};
+link13[] = {8,10};
+link14[] = {8,30};
+link15[] = {9,30};
+link16[] = {10,13};
+link17[] = {11,1};
+link18[] = {12,10};
+link19[] = {13,10};
+link20[] = {13,14};
+link21[] = {14,15};
+link22[] = {15,16};
+link23[] = {15,17};
+link24[] = {16,7};
+link25[] = {16,18};
+link26[] = {17,6};
+link27[] = {18,12};
+link28[] = {19,27};
+link29[] = {19,28};
+link30[] = {20,21};
+link31[] = {21,22};
+link32[] = {22,32};
+link33[] = {23,24};
+link34[] = {24,25};
+link35[] = {24,26};
+link36[] = {25,20};
+link37[] = {26,19};
+link38[] = {27,8};
+link39[] = {28,29};
+link40[] = {29,3};
+link41[] = {29,9};
+link42[] = {30,11};
+link43[] = {31,4};
+link44[] = {32,33};
+link45[] = {33,21};
+globals[] = {0.000000,0,0,0,0,640,480,1,271,6316128,1,-490.643921,146.393921,-18.931763,-917.226685,712,1004,1};
+window[] = {2,-1,-1,-1,-1,1001,234,1448,234,3,730};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Sector Handle";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"_oldSide = _this getVariable ""BIS_WL_sectorSide"";" \n
+                         "_conqueredSectorsVarID = format [""BIS_WL_conqueredSectors_%1"", side group player];" \n
+                         "_currentSectorVarID = format [""BIS_WL_currentSector_%1"", side group player];" \n
+                         "_tmoutVarID =  format [""BIS_WL_timeoutCur_%1"", side group player];" \n
+                         "_myBase = BIS_WL_base_EAST;" \n
+                         "if (side group player == WEST) then {_myBase = BIS_WL_base_WEST};" \n
+                         "_selectedBy = CIVILIAN;" \n
+                         "_sameTarget = FALSE;" \n
+                         "_enemySide = if (side group player == WEST) then {EAST} else {WEST};" \n
+                         "" \n
+                         "_t = time + 3;" \n
+                         "" \n
+                         "_tReclaim = time;" \n
+                         "_uiTick = time;" \n
+                         "" \n
+                         "_shownBar = FALSE;" \n
+                         "" \n
+                         "_shownSel = FALSE;" \n
+                         "_shownSelEnemy = FALSE;" \n
+                         "" \n
+                         "_this setVariable [""BIS_WL_handleClientRunning"", TRUE];" \n
+                         "" \n
+                         "[""Sector FSM start [%1] [%2]"", _this getVariable ""Name"", name player] call BIS_fnc_WLdebug;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "always">*/
+                                class always
+                                {
+                                        itemno = 23;
+                                        priority = 0.000000;
+                                        to="my_base_";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "update">*/
+                class update
+                {
+                        name = "update";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"[_this, _oldSide] call BIS_fnc_WLsectorUpdate;" \n
+                         "" \n
+                         "_oldSide = _this getVariable ""BIS_WL_sectorSide"";" \n
+                         "" \n
+                         "if (isServer) then {" \n
+                         "	[""%1 seized by %2"", _this getVariable ""Name"", _oldSide] call BIS_fnc_WLdebug;" \n
+                         "};" \n
+                         "" \n
+                         "_t = time + 3;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "reclaiming">*/
+                                class reclaiming
+                                {
+                                        itemno = 10;
+                                        priority = 1.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//if ({(_this getVariable [_x, -1]) >= 0} count [""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] > 0) then {" \n
+                                         "if ([""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_this getVariable [_x, -1]) >= 0} >= 0) then {" \n
+                                         "	([player, _this, TRUE] call BIS_fnc_WLInSectorArea) && (_this in (missionNamespace getVariable _conqueredSectorsVarID))" \n
+                                         "} else {" \n
+                                         "	FALSE" \n
+                                         "};"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "in_conflict">*/
+                                class in_conflict
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="text";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this == BIS_WL_currentSector_EAST || _this == BIS_WL_currentSector_WEST) && time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "changed">*/
+                                class changed
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="update";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this getVariable ""BIS_WL_sectorSide"") != _oldSide"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "text">*/
+                class text
+                {
+                        name = "text";
+                        itemno = 4;
+                        init = /*%FSM<STATEINIT""">*/"_selectedBy = CIVILIAN;" \n
+                         "if (_this == BIS_WL_currentSector_EAST) then {_selectedBy = EAST};" \n
+                         "if (_this == BIS_WL_currentSector_WEST) then {_selectedBy = WEST};" \n
+                         "" \n
+                         "if (_this == (missionNamespace getVariable (""BIS_WL_currentSector_"" + str side group player)) && !_shownSel) then {" \n
+                         "	_shownSel = TRUE;" \n
+                         "} else {" \n
+                         "	if (((_this getVariable ""BIS_WL_sectorSide"") == side group player || _this == (missionNamespace getVariable (""BIS_WL_currentSector_"" + str side group player))) && _this == (missionNamespace getVariable format [""BIS_WL_currentSector_%1"", _enemySide]) && !_shownSelEnemy) then {" \n
+                         "		_shownSelEnemy = TRUE;" \n
+                         "		[toUpper format [localize ""STR_A3_WL_incoming"", _this getVariable ""Name"", if (side group player == EAST) then {WEST call BIS_fnc_WLSideToFaction} else {EAST call BIS_fnc_WLSideToFaction}]] spawn BIS_fnc_WLSmoothText;" \n
+                         "		""Incoming"" call BIS_fnc_WLSoundMsg;" \n
+                         "	};" \n
+                         "};" \n
+                         "" \n
+                         "if (_this == BIS_WL_currentSector_EAST && _this == BIS_WL_currentSector_WEST) then {_sameTarget = TRUE};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "reclaiming">*/
+                                class reclaiming
+                                {
+                                        itemno = 10;
+                                        priority = 1.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//if ({(_this getVariable [_x, -1]) >= 0} count [""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] > 0) then {" \n
+                                         "if ([""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_this getVariable [_x, -1]) >= 0} >= 0) then {" \n
+                                         "	([player, _this, TRUE] call BIS_fnc_WLInSectorArea) && (_this in (missionNamespace getVariable _conqueredSectorsVarID))" \n
+                                         "} else {" \n
+                                         "	FALSE" \n
+                                         "};"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "selected_by_other">*/
+                                class selected_by_other
+                                {
+                                        itemno = 31;
+                                        priority = 0.000000;
+                                        to="text";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"!_sameTarget && (if (_selectedBy == WEST) then {_this == BIS_WL_currentSector_EAST} else {_this == BIS_WL_currentSector_WEST})"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "changed">*/
+                                class changed
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="update";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this getVariable ""BIS_WL_sectorSide"") != _oldSide"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "nothing">*/
+                class nothing
+                {
+                        name = "nothing";
+                        itemno = 8;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "reclaiming">*/
+                                class reclaiming
+                                {
+                                        itemno = 10;
+                                        priority = 1.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//if ({(_this getVariable [_x, -1]) >= 0} count [""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] > 0) then {" \n
+                                         "if ([""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_this getVariable [_x, -1]) >= 0} >= 0) then {" \n
+                                         "	([player, _this, TRUE] call BIS_fnc_WLInSectorArea) && (_this in (missionNamespace getVariable _conqueredSectorsVarID))" \n
+                                         "} else {" \n
+                                         "	FALSE" \n
+                                         "};"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "changed">*/
+                                class changed
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="update";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this getVariable ""BIS_WL_sectorSide"") != _oldSide"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "in_conflict">*/
+                                class in_conflict
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="text";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this == BIS_WL_currentSector_EAST || _this == BIS_WL_currentSector_WEST) && time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "show_countdown">*/
+                class show_countdown
+                {
+                        name = "show_countdown";
+                        itemno = 13;
+                        init = /*%FSM<STATEINIT""">*/"if (time > _uiTick + 0.5) then {" \n
+                         "	[_this, 2] call BIS_fnc_WLSeizingBarHandle;" \n
+                         "	_uiTick = time;" \n
+                         "};" \n
+                         "" \n
+                         "_tReclaim = time;" \n
+                         "" \n
+                         "_shownBar = TRUE;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "reclaiming">*/
+                                class reclaiming
+                                {
+                                        itemno = 10;
+                                        priority = 1.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//if ({(_this getVariable [_x, -1]) >= 0} count [""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] > 0) then {" \n
+                                         "if ([""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_this getVariable [_x, -1]) >= 0} >= 0) then {" \n
+                                         "	([player, _this, TRUE] call BIS_fnc_WLInSectorArea) && (_this in (missionNamespace getVariable _conqueredSectorsVarID))" \n
+                                         "} else {" \n
+                                         "	FALSE" \n
+                                         "};"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "always">*/
+                                class always
+                                {
+                                        itemno = 14;
+                                        priority = 0.000000;
+                                        to="wait";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "wait">*/
+                class wait
+                {
+                        name = "wait";
+                        itemno = 15;
+                        init = /*%FSM<STATEINIT""">*/"if (_shownBar) then {" \n
+                         "	_shownBar = FALSE;" \n
+                         "	[] call BIS_fnc_WLSeizingBarHandle;" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "reclaiming">*/
+                                class reclaiming
+                                {
+                                        itemno = 10;
+                                        priority = 1.000000;
+                                        to="show_countdown";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//if ({(_this getVariable [_x, -1]) >= 0} count [""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] > 0) then {" \n
+                                         "if ([""BIS_WL_timeoutCur_WEST"", ""BIS_WL_timeoutCur_EAST"", ""BIS_WL_timeoutCur_GUER""] findIf {(_this getVariable [_x, -1]) >= 0} >= 0) then {" \n
+                                         "	([player, _this, TRUE] call BIS_fnc_WLInSectorArea) && (_this in (missionNamespace getVariable _conqueredSectorsVarID))" \n
+                                         "} else {" \n
+                                         "	FALSE" \n
+                                         "};"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "in_conflict">*/
+                                class in_conflict
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="text";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this == BIS_WL_currentSector_EAST || _this == BIS_WL_currentSector_WEST) && time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "changed">*/
+                                class changed
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="update";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this getVariable ""BIS_WL_sectorSide"") != _oldSide"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "JIP_">*/
+                class JIP_
+                {
+                        name = "JIP_";
+                        itemno = 19;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "yes">*/
+                                class yes
+                                {
+                                        itemno = 27;
+                                        priority = 1.000000;
+                                        to="nothing";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[] call BIS_fnc_didJip"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no">*/
+                                class no
+                                {
+                                        itemno = 28;
+                                        priority = 0.000000;
+                                        to="nothing_2";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "nothing_1">*/
+                class nothing_1
+                {
+                        name = "nothing_1";
+                        itemno = 20;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "vulnerable">*/
+                                class vulnerable
+                                {
+                                        itemno = 21;
+                                        priority = 0.000000;
+                                        to="warn";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//{_x == _this} count [BIS_WL_currentSector_EAST, BIS_WL_currentSector_WEST] > 0" \n
+                                         "[BIS_WL_currentSector_EAST, BIS_WL_currentSector_WEST] findIf {_x == _this} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "warn">*/
+                class warn
+                {
+                        name = "warn";
+                        itemno = 22;
+                        init = /*%FSM<STATEINIT""">*/"[toUpper format [localize ""STR_A3_WL_incoming"", _this getVariable ""Name"", if (side group player == EAST) then {WEST call BIS_fnc_WLSideToFaction} else {EAST call BIS_fnc_WLSideToFaction}]] spawn BIS_fnc_WLSmoothText;" \n
+                         "[toUpper localize ""STR_A3_WL_popup_base_vulnerable""] spawn BIS_fnc_WLSmoothText;" \n
+                         "playSound ""air_raid"";" \n
+                         "" \n
+                         "_null = [] spawn {" \n
+                         "	scriptName ""WLSectorHandle (base attack warn)"";" \n
+                         "	_t = time + 30;" \n
+                         "	_i = 0;" \n
+                         "" \n
+                         "	while {time < _t} do {" \n
+                         "		if (BIS_WL_FTEnabled in [1, 2, 4]) then {[BIS_WL_hintPrio_baseVulnerable, format [toUpper localize ""STR_A3_WL_info_base_vulnerable"", ""<br/>"", ceil (_t - time)], -1] spawn BIS_fnc_WLshowInfo};" \n
+                         "		sleep 1;" \n
+                         "	};" \n
+                         "" \n
+                         "	if (BIS_WL_FTEnabled in [1, 2, 4]) then {[BIS_WL_hintPrio_baseVulnerable, format [toUpper localize ""STR_A3_WL_info_base_vulnerable2"", ""<br/>""], 30] spawn BIS_fnc_WLshowInfo};" \n
+                         "	playSound ""AddItemFailed"";" \n
+                         "	BIS_WL_baseFTDisabled = TRUE;" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "safe">*/
+                                class safe
+                                {
+                                        itemno = 32;
+                                        priority = 0.000000;
+                                        to="reset";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"[BIS_WL_currentSector_EAST, BIS_WL_currentSector_WEST] findIf {_x == _this} < 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "my_base_">*/
+                class my_base_
+                {
+                        name = "my_base_";
+                        itemno = 24;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "yes">*/
+                                class yes
+                                {
+                                        itemno = 25;
+                                        priority = 1.000000;
+                                        to="nothing_1";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"_this == _myBase"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no">*/
+                                class no
+                                {
+                                        itemno = 26;
+                                        priority = 0.000000;
+                                        to="JIP_";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "nothing_2">*/
+                class nothing_2
+                {
+                        name = "nothing_2";
+                        itemno = 29;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "changed">*/
+                                class changed
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="update";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this getVariable ""BIS_WL_sectorSide"") != _oldSide"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "in_conflict">*/
+                                class in_conflict
+                                {
+                                        itemno = 3;
+                                        priority = 0.000000;
+                                        to="text";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_this == BIS_WL_currentSector_EAST || _this == BIS_WL_currentSector_WEST) && time > _t"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "reset">*/
+                class reset
+                {
+                        name = "reset";
+                        itemno = 33;
+                        init = /*%FSM<STATEINIT""">*/"if (BIS_WL_FTEnabled in [1, 2, 4]) then {[BIS_WL_hintPrio_baseVulnerable, format [toUpper localize ""STR_A3_WL_popup_base_safe"", ""<br/>""], 30] spawn BIS_fnc_WLshowInfo};" \n
+                         "" \n
+                         "BIS_WL_baseFTDisabled = FALSE;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "vulnerable">*/
+                                class vulnerable
+                                {
+                                        itemno = 21;
+                                        priority = 0.000000;
+                                        to="warn";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"//{_x == _this} count [BIS_WL_currentSector_EAST, BIS_WL_currentSector_WEST] > 0" \n
+                                         "[BIS_WL_currentSector_EAST, BIS_WL_currentSector_WEST] findIf {_x == _this} >= 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+        };
+};
+/*%FSM</COMPILE>*/

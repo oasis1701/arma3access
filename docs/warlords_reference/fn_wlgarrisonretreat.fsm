@@ -1,0 +1,185 @@
+/*%FSM<COMPILE "C:\Program Files (x86)\Steam\steamapps\common\Arma 3 Tools\FSMEditor\scriptedFSM.cfg, WL: Garrison Retreat">*/
+/*%FSM<HEAD>*/
+/*
+item0[] = {"INIT",0,250,-75.000000,-925.000000,25.000000,-875.000000,0.000000,"INIT"};
+item1[] = {"sector_lost",4,218,-75.000000,-850.000000,25.000000,-800.000000,0.000000,"sector lost"};
+item2[] = {"retreat_to_another",2,4346,-200.000000,-700.000000,-100.000000,-650.000000,0.000000,"retreat" \n "to another sector"};
+item3[] = {"any_sectors_available",2,250,-75.000000,-775.000000,25.000000,-725.000000,0.000000,"any sectors" \n "available?"};
+item4[] = {"yes",4,218,-200.000000,-775.000000,-100.000000,-725.000000,1.000000,"yes"};
+item5[] = {"no",4,218,50.000000,-775.000000,150.000000,-725.000000,0.000000,"no"};
+item6[] = {"terminate",1,250,50.000000,-700.000000,150.000000,-650.000000,0.000000,"terminate"};
+item7[] = {"all_dead",4,218,50.000000,-925.000000,150.000000,-875.000000,0.000000,"all" \n "dead"};
+item8[] = {"",7,210,171.000000,-904.000000,179.000000,-896.000000,0.000000,""};
+item9[] = {"",7,210,171.000000,-679.000000,179.000000,-671.000000,0.000000,""};
+item10[] = {"",7,210,-229.000000,-679.000000,-221.000000,-671.000000,0.000000,""};
+item11[] = {"",7,210,-229.000000,-829.000000,-220.999985,-821.000000,0.000000,""};
+item12[] = {"",7,210,-229.000000,-954.000000,-221.000000,-946.000000,0.000000,""};
+item13[] = {"",7,210,96.000000,-954.000000,104.000000,-946.000000,0.000000,""};
+link0[] = {0,1};
+link1[] = {0,7};
+link2[] = {1,3};
+link3[] = {2,10};
+link4[] = {3,4};
+link5[] = {3,5};
+link6[] = {4,2};
+link7[] = {5,6};
+link8[] = {7,8};
+link9[] = {8,9};
+link10[] = {9,6};
+link11[] = {10,11};
+link12[] = {11,1};
+link13[] = {11,12};
+link14[] = {12,13};
+link15[] = {13,7};
+globals[] = {0.000000,0,0,0,0,640,480,1,240,6316128,1,-315.047760,214.708344,-392.128845,-1020.080627,847,1004,1};
+window[] = {2,-1,-1,-1,-1,793,26,1240,26,3,865};
+*//*%FSM</HEAD>*/
+class FSM
+{
+        fsmName = "WL: Garrison Retreat";
+        class States
+        {
+                /*%FSM<STATE "INIT">*/
+                class INIT
+                {
+                        name = "INIT";
+                        itemno = 0;
+                        init = /*%FSM<STATEINIT""">*/"params [""_grp"", ""_home""];" \n
+                         "" \n
+                         "_side = _home getVariable ""BIS_WL_sectorSide"";"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "all_dead">*/
+                                class all_dead
+                                {
+                                        itemno = 7;
+                                        priority = 0.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"{alive _x} count units _grp == 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_lost">*/
+                                class sector_lost
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="any_sectors_available";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_home getVariable ""BIS_WL_sectorSide"") != _side"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "retreat_to_another">*/
+                class retreat_to_another
+                {
+                        name = "retreat_to_another";
+                        itemno = 2;
+                        init = /*%FSM<STATEINIT""">*/"_nearest = _sectorsPool # 0;" \n
+                         "" \n
+                         "{" \n
+                         "	if ((_x distance2D _home) < (_nearest distance2D _home)) then {_nearest = _x};" \n
+                         "} forEach _sectorsPool;" \n
+                         "" \n
+                         "_home = _nearest;" \n
+                         "" \n
+                         "_wp = _grp addWaypoint [position _home, (_home getVariable ""Size"") / 2];" \n
+                         "_wp setWaypointSpeed ""FULL"";" \n
+                         "" \n
+                         "_wp2 = _grp addWaypoint [position _home, (_home getVariable ""Size"") / 2];" \n
+                         "_wp2 setWaypointType ""GUARD"";" \n
+                         "" \n
+                         "_grp setCurrentWaypoint _wp;" \n
+                         "" \n
+                         "[""%1 is retreating to %2"", _grp, _home getVariable ""Name""] call BIS_fnc_WLdebug;"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "all_dead">*/
+                                class all_dead
+                                {
+                                        itemno = 7;
+                                        priority = 0.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"{alive _x} count units _grp == 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "sector_lost">*/
+                                class sector_lost
+                                {
+                                        itemno = 1;
+                                        priority = 0.000000;
+                                        to="any_sectors_available";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_home getVariable ""BIS_WL_sectorSide"") != _side"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "any_sectors_available">*/
+                class any_sectors_available
+                {
+                        name = "any_sectors_available";
+                        itemno = 3;
+                        init = /*%FSM<STATEINIT""">*/"_sectorsPool = (synchronizedObjects _home) select {(_x getVariable [""BIS_WL_sectorSide"", sideUnknown]) == _side};" \n
+                         "" \n
+                         "if (count _sectorsPool == 0) then {" \n
+                         "	_sectorsPool = BIS_WL_sectors select {(_x getVariable ""BIS_WL_sectorSide"") == _side};" \n
+                         "};"/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                                /*%FSM<LINK "yes">*/
+                                class yes
+                                {
+                                        itemno = 4;
+                                        priority = 1.000000;
+                                        to="retreat_to_another";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"count _sectorsPool > 0"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                                /*%FSM<LINK "no">*/
+                                class no
+                                {
+                                        itemno = 5;
+                                        priority = 0.000000;
+                                        to="terminate";
+                                        precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"TRUE"/*%FSM</CONDITION""">*/;
+                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                };
+                                /*%FSM</LINK>*/
+                        };
+                };
+                /*%FSM</STATE>*/
+                /*%FSM<STATE "terminate">*/
+                class terminate
+                {
+                        name = "terminate";
+                        itemno = 6;
+                        init = /*%FSM<STATEINIT""">*/""/*%FSM</STATEINIT""">*/;
+                        precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
+                        class Links
+                        {
+                        };
+                };
+                /*%FSM</STATE>*/
+        };
+        initState="INIT";
+        finalStates[] =
+        {
+                "terminate",
+        };
+};
+/*%FSM</COMPILE>*/
