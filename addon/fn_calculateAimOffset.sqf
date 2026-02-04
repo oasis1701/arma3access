@@ -122,7 +122,7 @@ private _vertThreshold = (atan (_vertRadius / (_distance max 1))) / 45;
 
 // Minimum thresholds (for very far targets)
 _horizThreshold = _horizThreshold max 0.003;
-_vertThreshold = _vertThreshold max 0.005;
+_vertThreshold = _vertThreshold max 0.002;
 
 // CRITICAL: Check if target is behind using dot product
 // dot < 0 means target is more than 90 degrees away (behind)
