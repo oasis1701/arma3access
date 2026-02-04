@@ -46,6 +46,17 @@ if (_task isEqualType []) then {
             private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
             format ["%1, %2 meters %3", _name, _distance, _compassDir]
         };
+        case "combatpatrol_status": {
+            // Status message (no distance) - same as warlords_status
+            _name
+        };
+        case "combatpatrol_location": {
+            // Voteable location with distance
+            private _distance = round (BA_cursorPos distance2D _pos);
+            private _bearing = BA_cursorPos getDir _pos;
+            private _compassDir = [_bearing] call BA_fnc_bearingToCompass;
+            format ["%1, %2 meters %3", _name, _distance, _compassDir]
+        };
         default {
             // Legacy "warlords" type
             private _distance = round (BA_cursorPos distance2D _pos);

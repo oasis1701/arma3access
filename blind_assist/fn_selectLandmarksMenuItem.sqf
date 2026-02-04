@@ -60,6 +60,32 @@ if (BA_landmarksCategoryIndex == 5) then {
                 };
             };
         };
+
+        // Handle Combat Patrol voting
+        if (_type == "combatpatrol_location" && {count _selectedItem >= 5}) then {
+            private _locationIndex = _selectedItem select 3;
+            private _canVote = _selectedItem select 4;
+
+            if (_canVote && _locationIndex >= 0) then {
+                // Cast the vote
+                player setVariable ["BIS_CP_votedFor", _locationIndex, true];
+
+                // Trigger countdown if this is the first vote
+                if ((missionNamespace getVariable ["BIS_CP_voting_countdown_end", 0]) == 0) then {
+                    private _votingTimer = missionNamespace getVariable ["BIS_CP_votingTimer", 15];
+                    missionNamespace setVariable ["BIS_CP_voting_countdown_end", daytime + (_votingTimer / 3600), true];
+                };
+
+                private _voteName = if (!isNil "BIS_CP_locationArrFinal" && {_locationIndex < count BIS_CP_locationArrFinal}) then {
+                    (BIS_CP_locationArrFinal select _locationIndex) select 1
+                } else {
+                    "location"
+                };
+
+                diag_log format ["BA_VOTE_CP: Voted for %1 (index: %2)", _voteName, _locationIndex];
+                _name = format ["VOTED: %1", _voteName];
+            };
+        };
     } else {
         // Standard Task object
         _locPos = taskDestination _selectedItem;

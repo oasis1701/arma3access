@@ -278,6 +278,57 @@ if (_isWarlords) then {
 
 // (Old BIS_WL_allSectors check removed - using marker-based detection above)
 
+// Combat Patrol Detection
+// Uses BIS_CP_locationArrFinal (populated by fn_cpinit.sqf)
+private _isCombatPatrol = !isNil "BIS_CP_locationArrFinal"
+    && { (missionNamespace getVariable ["BIS_CP_targetLocationID", -1]) == -1 }
+    && { (missionNamespace getVariable ["BIS_CP_preset_locationSelection", 0]) != 1 };
+
+// Combat Patrol status entry (will be added after sorting to keep at top)
+private _cpStatusEntry = [];
+
+if (_isCombatPatrol) then {
+    diag_log "BA_TASKS: === COMBAT PATROL VOTING PHASE ===";
+
+    // Get player's current vote
+    private _currentVote = player getVariable ["BIS_CP_votedFor", -1];
+
+    // Prepare status entry (added after sorting to keep at top)
+    if (_currentVote >= 0 && _currentVote < count BIS_CP_locationArrFinal) then {
+        private _votedName = (BIS_CP_locationArrFinal select _currentVote) select 1;
+        _cpStatusEntry = ["combatpatrol_status", format ["VOTED: %1", _votedName], [0,0,0], -1, false];
+    } else {
+        _cpStatusEntry = ["combatpatrol_status", "Select a location from the list", [0,0,0], -1, false];
+    };
+
+    // Add each location as voteable entry
+    {
+        private _pos = _x select 0;
+        private _name = _x select 1;
+        private _size = _x select 2;
+
+        // Determine location type label
+        private _typeLabel = switch (true) do {
+            case (_size >= 1.5): { "Capital" };
+            case (_size >= 1): { "City" };
+            default { "Village" };
+        };
+
+        private _isCurrentVote = (_forEachIndex == _currentVote);
+        private _label = if (_isCurrentVote) then {
+            format ["[VOTED] %1 (%2)", _name, _typeLabel]
+        } else {
+            format ["%1 (%2)", _name, _typeLabel]
+        };
+
+        // Array: [type, label, pos, locationIndex, canVote]
+        _taskItems pushBack ["combatpatrol_location", _label, _pos, _forEachIndex, true];
+
+    } forEach BIS_CP_locationArrFinal;
+
+    diag_log format ["BA_TASKS: Added %1 Combat Patrol locations", count BIS_CP_locationArrFinal];
+};
+
 diag_log format ["BA_TASKS: Final task count = %1", count _taskItems];
 
 // Sort tasks by distance from cursor (handle both Task objects and Warlords arrays)
@@ -285,6 +336,11 @@ _taskItems = [_taskItems, [], {
     private _pos = if (_x isEqualType []) then { _x select 2 } else { taskDestination _x };
     BA_cursorPos distance2D _pos
 }, "ASCEND"] call BIS_fnc_sortBy;
+
+// Add Combat Patrol status at the top (after sorting)
+if (count _cpStatusEntry > 0) then {
+    _taskItems = [_cpStatusEntry] + _taskItems;
+};
 
 // Limit tasks
 if (count _taskItems > _maxItems) then { _taskItems resize _maxItems };
