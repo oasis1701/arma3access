@@ -47,13 +47,8 @@ echo.
 echo === Blind Assist PBO Packer ===
 echo ARMA3_DIR: %ARMA3_DIR%
 echo ARMA3_TOOLS: %ARMA3_TOOLS%
+echo Destination: %ARMA3_DIR%\Addons (always loaded)
 echo.
-
-REM Create mod folder if it doesn't exist
-if not exist "%ARMA3_DIR%\@BlindAssist\addons" (
-    echo Creating mod folder...
-    mkdir "%ARMA3_DIR%\@BlindAssist\addons"
-)
 
 REM Step 1: Convert config.cpp to text (resolves #include directives)
 echo [1/4] Converting config.cpp to text...
@@ -78,12 +73,12 @@ if errorlevel 1 (
 
 REM Step 3: Delete old PBO
 echo [3/4] Removing old PBO...
-del /q "%ARMA3_DIR%\@BlindAssist\addons\blind_assist.pbo" 2>nul
+del /q "%ARMA3_DIR%\Addons\blind_assist.pbo" 2>nul
 
 REM Step 4: Pack with FileBank
 echo [4/4] Packing PBO...
 cd /d "%~dp0"
-"%ARMA3_TOOLS%\FileBank\FileBank.exe" -property prefix=blind_assist -dst "%ARMA3_DIR%\@BlindAssist\addons" blind_assist
+"%ARMA3_TOOLS%\FileBank\FileBank.exe" -property prefix=blind_assist -dst "%ARMA3_DIR%\Addons" blind_assist
 if errorlevel 1 (
     echo ERROR: FileBank packing failed!
     pause
@@ -92,11 +87,11 @@ if errorlevel 1 (
 
 echo.
 echo === SUCCESS ===
-echo PBO created: %ARMA3_DIR%\@BlindAssist\addons\blind_assist.pbo
+echo PBO created: %ARMA3_DIR%\Addons\blind_assist.pbo
 echo.
 
 REM Show file size
-for %%A in ("%ARMA3_DIR%\@BlindAssist\addons\blind_assist.pbo") do echo Size: %%~zA bytes
+for %%A in ("%ARMA3_DIR%\Addons\blind_assist.pbo") do echo Size: %%~zA bytes
 
 echo.
 pause
