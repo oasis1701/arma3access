@@ -436,26 +436,26 @@ Self-contained addon structure for distribution as PBO.
 ### Files Created
 | File | Purpose |
 |------|---------|
-| `addon/config.cpp` | Master addon config - includes CfgPatches, CfgFunctions, dialogs |
-| `addon/$PBOPREFIX$` | Addon root marker - contains `blind_assist` |
-| `addon/CfgFunctions_Addon.hpp` | PBO function paths (`\blind_assist` instead of `addon`) |
+| `blind_assist/config.cpp` | Master addon config - includes CfgPatches, CfgFunctions, dialogs |
+| `blind_assist/$PBOPREFIX$` | Addon root marker - contains `blind_assist` |
+| `blind_assist/CfgFunctions_Addon.hpp` | PBO function paths (`\blind_assist`) |
 
 ### Two Workflows Supported
 | Workflow | CfgFunctions File | Path Style |
 |----------|-------------------|------------|
-| **Development** | `CfgFunctions.hpp` | `file = "addon"` (mission-relative) |
+| **Development** | `CfgFunctions.hpp` | `file = "blind_assist"` (mission-relative) |
 | **Distribution** | `CfgFunctions_Addon.hpp` | `file = "\blind_assist"` (absolute addon path) |
 
 ### PBO Packing Instructions
 Using Arma 3 Tools (AddonBuilder):
 ```
-Source: D:\arma3 access\addon\
+Source: D:\arma3 access\blind_assist\
 Output: blind_assist.pbo
 Prefix: blind_assist (from $PBOPREFIX$ file)
 ```
 
 ### Usage as Addon
-1. Pack `addon/` folder into `blind_assist.pbo`
+1. Pack `blind_assist/` folder into `blind_assist.pbo`
 2. Place in `Arma 3\@BlindAssist\addons\blind_assist.pbo`
 3. Launch with `-mod=@BlindAssist`
 4. Works with ANY mission - no description.ext edits needed

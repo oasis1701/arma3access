@@ -8,6 +8,13 @@
  */
 
 class BA {
+    class Core {
+        file = "\blind_assist";
+
+        // Auto-initialization - runs automatically when mission starts
+        class autoInit { postInit = 1; };
+    };
+
     class NVDA {
         file = "\blind_assist";
 
@@ -411,5 +418,35 @@ class BA {
         // Per-frame update for smooth direction interpolation
         // Usage: [] call BA_fnc_updateDirectionSnap;
         class updateDirectionSnap {};
+    };
+
+    class PlayerNav {
+        file = "\blind_assist";
+
+        // Initialize player navigation state variables
+        // Usage: [] call BA_fnc_initPlayerNav;
+        class initPlayerNav {};
+
+        // Set waypoint at current cursor position
+        // Usage: [] call BA_fnc_setPlayerWaypoint;
+        // Hotkey: Y (requires cursor active)
+        class setPlayerWaypoint {};
+
+        // Clear active navigation waypoint
+        // Usage: [] call BA_fnc_clearPlayerWaypoint;
+        // Hotkey: Ctrl+Y
+        class clearPlayerWaypoint {};
+
+        // Per-frame navigation update (10Hz)
+        // Usage: [] call BA_fnc_updatePlayerNav;
+        class updatePlayerNav {};
+
+        // Calculate navigation path (async)
+        // Usage: [_soldier, _destination] call BA_fnc_calculateNavPath;
+        class calculateNavPath {};
+
+        // Announce distance threshold progress
+        // Usage: [_distance] call BA_fnc_announceNavProgress;
+        class announceNavProgress {};
     };
 };

@@ -133,7 +133,7 @@ cp "bridge/nvda_arma3_bridge_x64.dll" "$ARMA3_DIR/" && cp "nvda controllerClient
 
 Deploy SQF scripts to test mission:
 ```bash
-cp "addon/"*.sqf "$ARMA3_MISSION_DIR/addon/"
+cp "blind_assist/"*.sqf "$ARMA3_MISSION_DIR/blind_assist/"
 ```
 
 Verify DLL deployment:
@@ -181,7 +181,7 @@ deploy.bat
 │   ├── nvda_arma3_bridge.cpp       (main source)
 │   ├── build.bat                   (compile script)
 │   └── deploy.bat                  (copy to Arma 3)
-├── addon/                          (SQF scripts - deploy to test mission)
+├── blind_assist/                   (SQF scripts - deploy to test mission)
 │   ├── fn_speak.sqf                (speak wrapper)
 │   ├── fn_cancel.sqf               (cancel speech)
 │   ├── fn_*.sqf                    (all function scripts)
@@ -190,7 +190,7 @@ deploy.bat
     └── init.sqf                    (test the bridge)
 
 $ARMA3_MISSION_DIR/                     (DEPLOY TARGET - don't edit here)
-├── addon/                          (copy of repo addon/)
+├── blind_assist/                   (copy of repo blind_assist/)
 ├── description.ext                 (mission config)
 └── init.sqf                        (mission init)
 ```

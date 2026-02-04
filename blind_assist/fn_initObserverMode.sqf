@@ -87,6 +87,9 @@ BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]
+// Wait for display 46 to be available (may not exist during early init)
+waitUntil {!isNull findDisplay 46};
+
 findDisplay 46 displayAddEventHandler ["KeyDown", {
     params ["_display", "_key", "_shift", "_ctrl", "_alt"];
 

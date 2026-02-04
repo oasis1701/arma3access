@@ -3,7 +3,7 @@
  *
  * Include this in your mission's description.ext like:
  *   class CfgFunctions {
- *       #include "addon\CfgFunctions.hpp"
+ *       #include "blind_assist\CfgFunctions.hpp"
  *   };
  *
  * Or copy the contents directly into your CfgFunctions class.
@@ -11,7 +11,7 @@
 
 class BA {
     class NVDA {
-        file = "addon";
+        file = "blind_assist";
 
         // Make NVDA speak text
         // Usage: ["Hello world"] call BA_fnc_speak;
@@ -31,7 +31,7 @@ class BA {
     };
 
     class ObserverMode {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize observer mode system (call once at mission start)
         // Usage: [] call BA_fnc_initObserverMode;
@@ -77,7 +77,7 @@ class BA {
     };
 
     class Cursor {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize cursor system (called from initObserverMode)
         // Usage: [] call BA_fnc_initCursor;
@@ -137,7 +137,7 @@ class BA {
     };
 
     class Orders {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize order menu state variables
         // Usage: [] call BA_fnc_initOrderMenu;
@@ -169,7 +169,7 @@ class BA {
     };
 
     class GroupMenu {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize group menu state variables
         // Usage: [] call BA_fnc_initGroupMenu;
@@ -197,7 +197,7 @@ class BA {
     };
 
     class LandmarksMenu {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize landmarks menu state variables
         // Usage: [] call BA_fnc_initLandmarksMenu;
@@ -241,7 +241,7 @@ class BA {
     };
 
     class Scanner {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize scanner state variables and categories
         // Usage: [] call BA_fnc_initScanner;
@@ -273,7 +273,7 @@ class BA {
     };
 
     class RoadMode {
-        file = "addon";
+        file = "blind_assist";
 
         // Toggle road exploration mode on/off
         // Usage: [] call BA_fnc_toggleRoadMode;
@@ -321,7 +321,7 @@ class BA {
     };
 
     class DevSandbox {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize dev sandbox with pre-placed assets
         // Usage: [] call BA_fnc_initDevSandbox;
@@ -342,7 +342,7 @@ class BA {
     };
 
     class AimAssist {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize aim assist state variables
         // Usage: [] call BA_fnc_initAimAssist;
@@ -366,7 +366,7 @@ class BA {
     };
 
     class TerrainRadar {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize terrain radar state variables
         // Usage: [] call BA_fnc_initTerrainRadar;
@@ -382,7 +382,7 @@ class BA {
     };
 
     class FocusMode {
-        file = "addon";
+        file = "blind_assist";
 
         // Toggle focus mode on/off (Backtick ~)
         // Usage: [] call BA_fnc_toggleFocusMode;
@@ -398,7 +398,7 @@ class BA {
     };
 
     class DirectionSnap {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize direction snap state variables
         // Usage: [] call BA_fnc_initDirectionSnap;
@@ -416,7 +416,7 @@ class BA {
     };
 
     class PlayerNav {
-        file = "addon";
+        file = "blind_assist";
 
         // Initialize player navigation state variables
         // Usage: [] call BA_fnc_initPlayerNav;

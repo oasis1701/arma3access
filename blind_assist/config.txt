@@ -1,0 +1,394 @@
+class CfgPatches
+{
+	class BlindAssist
+	{
+		name="Blind Assist";
+		author="BlindDev";
+		url="";
+		units[]={};
+		weapons[]={};
+		requiredAddons[]=
+		{
+			"A3_Functions_F"
+		};
+		requiredVersion=2.1800001;
+	};
+};
+class CfgFunctions
+{
+	class BA
+	{
+		class Core
+		{
+			file="\blind_assist";
+			class autoInit
+			{
+				postInit=1;
+			};
+		};
+		class NVDA
+		{
+			file="\blind_assist";
+			class speak
+			{
+			};
+			class cancel
+			{
+			};
+			class test
+			{
+			};
+			class braille
+			{
+			};
+		};
+		class ObserverMode
+		{
+			file="\blind_assist";
+			class initObserverMode
+			{
+			};
+			class toggleObserverMode
+			{
+			};
+			class enterObserverMode
+			{
+			};
+			class exitObserverMode
+			{
+			};
+			class switchObserverTarget
+			{
+			};
+			class nextUnit
+			{
+			};
+			class prevUnit
+			{
+			};
+			class nextGroup
+			{
+			};
+			class prevGroup
+			{
+			};
+			class announceUnitStatus
+			{
+			};
+		};
+		class Cursor
+		{
+			file="\blind_assist";
+			class initCursor
+			{
+			};
+			class setCursorPos
+			{
+			};
+			class moveCursor
+			{
+			};
+			class snapCursorToUnit
+			{
+			};
+			class getGridInfo
+			{
+			};
+			class getTerrainInfo
+			{
+			};
+			class getAltitudeInfo
+			{
+			};
+			class getSlopeInfo
+			{
+			};
+			class getNearbyObjects
+			{
+			};
+			class getNearbyUnits
+			{
+			};
+			class getBearingDistance
+			{
+			};
+			class announceMovement
+			{
+			};
+			class announceCursorBrief
+			{
+			};
+			class announceCursorDetailed
+			{
+			};
+		};
+		class Orders
+		{
+			file="\blind_assist";
+			class initOrderMenu
+			{
+			};
+			class detectUnitType
+			{
+			};
+			class openOrderMenu
+			{
+			};
+			class navigateOrderMenu
+			{
+			};
+			class selectOrderMenuItem
+			{
+			};
+			class closeOrderMenu
+			{
+			};
+			class issueOrder
+			{
+			};
+		};
+		class GroupMenu
+		{
+			file="\blind_assist";
+			class initGroupMenu
+			{
+			};
+			class openGroupMenu
+			{
+			};
+			class navigateGroupMenu
+			{
+			};
+			class selectGroupMenuItem
+			{
+			};
+			class closeGroupMenu
+			{
+			};
+			class getGroupDescription
+			{
+			};
+		};
+		class LandmarksMenu
+		{
+			file="\blind_assist";
+			class initLandmarksMenu
+			{
+			};
+			class openLandmarksMenu
+			{
+			};
+			class navigateLandmarksMenu
+			{
+			};
+			class selectLandmarksMenuItem
+			{
+			};
+			class closeLandmarksMenu
+			{
+			};
+			class getLandmarkDescription
+			{
+			};
+			class getMarkerDescription
+			{
+			};
+			class getTaskDescription
+			{
+			};
+			class getLocationTypeName
+			{
+			};
+			class bearingToCompass
+			{
+			};
+		};
+		class Scanner
+		{
+			file="\blind_assist";
+			class initScanner
+			{
+			};
+			class cycleScannerRange
+			{
+			};
+			class scanObjects
+			{
+			};
+			class navigateScanner
+			{
+			};
+			class jumpToScannerObject
+			{
+			};
+			class announceScannedObject
+			{
+			};
+			class getObjectSide
+			{
+			};
+		};
+		class RoadMode
+		{
+			file="\blind_assist";
+			class toggleRoadMode
+			{
+			};
+			class getRoadTypeDescription
+			{
+			};
+			class snapToRoad
+			{
+			};
+			class followRoad
+			{
+			};
+			class detectIntersection
+			{
+			};
+			class announceIntersection
+			{
+			};
+			class selectRoadAtIntersection
+			{
+			};
+			class openIntersectionMenu
+			{
+			};
+			class navigateIntersectionMenu
+			{
+			};
+			class selectIntersectionMenuItem
+			{
+			};
+			class closeIntersectionMenu
+			{
+			};
+		};
+		class DevSandbox
+		{
+			file="\blind_assist";
+			class initDevSandbox
+			{
+			};
+			class spawnEnemies
+			{
+			};
+			class clearEnemies
+			{
+			};
+			class resetAssets
+			{
+			};
+		};
+		class AimAssist
+		{
+			file="\blind_assist";
+			class initAimAssist
+			{
+			};
+			class toggleAimAssist
+			{
+			};
+			class updateAimAssist
+			{
+			};
+			class findAimTarget
+			{
+			};
+			class calculateAimOffset
+			{
+			};
+		};
+		class TerrainRadar
+		{
+			file="\blind_assist";
+			class initTerrainRadar
+			{
+			};
+			class toggleTerrainRadar
+			{
+			};
+			class updateTerrainRadar
+			{
+			};
+		};
+		class FocusMode
+		{
+			file="\blind_assist";
+			class toggleFocusMode
+			{
+			};
+			class enterFocusMode
+			{
+			};
+			class exitFocusMode
+			{
+			};
+		};
+		class DirectionSnap
+		{
+			file="\blind_assist";
+			class initDirectionSnap
+			{
+			};
+			class cycleDirection
+			{
+			};
+			class updateDirectionSnap
+			{
+			};
+		};
+		class PlayerNav
+		{
+			file="\blind_assist";
+			class initPlayerNav
+			{
+			};
+			class setPlayerWaypoint
+			{
+			};
+			class clearPlayerWaypoint
+			{
+			};
+			class updatePlayerNav
+			{
+			};
+			class calculateNavPath
+			{
+			};
+			class announceNavProgress
+			{
+			};
+		};
+	};
+};
+class BA_FocusModeDialog
+{
+	idd=9100;
+	movingEnable="false";
+	enableSimulation="true";
+	onLoad="";
+	onUnload="BA_focusMode = false; BA_cursorActive = false;";
+	class ControlsBackground
+	{
+		class Background
+		{
+			idc=-1;
+			type=0;
+			style=0;
+			x="safeZoneX";
+			y="safeZoneY";
+			w="safeZoneW";
+			h="safeZoneH";
+			colorBackground[]={0,0,0,0};
+			colorText[]={1,1,1,1};
+			text="";
+			font="RobotoCondensed";
+			sizeEx=0.02;
+		};
+	};
+	class Controls
+	{
+	};
+};
