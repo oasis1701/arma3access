@@ -56,7 +56,7 @@ extern "C" {
 }
 
 // DLL version string
-static const char* VERSION = "1.4.0";
+static const char* VERSION = "1.5.0";
 
 // ============================================================================
 // Audio Synthesis State (for aim assist)
@@ -118,6 +118,31 @@ static const int RADAR_RELEASE_SAMPLES = 132;  // 3ms release
 
 // Radar volume
 static const float RADAR_BASE_VOLUME = 0.015f;  // Base volume for radar beeps
+
+// ============================================================================
+// Navigation Beacon Audio State
+// ============================================================================
+
+// Beacon active flag and pan parameter
+static std::atomic<bool> g_beaconActive(false);
+static std::atomic<float> g_beaconPan(0.0f);     // -1.0 (left) to +1.0 (right)
+
+// Beacon oscillator state (non-atomic, only accessed in audio callback)
+static double g_beaconPhase = 0.0;               // Oscillator phase
+static double g_beaconPulsePhase = 0.0;          // Pulse envelope phase
+static float g_beaconLpfState = 0.0f;            // Low pass filter state
+static float g_beaconEnvelopeState = 0.0f;       // Smooth envelope level (0-1)
+
+// Beacon audio constants
+static const float BEACON_FREQ_MIN = 400.0f;      // Frequency when off center
+static const float BEACON_FREQ_MAX = 460.0f;      // Frequency when centered
+static const float BEACON_VOLUME = 0.006f;        // 60% of aim assist volume
+static const float BEACON_LPF_CUTOFF = 4000.0f;   // Low pass filter cutoff Hz
+static const float BEACON_MIN_PULSE_RATE = 2.0f;  // Hz when far off center
+static const float BEACON_MAX_PULSE_RATE = 15.0f; // Hz when near center
+static const float BEACON_CENTER_THRESHOLD = 0.05f; // abs(pan) below this = steady tone
+static const float BEACON_ATTACK_MS = 5.0f;       // Envelope attack (hearing safety)
+static const float BEACON_RELEASE_MS = 5.0f;      // Envelope release (hearing safety)
 
 // Audio device state
 static ma_device g_audioDevice;
@@ -431,6 +456,78 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                 g_radarPhase += radarPhaseInc;
                 if (g_radarPhase >= 2.0 * PI) g_radarPhase -= 2.0 * PI;
             }
+        }
+
+        // ================================================================
+        // Navigation Beacon audio (mutually exclusive with aim assist)
+        // Triangle wave with frequency sweep, pulsing, and LPF
+        // ================================================================
+        if (g_beaconActive.load() && !active) {
+            float beaconPan = g_beaconPan.load();
+
+            // Calculate pan magnitude and centeredness (0 = far, 1 = centered)
+            float panMagnitude = fabsf(beaconPan);
+            float centeredness = 1.0f - (panMagnitude / 0.2f);  // 0.2 = max useful range
+            centeredness = (centeredness < 0.0f) ? 0.0f : (centeredness > 1.0f) ? 1.0f : centeredness;
+
+            // Frequency sweep: 400 Hz (off center) to 460 Hz (centered)
+            float beaconFreq = BEACON_FREQ_MIN + centeredness * (BEACON_FREQ_MAX - BEACON_FREQ_MIN);
+
+            // Advance oscillator phase with current frequency
+            double beaconPhaseInc = (2.0 * PI * beaconFreq) / SAMPLE_RATE;
+            g_beaconPhase += beaconPhaseInc;
+            if (g_beaconPhase >= 2.0 * PI) g_beaconPhase -= 2.0 * PI;
+
+            // Generate triangle wave: map phase [0, 2*PI] to triangle [-1, +1]
+            float normalizedPhase = (float)(g_beaconPhase / (2.0 * PI));  // 0 to 1
+            float triangleSample = 4.0f * fabsf(normalizedPhase - 0.5f) - 1.0f;
+
+            // Apply one-pole low pass filter (4000 Hz cutoff)
+            static const float beaconLpfAlpha = 1.0f - expf(-2.0f * (float)PI * BEACON_LPF_CUTOFF / SAMPLE_RATE);
+            g_beaconLpfState += beaconLpfAlpha * (triangleSample - g_beaconLpfState);
+
+            // Calculate pulse rate based on pan magnitude
+            float beaconPulseRate = 0.0f;  // 0 = continuous
+            if (panMagnitude >= BEACON_CENTER_THRESHOLD) {
+                // Map pan [0.05, 0.2+] to pulse rate [15 Hz, 2 Hz]
+                float t = (panMagnitude - BEACON_CENTER_THRESHOLD) / (0.2f - BEACON_CENTER_THRESHOLD);
+                t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;
+                beaconPulseRate = BEACON_MAX_PULSE_RATE + t * (BEACON_MIN_PULSE_RATE - BEACON_MAX_PULSE_RATE);
+            }
+
+            // Calculate pulse envelope (square wave envelope for on/off)
+            float targetEnvelope = 1.0f;
+            if (beaconPulseRate > 0.0f) {
+                double beaconPulseInc = (2.0 * PI * beaconPulseRate) / SAMPLE_RATE;
+                g_beaconPulsePhase += beaconPulseInc;
+                if (g_beaconPulsePhase >= 2.0 * PI) g_beaconPulsePhase -= 2.0 * PI;
+                targetEnvelope = (sin(g_beaconPulsePhase) > 0.0) ? 1.0f : 0.0f;
+            } else {
+                g_beaconPulsePhase = 0.0;  // Reset when continuous
+            }
+
+            // Smooth attack/release envelope (5ms each for hearing safety)
+            static const float beaconSamplesPerMs = SAMPLE_RATE / 1000.0f;
+            static const float beaconAttackCoef = 1.0f / (BEACON_ATTACK_MS * beaconSamplesPerMs);
+            static const float beaconReleaseCoef = 1.0f / (BEACON_RELEASE_MS * beaconSamplesPerMs);
+
+            if (g_beaconEnvelopeState < targetEnvelope) {
+                g_beaconEnvelopeState += beaconAttackCoef;
+                if (g_beaconEnvelopeState > targetEnvelope) g_beaconEnvelopeState = targetEnvelope;
+            } else if (g_beaconEnvelopeState > targetEnvelope) {
+                g_beaconEnvelopeState -= beaconReleaseCoef;
+                if (g_beaconEnvelopeState < targetEnvelope) g_beaconEnvelopeState = targetEnvelope;
+            }
+
+            // Final sample with volume and envelope
+            float beaconSample = g_beaconLpfState * BEACON_VOLUME * g_beaconEnvelopeState;
+
+            // Apply stereo panning
+            float beaconLeftGain = (beaconPan <= 0.0f) ? 1.0f : (1.0f - beaconPan);
+            float beaconRightGain = (beaconPan >= 0.0f) ? 1.0f : (1.0f + beaconPan);
+
+            leftSample += beaconSample * beaconLeftGain;
+            rightSample += beaconSample * beaconRightGain;
         }
 
         // Output stereo
@@ -830,6 +927,48 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
         g_radarQueueTail.store(0);
         g_radarEnvState = 0;
         g_radarEnvelope = 0.0f;
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // ========================================================================
+    // Navigation Beacon Audio Commands
+    // ========================================================================
+
+    // Command: beacon_start - Initialize audio and start beacon
+    if (cmd == "beacon_start") {
+        if (init_audio()) {
+            g_beaconPan.store(0.0f);
+            g_beaconPhase = 0.0;
+            g_beaconPulsePhase = 0.0;
+            g_beaconLpfState = 0.0f;
+            g_beaconEnvelopeState = 0.0f;
+            g_beaconActive.store(true);
+            safe_output(output, outputSize, "OK");
+        } else {
+            safe_output(output, outputSize, "AUDIO_INIT_FAILED");
+        }
+        return;
+    }
+
+    // Command: beacon_update:pan - Update beacon pan value
+    // pan: -1.0 (left) to +1.0 (right)
+    if (cmd.rfind("beacon_update:", 0) == 0) {
+        std::string params = cmd.substr(14);
+        float pan = parse_float(params.c_str(), 0.0f);
+
+        // Clamp pan to valid range
+        pan = (pan < -1.0f) ? -1.0f : (pan > 1.0f) ? 1.0f : pan;
+
+        g_beaconPan.store(pan);
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // Command: beacon_stop - Stop navigation beacon
+    if (cmd == "beacon_stop") {
+        g_beaconActive.store(false);
+        g_beaconEnvelopeState = 0.0f;
         safe_output(output, outputSize, "OK");
         return;
     }

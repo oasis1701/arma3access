@@ -81,6 +81,9 @@ BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 // Initialize direction snap system
 [] call BA_fnc_initDirectionSnap;
 
+// Initialize player navigation system
+[] call BA_fnc_initPlayerNav;
+
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]
@@ -121,6 +124,27 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     if (_key == 41 && !_ctrl && !_shift && !_alt) exitWith {
         if (!BA_observerMode) then {
             [] call BA_fnc_toggleFocusMode;
+        };
+        true
+    };
+
+    // Y key (21) - Set player waypoint (requires cursor active)
+    if (_key == 21 && !_ctrl && !_shift && !_alt) exitWith {
+        if (BA_cursorActive) then {
+            [] call BA_fnc_setPlayerWaypoint;
+        } else {
+            ["Enter focus mode or observer mode first."] call BA_fnc_speak;
+        };
+        true
+    };
+
+    // Ctrl+Y (key 21) - Clear player waypoint
+    if (_key == 21 && _ctrl && !_shift && !_alt) exitWith {
+        if (BA_playerNavEnabled) then {
+            [] call BA_fnc_clearPlayerWaypoint;
+            ["Waypoint cleared."] call BA_fnc_speak;
+        } else {
+            ["No active waypoint."] call BA_fnc_speak;
         };
         true
     };

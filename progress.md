@@ -493,3 +493,56 @@ South (180°) → Southwest (225°) → West (270°) → Northwest (315°)
 - EachFrame handler provides precise timing
 - Cancels in-progress interpolation if key pressed again quickly
 
+---
+
+## Phase 12: Player Waypoint Navigation - COMPLETE (2026-02-03)
+Audio beacon guidance to navigate to cursor position.
+Uses Arma 3's pathfinding to route through doors and around obstacles.
+
+### Controls
+| Key | Action |
+|-----|--------|
+| **Y** | Set waypoint at cursor position |
+| **Ctrl+Y** | Clear active waypoint |
+
+**Requires:** Cursor active (Focus Mode or Observer Mode).
+
+### Audio Beacon
+| Audio Aspect | Meaning |
+|--------------|---------|
+| **Stereo Pan** | Left ear = turn left, Right ear = turn right |
+| **Frequency** | 400 Hz (off-center) → 460 Hz (on-target) |
+| **Pulse Rate** | Slow (2 Hz) far off → Fast (15 Hz) near → Steady when facing |
+| **Waveform** | Triangle wave with 4000 Hz low-pass filter |
+
+Beacon is mutually exclusive with aim assist - only one plays at a time.
+
+### Distance Announcements
+Announces when crossing thresholds: 500m, 300m, 200m, 150m, 100m, 75m, 50m, 30m, 20m, 10m.
+- Initial: "Waypoint set. 127 meters."
+- Progress: "100 meters." ... "50 meters." ... "10 meters."
+- Arrival: "Arrived at waypoint." (< 3m from destination)
+
+### Path Deviation
+- If player strays >15m from calculated path, announces "Recalculating route."
+- 5-second cooldown between recalculations
+- If pathfinding fails: "Route blocked. Try a different waypoint."
+
+### Technical Notes
+- Uses async `calculatePath ["man", "safe", destination, callback]`
+- Path includes waypoints through doors, around obstacles
+- 10 Hz update loop (EachFrame with rate limiting)
+- Breadcrumb radius: 5m (advance to next path point)
+- Arrival radius: 3m (waypoint reached)
+- Local marker created at destination (yellow objective marker)
+
+### DLL Commands
+```sqf
+"nvda_arma3_bridge" callExtension "beacon_start"        // Start beacon
+"nvda_arma3_bridge" callExtension "beacon_update:0.5"   // Pan right
+"nvda_arma3_bridge" callExtension "beacon_update:-0.3"  // Pan left
+"nvda_arma3_bridge" callExtension "beacon_stop"         // Stop beacon
+```
+
+---
+

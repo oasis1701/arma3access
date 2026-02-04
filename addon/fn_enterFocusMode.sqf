@@ -222,6 +222,23 @@ _display displayAddEventHandler ["KeyDown", {
         true
     };
 
+    // Y key (21) - Set player waypoint
+    if (_key == 21 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_setPlayerWaypoint;
+        true
+    };
+
+    // Ctrl+Y (21) - Clear player waypoint
+    if (_key == 21 && _ctrl && !_shift && !_alt) exitWith {
+        if (BA_playerNavEnabled) then {
+            [] call BA_fnc_clearPlayerWaypoint;
+            ["Waypoint cleared."] call BA_fnc_speak;
+        } else {
+            ["No active waypoint."] call BA_fnc_speak;
+        };
+        true
+    };
+
     // Alt+1 through Alt+9: Unit status categories
     if (_alt && !_ctrl && !_shift && _key >= 2 && _key <= 10) exitWith {
         [_key - 1] call BA_fnc_announceUnitStatus;
