@@ -181,7 +181,6 @@ diag_log format ["BA_TASKS: Combined tasks before filter = %1", count _allTasks]
     private _state = taskState _task;
     private _pos = taskDestination _task;
     private _desc = taskDescription _task;
-    private _parent = taskParent _task;
     // taskDescription returns [description, title, marker]
     private _marker = if (_desc isEqualType [] && {count _desc >= 3}) then { _desc select 2 } else { "" };
     private _markerPos = if (_marker != "") then { getMarkerPos _marker } else { [0,0,0] };
@@ -198,106 +197,11 @@ diag_log format ["BA_TASKS: Combined tasks before filter = %1", count _allTasks]
 
 diag_log format ["BA_TASKS: After filter = %1 tasks", count _taskItems];
 
-// Method 3: Warlords Direct Variable Read (bypasses task system)
-diag_log "BA_TASKS: === Searching for Warlords active sector ===";
-
-// Check missionNamespace variables
-diag_log format ["BA_TASKS: BIS_WL_allSectors = %1", missionNamespace getVariable "BIS_WL_allSectors"];
-diag_log format ["BA_TASKS: BIS_WL_competitiveSectors = %1", missionNamespace getVariable "BIS_WL_competitiveSectors"];
-diag_log format ["BA_TASKS: BIS_WL_sectorsArray = %1", missionNamespace getVariable "BIS_WL_sectorsArray"];
-diag_log format ["BA_TASKS: BIS_WL_targetSector = %1", missionNamespace getVariable "BIS_WL_targetSector"];
-diag_log format ["BA_TASKS: BIS_WL_currentTarget = %1", missionNamespace getVariable "BIS_WL_currentTarget"];
-
-// Check player variables
-diag_log format ["BA_TASKS: player BIS_WL_ownedSectors = %1", player getVariable "BIS_WL_ownedSectors"];
-diag_log format ["BA_TASKS: player BIS_WL_targetSector = %1", player getVariable "BIS_WL_targetSector"];
-diag_log format ["BA_TASKS: player BIS_WL_currentTarget = %1", player getVariable "BIS_WL_currentTarget"];
-
-// Check side-specific variables
-diag_log format ["BA_TASKS: BIS_WL_currentTarget_WEST = %1", missionNamespace getVariable "BIS_WL_currentTarget_WEST"];
-diag_log format ["BA_TASKS: BIS_WL_currentTarget_EAST = %1", missionNamespace getVariable "BIS_WL_currentTarget_EAST"];
-diag_log format ["BA_TASKS: BIS_WL_sectors_WEST = %1", missionNamespace getVariable "BIS_WL_sectors_WEST"];
-diag_log format ["BA_TASKS: BIS_WL_sectors_EAST = %1", missionNamespace getVariable "BIS_WL_sectors_EAST"];
-
-// Check for Warlords markers and their positions
+// Warlords Detection - use markers since BIS_WL variables don't sync to client
+// See docs/warlords_reference/ for Warlords source code reference
 private _wlMarkers = allMapMarkers select { "BIS_WL" in _x };
-diag_log format ["BA_TASKS: Warlords markers count = %1", count _wlMarkers];
-
-// Find sector markers specifically and log their positions and colors
 private _sectorMarkers = _wlMarkers select { "sectorMrkr_" in _x && !("Text" in _x) && !("Lock" in _x) };
-diag_log format ["BA_TASKS: Sector markers = %1", _sectorMarkers];
-
-// Check for selection/highlight markers
-private _selectionMarkers = _wlMarkers select { "select" in toLower _x || "highlight" in toLower _x || "target" in toLower _x || "vote" in toLower _x };
-diag_log format ["BA_TASKS: Selection markers = %1", _selectionMarkers];
-
-// Check for AO (Area of Operations) markers - might indicate active sector
-private _aoMarkers = _wlMarkers select { "AO" in _x || "ao_" in toLower _x || "area" in toLower _x };
-diag_log format ["BA_TASKS: AO markers = %1", _aoMarkers];
-
-// Log ALL warlords markers to find the active indicator
-diag_log format ["BA_TASKS: ALL WL markers = %1", _wlMarkers];
-
-private _activeSector = "";
-private _activeSectorPos = [0,0,0];
-
-{
-    private _color = getMarkerColor _x;
-    private _alpha = markerAlpha _x;
-    private _size = markerSize _x;
-    private _sectorNum = (_x splitString "_") select 3;
-    private _textMarker = format ["BIS_WL_sectorMrkrText_%1", _sectorNum];
-    private _sectorName = markerText _textMarker;
-    private _pos = getMarkerPos _x;
-    diag_log format ["BA_TASKS: Marker %1 color=%2 alpha=%3 size=%4 name=%5", _x, _color, _alpha, _size, _sectorName];
-
-    // Check if this sector has unusual alpha or size (might indicate selection)
-    if (_alpha != 1 || (_size select 0) != 1) then {
-        diag_log format ["BA_TASKS: UNUSUAL marker %1 - alpha=%2 size=%3", _x, _alpha, _size];
-    };
-} forEach _sectorMarkers;
-
-// Check voting-related variables
-diag_log format ["BA_TASKS: BIS_WL_votedTarget = %1", missionNamespace getVariable "BIS_WL_votedTarget"];
-diag_log format ["BA_TASKS: BIS_WL_sectorTarget = %1", missionNamespace getVariable "BIS_WL_sectorTarget"];
-diag_log format ["BA_TASKS: BIS_WL_votingActive = %1", missionNamespace getVariable "BIS_WL_votingActive"];
-diag_log format ["BA_TASKS: BIS_WL_sectorSelectionActive = %1", missionNamespace getVariable "BIS_WL_sectorSelectionActive"];
-diag_log format ["BA_TASKS: BIS_WL_votingPhase = %1", missionNamespace getVariable "BIS_WL_votingPhase"];
-diag_log format ["BA_TASKS: BIS_WL_playerVote = %1", player getVariable "BIS_WL_playerVote"];
-diag_log format ["BA_TASKS: BIS_WL_selectedSector = %1", missionNamespace getVariable "BIS_WL_selectedSector"];
-
-// Check for voting time/timer variables
-diag_log format ["BA_TASKS: BIS_WL_votingTime = %1", missionNamespace getVariable "BIS_WL_votingTime"];
-diag_log format ["BA_TASKS: BIS_WL_votingEndTime = %1", missionNamespace getVariable "BIS_WL_votingEndTime"];
-diag_log format ["BA_TASKS: BIS_WL_sectorSelectionTime = %1", missionNamespace getVariable "BIS_WL_sectorSelectionTime"];
-diag_log format ["BA_TASKS: BIS_WL_selectionEndTime = %1", missionNamespace getVariable "BIS_WL_selectionEndTime"];
-
-// Check for phase/state variables
-diag_log format ["BA_TASKS: BIS_WL_phase = %1", missionNamespace getVariable "BIS_WL_phase"];
-diag_log format ["BA_TASKS: BIS_WL_state = %1", missionNamespace getVariable "BIS_WL_state"];
-diag_log format ["BA_TASKS: BIS_WL_gamePhase = %1", missionNamespace getVariable "BIS_WL_gamePhase"];
-
-// Check UI displays - voting bar might be on a specific display
-private _mainDisplay = findDisplay 46;  // Main game display
-diag_log format ["BA_TASKS: Main display 46 = %1", _mainDisplay];
-if (!isNull _mainDisplay) then {
-    private _allControls = allControls _mainDisplay;
-    diag_log format ["BA_TASKS: Display 46 controls count = %1", count _allControls];
-};
-
-// Check for voting bar UI element (IDD might be different)
-private _votingDisplay = findDisplay 312346;  // Common Warlords display
-diag_log format ["BA_TASKS: Warlords display 312346 = %1", _votingDisplay];
-
-// Check uiNamespace for Warlords UI variables
-diag_log format ["BA_TASKS: uiNamespace BIS_WL_votingBar = %1", uiNamespace getVariable "BIS_WL_votingBar"];
-diag_log format ["BA_TASKS: uiNamespace BIS_WL_votingCtrl = %1", uiNamespace getVariable "BIS_WL_votingCtrl"];
-diag_log format ["BA_TASKS: uiNamespace BIS_WL_sectorSelection = %1", uiNamespace getVariable "BIS_WL_sectorSelection"];
-
-// Warlords State Detection (based on Gemini's analysis)
-// Detect Warlords by markers (BIS_WL_allSectors might not sync to client)
 private _isWarlords = count _sectorMarkers > 0;
-diag_log format ["BA_TASKS: Warlords detected by markers = %1", _isWarlords];
 
 if (_isWarlords) then {
     // Get current target for our side (correct variable from fn_wlaicore.fsm)
