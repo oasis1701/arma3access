@@ -150,7 +150,7 @@ static float g_beaconEnvelopeState = 0.0f;       // Smooth envelope level (0-1)
 // Beacon audio constants
 static const float BEACON_FREQ_MIN = 400.0f;      // Frequency when off center
 static const float BEACON_FREQ_MAX = 460.0f;      // Frequency when centered
-static const float BEACON_VOLUME = 0.006f;        // 60% of aim assist volume
+static const float BEACON_VOLUME = 0.012f;        // 2x louder beacon
 static const float BEACON_LPF_CUTOFF = 4000.0f;   // Low pass filter cutoff Hz
 static const float BEACON_MIN_PULSE_RATE = 2.0f;  // Hz when far off center
 static const float BEACON_MAX_PULSE_RATE = 15.0f; // Hz when near center
@@ -647,9 +647,12 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
             // Final sample with volume and envelope
             float beaconSample = g_beaconLpfState * BEACON_VOLUME * g_beaconEnvelopeState;
 
-            // Apply stereo panning
-            float beaconLeftGain = (beaconPan <= 0.0f) ? 1.0f : (1.0f - beaconPan);
-            float beaconRightGain = (beaconPan >= 0.0f) ? 1.0f : (1.0f + beaconPan);
+            // Apply stereo panning - widen by 2x for more dramatic separation
+            float widePan = beaconPan * 2.0f;
+            if (widePan > 1.0f) widePan = 1.0f;
+            if (widePan < -1.0f) widePan = -1.0f;
+            float beaconLeftGain = (widePan <= 0.0f) ? 1.0f : (1.0f - widePan);
+            float beaconRightGain = (widePan >= 0.0f) ? 1.0f : (1.0f + widePan);
 
             leftSample += beaconSample * beaconLeftGain;
             rightSample += beaconSample * beaconRightGain;
