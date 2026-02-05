@@ -30,6 +30,10 @@ if (BA_intersectionMenuActive) then {
     [] call BA_fnc_closeIntersectionMenu;
 };
 
+if (BA_menuActive) then {
+    [] call BA_fnc_closeBAMenu;
+};
+
 // Close the dialog (this also triggers onUnload as a safety net)
 closeDialog 0;
 

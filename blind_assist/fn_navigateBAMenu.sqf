@@ -1,0 +1,63 @@
+/*
+ * Function: BA_fnc_navigateBAMenu
+ * Navigates up or down in the BA Menu.
+ *
+ * Works across all menu levels with appropriate announcements.
+ *
+ * Arguments:
+ *   0: STRING - Direction ("up" or "down")
+ *
+ * Return Value:
+ *   None
+ *
+ * Example:
+ *   ["up"] call BA_fnc_navigateBAMenu;
+ *   ["down"] call BA_fnc_navigateBAMenu;
+ */
+
+params [["_direction", "down", [""]]];
+
+// Don't navigate if menu not active
+if (!BA_menuActive) exitWith {};
+
+private _count = count BA_menuItems;
+if (_count == 0) exitWith {};
+
+// Update index with wrap-around
+if (_direction == "up") then {
+    BA_menuIndex = BA_menuIndex - 1;
+    if (BA_menuIndex < 0) then { BA_menuIndex = _count - 1; };
+} else {
+    BA_menuIndex = BA_menuIndex + 1;
+    if (BA_menuIndex >= _count) then { BA_menuIndex = 0; };
+};
+
+// Announce based on current level
+private _item = BA_menuItems select BA_menuIndex;
+
+switch (BA_menuLevel) do {
+    case 1: {
+        // Item list - format based on type
+        private _name = _item select 0;
+        private _magCount = _item select 3;
+        private _type = _item select 4;
+
+        private _announcement = if (_type == "weapon") then {
+            private _magText = if (_magCount == 1) then { "magazine" } else { "magazines" };
+            format ["%1 of %2. %3, %4 %5.", BA_menuIndex + 1, _count, _name, _magCount, _magText]
+        } else {
+            format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _name]
+        };
+        [_announcement] call BA_fnc_speak;
+    };
+    case 2: {
+        // Options: "[n] of [total]. [option]."
+        private _label = _item select 0;
+        [format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _label]] call BA_fnc_speak;
+    };
+    case 3: {
+        // Mag count: "[n] of [total]. [count]."
+        private _value = _item select 1;
+        [format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _value]] call BA_fnc_speak;
+    };
+};

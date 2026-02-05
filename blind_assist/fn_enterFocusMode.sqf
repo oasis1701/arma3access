@@ -69,7 +69,7 @@ _display displayAddEventHandler ["KeyDown", {
 
     // WASD (17, 30, 31, 32) - Exit focus mode and pass key through
     if (_key in [17, 30, 31, 32] && !_ctrl && !_alt) exitWith {
-        closeDialog 0;
+        [] call BA_fnc_exitFocusMode;
         false  // Let movement key through to Arma
     };
 
@@ -103,6 +103,27 @@ _display displayAddEventHandler ["KeyDown", {
             case 203: { ["left"] call BA_fnc_navigateLandmarksMenu; true };
             case 205: { ["right"] call BA_fnc_navigateLandmarksMenu; true };
             case 28: { [] call BA_fnc_selectLandmarksMenuItem; true };
+            default { true };
+        }
+    };
+
+    // N key (49) - Open/close BA Menu
+    if (_key == 49 && !_ctrl && !_shift && !_alt) exitWith {
+        if (BA_menuActive) then {
+            [] call BA_fnc_closeBAMenu;
+        } else {
+            [] call BA_fnc_openBAMenu;
+        };
+        true
+    };
+
+    // BA Menu navigation (when active)
+    if (BA_menuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateBAMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateBAMenu; true };
+            case 28: { [] call BA_fnc_selectBAMenuItem; true };
+            case 1: { [] call BA_fnc_closeBAMenu; true };
             default { true };
         }
     };

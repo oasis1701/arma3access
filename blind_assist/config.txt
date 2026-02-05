@@ -329,6 +329,31 @@ class CfgFunctions
 			{
 			};
 		};
+		class BAMenu
+		{
+			file="\blind_assist";
+			class initBAMenu
+			{
+			};
+			class openBAMenu
+			{
+			};
+			class navigateBAMenu
+			{
+			};
+			class selectBAMenuItem
+			{
+			};
+			class closeBAMenu
+			{
+			};
+			class restockAmmo
+			{
+			};
+			class getWeaponMagazineInfo
+			{
+			};
+		};
 		class DirectionSnap
 		{
 			file="\blind_assist";

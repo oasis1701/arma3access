@@ -619,3 +619,56 @@ Examples:
 
 ---
 
+## Phase 15: BA Menu - COMPLETE (2026-02-05)
+Inventory browser with weapon-specific ammo restocking.
+Accessible in both Observer Mode and Focus Mode.
+
+### Controls
+| Key | Action |
+|-----|--------|
+| **M** | Open BA Menu (weapon list) |
+| **Up/Down** | Navigate current level |
+| **Enter** | Select / drill down to next level |
+| **Escape** | Go back one level / close menu |
+
+### Menu Flow (3 Levels)
+```
+Level 1: Weapon List
+  "BA Menu. 1 of 3. MX Rifle, 2 magazines."
+  ↓ Enter
+
+Level 2: Weapon Options
+  "MX Rifle. 1 of 1. Restock."
+  ↓ Enter
+
+Level 3: Magazine Count
+  "Set magazines. 1 of 6. 1."
+  (Options: 1, 2, 4, 6, 8, 10)
+  ↓ Enter
+
+  "Restocked MX Rifle to 6 magazines."
+  → Returns to Level 1
+```
+
+### Announcements
+| Event | Format |
+|-------|--------|
+| Open menu | "BA Menu. [n] of [total]. [weapon], [count] magazines." |
+| Navigate weapons | "[n] of [total]. [weapon], [count] magazines." |
+| Select weapon | "[weapon]. 1 of 1. Restock." |
+| Select Restock | "Set magazines. 1 of 6. 1." |
+| Navigate counts | "[n] of 6. [count]." |
+| Execute | "Restocked [weapon] to [count] magazines." |
+| Back/Cancel | Level-appropriate announcement |
+| No weapons | "No weapons equipped." |
+
+### Technical Notes
+- Lists primary weapon, launcher, and handgun
+- Shows current magazine count for each weapon
+- Gets compatible magazine types from `CfgWeapons >> magazines`
+- Uses `removeMagazines` + `addMagazine` for precise control
+- In observer mode, modifies `BA_originalUnit`
+- Menu designed for easy expansion (add options to Level 2)
+
+---
+

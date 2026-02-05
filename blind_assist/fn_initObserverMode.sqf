@@ -11,6 +11,7 @@
  *   G            - Open group selection menu
  *   O            - Open orders menu
  *   L            - Open landmarks menu
+ *   N            - Open BA Menu (restock ammo, etc.)
  *   R            - Toggle road exploration mode
  *   Ctrl+R       - Open intersection menu (in road mode)
  *   Arrow keys   - Cursor movement (with Alt/Shift/Ctrl modifiers)
@@ -217,6 +218,27 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
             case 205: { ["right"] call BA_fnc_navigateLandmarksMenu; true };
             case 28: { [] call BA_fnc_selectLandmarksMenuItem; true };
             case 1: { [] call BA_fnc_closeLandmarksMenu; true };
+            default { true };  // Block all other keys while menu open
+        }
+    };
+
+    // N key (49) - Open/close BA Menu
+    if (_key == 49 && !_ctrl && !_shift && !_alt) exitWith {
+        if (BA_menuActive) then {
+            [] call BA_fnc_closeBAMenu;
+        } else {
+            [] call BA_fnc_openBAMenu;
+        };
+        true
+    };
+
+    // BA Menu navigation (when active) - takes priority
+    if (BA_menuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateBAMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateBAMenu; true };
+            case 28: { [] call BA_fnc_selectBAMenuItem; true };
+            case 1: { [] call BA_fnc_closeBAMenu; true };
             default { true };  // Block all other keys while menu open
         }
     };

@@ -401,6 +401,39 @@ class BA {
         class exitFocusMode {};
     };
 
+    class BAMenu {
+        file = "blind_assist";
+
+        // Initialize BA Menu state variables
+        // Usage: [] call BA_fnc_initBAMenu;
+        class initBAMenu {};
+
+        // Open the BA Menu (M key) - shows weapon inventory
+        // Usage: [] call BA_fnc_openBAMenu;
+        class openBAMenu {};
+
+        // Navigate up/down in BA Menu
+        // Usage: ["up"] call BA_fnc_navigateBAMenu;
+        class navigateBAMenu {};
+
+        // Select current BA Menu item (handles level transitions)
+        // Usage: [] call BA_fnc_selectBAMenuItem;
+        class selectBAMenuItem {};
+
+        // Close/back in BA Menu (level-aware)
+        // Usage: [] call BA_fnc_closeBAMenu;
+        class closeBAMenu {};
+
+        // Restock a specific magazine type
+        // Usage: ["30Rnd_65x39_caseless_mag", 6] call BA_fnc_restockAmmo;
+        class restockAmmo {};
+
+        // Get magazine info for a weapon
+        // Usage: [_unit, _weaponClass] call BA_fnc_getWeaponMagazineInfo;
+        // Returns: [magazineClass, currentCount]
+        class getWeaponMagazineInfo {};
+    };
+
     class DirectionSnap {
         file = "blind_assist";
 
