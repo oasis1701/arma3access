@@ -150,6 +150,46 @@ build.bat
 deploy.bat
 ```
 
+## Adding New Features (IMPORTANT)
+
+When creating new SQF functions, you must update multiple files:
+
+### 1. Function Registration (BOTH files!)
+New functions must be added to TWO config files:
+
+| File | Purpose |
+|------|---------|
+| `CfgFunctions.hpp` | Dev mission (description.ext includes this) |
+| `CfgFunctions_Addon.hpp` | PBO build (config.cpp includes this) |
+
+**Example:** Adding `fn_myNewFeature.sqf`:
+```cpp
+// Add to BOTH files in the appropriate class:
+class myNewFeature {};
+```
+
+### 2. Initialization (fn_autoInit.sqf)
+If your feature needs initialization, add the call to TWO places in `fn_autoInit.sqf`:
+
+1. **Main init block** (around line 17-27) - runs on fresh mission start
+2. **"Loaded" event handler** (around line 30-42) - runs when loading saved games
+
+```sqf
+// Add to BOTH places:
+[] call BA_fnc_initMyNewFeature;
+```
+
+**Why both?** `postInit` only runs on fresh mission starts. The "Loaded" handler ensures
+Blind Assist re-initializes when players load a saved game.
+
+### 3. Deployment Checklist
+After making changes:
+1. Deploy to dev mission: `cp blind_assist/*.sqf "$ARMA3_MISSION_DIR/blind_assist/"`
+2. Also deploy hpp: `cp blind_assist/CfgFunctions.hpp "$ARMA3_MISSION_DIR/blind_assist/"`
+3. Test in dev mission
+4. Rebuild PBO: `pack_ci.bat` (non-interactive version for Claude)
+5. Test with PBO (both fresh start AND loading a save)
+
 ## Test Command (in Arma 3 debug console)
 ```sqf
 "nvda_arma3_bridge" callExtension "speak:Hello world"

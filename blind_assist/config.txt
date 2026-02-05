@@ -299,6 +299,9 @@ class CfgFunctions
 			class calculateAimOffset
 			{
 			};
+			class snapAimToTarget
+			{
+			};
 		};
 		class TerrainRadar
 		{
@@ -358,6 +361,16 @@ class CfgFunctions
 			{
 			};
 			class announceNavProgress
+			{
+			};
+		};
+		class EnemyDetection
+		{
+			file="\blind_assist";
+			class initEnemyDetection
+			{
+			};
+			class updateEnemyDetection
 			{
 			};
 		};

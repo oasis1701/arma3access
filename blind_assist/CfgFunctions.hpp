@@ -448,4 +448,16 @@ class BA {
         // Usage: [_distance] call BA_fnc_announceNavProgress;
         class announceNavProgress {};
     };
+
+    class EnemyDetection {
+        file = "blind_assist";
+
+        // Initialize enemy detection (auto-starts, always active)
+        // Usage: [] call BA_fnc_initEnemyDetection;
+        class initEnemyDetection {};
+
+        // Per-frame update for enemy detection
+        // Usage: [] call BA_fnc_updateEnemyDetection;
+        class updateEnemyDetection {};
+    };
 };

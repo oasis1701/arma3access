@@ -368,6 +368,10 @@ class BA {
         // Calculate audio parameters (pan, pitch, locked)
         // Usage: [_soldier, _target] call BA_fnc_calculateAimOffset;
         class calculateAimOffset {};
+
+        // Snap aim to current target (T key - horizontal only)
+        // Usage: [] call BA_fnc_snapAimToTarget;
+        class snapAimToTarget {};
     };
 
     class TerrainRadar {
@@ -448,5 +452,17 @@ class BA {
         // Announce distance threshold progress
         // Usage: [_distance] call BA_fnc_announceNavProgress;
         class announceNavProgress {};
+    };
+
+    class EnemyDetection {
+        file = "\blind_assist";
+
+        // Initialize enemy detection (auto-starts, always active)
+        // Usage: [] call BA_fnc_initEnemyDetection;
+        class initEnemyDetection {};
+
+        // Per-frame update for enemy detection
+        // Usage: [] call BA_fnc_updateEnemyDetection;
+        class updateEnemyDetection {};
     };
 };
