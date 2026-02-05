@@ -72,6 +72,20 @@ static std::atomic<float> g_aimHorizThreshold(0.005f); // Adaptive horizontal th
 static std::atomic<bool> g_aimActive(false);        // Whether aim assist is active
 static std::atomic<bool> g_aimMuted(false);         // Mute when no target
 
+// Vertical lock blip state
+static std::atomic<bool> g_aimBlipPending(false);   // Flag to trigger blip
+static double g_blipPhase = 0.0;                    // Blip oscillator phase
+static float g_blipEnvelope = 0.0f;                 // Blip envelope level
+static int g_blipEnvState = 0;                      // 0=idle, 1=attack, 2=sustain, 3=release
+static int g_blipSustainSamples = 0;                // Remaining sustain samples
+
+// Vertical unlock blip state
+static std::atomic<bool> g_aimUnlockBlipPending(false);
+static double g_unlockBlipPhase = 0.0;
+static float g_unlockBlipEnvelope = 0.0f;
+static int g_unlockBlipEnvState = 0;
+static int g_unlockBlipSustainSamples = 0;
+
 // ============================================================================
 // Terrain Radar Audio State
 // ============================================================================
@@ -177,6 +191,14 @@ static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates 
 static const float VERT_ACTIVATE_THRESHOLD = 0.4f;  // vertError above this = slow clicks (edge of useful range)
 static const double PI = 3.14159265358979323846;
 // Note: VERT_CENTER_THRESHOLD and HORIZ_CENTER_THRESHOLD are now adaptive (passed from SQF)
+
+// Vertical lock blip constants
+static const float BLIP_FREQ = 800.0f;              // 800 Hz for lock
+static const float UNLOCK_BLIP_FREQ = 500.0f;       // 500 Hz for unlock
+static const int BLIP_ATTACK_SAMPLES = 44;          // ~1ms attack
+static const int BLIP_SUSTAIN_SAMPLES = 882;        // 20ms sustain
+static const int BLIP_RELEASE_SAMPLES = 88;         // ~2ms release
+static const float BLIP_VOLUME = 0.08f;             // Loud blip
 
 // Audio callback - generates two-tone precision feedback in real-time
 void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
@@ -335,6 +357,109 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
                     // Target is to the right - click in right ear
                     rightSample += clickSample;
                 }
+            }
+        }
+
+        // ================================================================
+        // Vertical lock blip (one-shot notification)
+        // ================================================================
+        if (active) {
+            // Check for pending blip and start envelope if idle
+            if (g_aimBlipPending.load() && g_blipEnvState == 0) {
+                g_blipEnvState = 1;
+                g_blipEnvelope = 0.0f;
+                g_blipPhase = 0.0;
+                g_blipSustainSamples = BLIP_SUSTAIN_SAMPLES;
+                g_aimBlipPending.store(false);
+            }
+
+            if (g_blipEnvState > 0) {
+                // Generate sine wave at 800 Hz
+                float blipSample = (float)sin(g_blipPhase) * BLIP_VOLUME;
+
+                // Advance phase
+                double blipPhaseInc = (2.0 * PI * BLIP_FREQ) / SAMPLE_RATE;
+                g_blipPhase += blipPhaseInc;
+                if (g_blipPhase >= 2.0 * PI) g_blipPhase -= 2.0 * PI;
+
+                // Update envelope state machine
+                switch (g_blipEnvState) {
+                    case 1:  // Attack
+                        g_blipEnvelope += 1.0f / BLIP_ATTACK_SAMPLES;
+                        if (g_blipEnvelope >= 1.0f) {
+                            g_blipEnvelope = 1.0f;
+                            g_blipEnvState = 2;
+                        }
+                        break;
+                    case 2:  // Sustain
+                        g_blipSustainSamples--;
+                        if (g_blipSustainSamples <= 0) {
+                            g_blipEnvState = 3;
+                        }
+                        break;
+                    case 3:  // Release
+                        g_blipEnvelope -= 1.0f / BLIP_RELEASE_SAMPLES;
+                        if (g_blipEnvelope <= 0.0f) {
+                            g_blipEnvelope = 0.0f;
+                            g_blipEnvState = 0;  // Done
+                        }
+                        break;
+                }
+
+                // Apply envelope and add to both channels (mono)
+                blipSample *= g_blipEnvelope;
+                leftSample += blipSample;
+                rightSample += blipSample;
+            }
+
+            // ================================================================
+            // Vertical unlock blip (one-shot notification at 500 Hz)
+            // ================================================================
+            if (g_aimUnlockBlipPending.load() && g_unlockBlipEnvState == 0) {
+                g_unlockBlipEnvState = 1;
+                g_unlockBlipEnvelope = 0.0f;
+                g_unlockBlipPhase = 0.0;
+                g_unlockBlipSustainSamples = BLIP_SUSTAIN_SAMPLES;
+                g_aimUnlockBlipPending.store(false);
+            }
+
+            if (g_unlockBlipEnvState > 0) {
+                // Generate sine wave at 500 Hz
+                float unlockBlipSample = (float)sin(g_unlockBlipPhase) * BLIP_VOLUME;
+
+                // Advance phase
+                double unlockBlipPhaseInc = (2.0 * PI * UNLOCK_BLIP_FREQ) / SAMPLE_RATE;
+                g_unlockBlipPhase += unlockBlipPhaseInc;
+                if (g_unlockBlipPhase >= 2.0 * PI) g_unlockBlipPhase -= 2.0 * PI;
+
+                // Update envelope state machine
+                switch (g_unlockBlipEnvState) {
+                    case 1:  // Attack
+                        g_unlockBlipEnvelope += 1.0f / BLIP_ATTACK_SAMPLES;
+                        if (g_unlockBlipEnvelope >= 1.0f) {
+                            g_unlockBlipEnvelope = 1.0f;
+                            g_unlockBlipEnvState = 2;
+                        }
+                        break;
+                    case 2:  // Sustain
+                        g_unlockBlipSustainSamples--;
+                        if (g_unlockBlipSustainSamples <= 0) {
+                            g_unlockBlipEnvState = 3;
+                        }
+                        break;
+                    case 3:  // Release
+                        g_unlockBlipEnvelope -= 1.0f / BLIP_RELEASE_SAMPLES;
+                        if (g_unlockBlipEnvelope <= 0.0f) {
+                            g_unlockBlipEnvelope = 0.0f;
+                            g_unlockBlipEnvState = 0;  // Done
+                        }
+                        break;
+                }
+
+                // Apply envelope and add to both channels (mono)
+                unlockBlipSample *= g_unlockBlipEnvelope;
+                leftSample += unlockBlipSample;
+                rightSample += unlockBlipSample;
             }
         }
 
@@ -806,6 +931,20 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
             g_aimHorizThreshold.store(horizThreshold);
         }
 
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // Command: aim_blip - Play a one-shot vertical lock blip (800 Hz)
+    if (cmd == "aim_blip") {
+        g_aimBlipPending.store(true);
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // Command: aim_unlock_blip - Play a one-shot vertical unlock blip (500 Hz)
+    if (cmd == "aim_unlock_blip") {
+        g_aimUnlockBlipPending.store(true);
         safe_output(output, outputSize, "OK");
         return;
     }

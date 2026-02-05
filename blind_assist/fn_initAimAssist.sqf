@@ -29,6 +29,9 @@ BA_aimAssistEHId = -1;             // EachFrame event handler ID
 BA_aimAssistHitTarget = objNull;   // Target with hit EH attached
 BA_aimAssistHitEH = -1;            // Hit event handler ID
 
+// Lock state tracking (for blip sound)
+BA_aimAssistWasVertLocked = false; // Previous vertical lock state
+
 // Configuration
 BA_aimAssistMaxRange = 500;        // Maximum target acquisition range (meters)
 BA_aimAssistLockAngle = 1.0;       // Degrees of error for "locked" - testing camera direction

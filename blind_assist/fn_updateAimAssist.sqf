@@ -77,12 +77,46 @@ if (isNull _target) then {
     // Reset state
     BA_aimAssistTarget = objNull;
     BA_aimAssistTargetDeathType = "";
+    BA_aimAssistWasVertLocked = false;
 } else {
     // Announce new or changed target
     if (_target != _previousTarget) then {
         private _type = getText (configFile >> "CfgVehicles" >> typeOf _target >> "displayName");
         private _dist = round (_soldier distance _target);
         [format ["Targeting %1, %2 meters.", _type, _dist]] call BA_fnc_speak;
+
+        // Auto-snap if auto-lock mode is enabled (only in manual mode, not observer)
+        if (!isNil "BA_autoLockEnabled" && {BA_autoLockEnabled} && {!BA_observerMode}) then {
+            // Store target for tracking
+            BA_snapTarget = _target;
+
+            // Set up continuous horizontal tracking
+            onEachFrame {
+                // Safety checks
+                if (isNil "BA_snapTarget" || {isNull BA_snapTarget} || {!alive BA_snapTarget} || {!alive player}) exitWith {
+                    onEachFrame {};
+                    BA_snapTarget = objNull;
+                };
+
+                if (vehicle player != player) exitWith {
+                    onEachFrame {};
+                    BA_snapTarget = objNull;
+                };
+
+                // Stop if auto-lock disabled
+                if (isNil "BA_autoLockEnabled" || {!BA_autoLockEnabled}) exitWith {
+                    onEachFrame {};
+                };
+
+                // Calculate and apply horizontal direction
+                private _playerPos = getPos player;
+                private _targetPos = getPos BA_snapTarget;
+                player setDir (_playerPos getDir _targetPos);
+            };
+        };
+
+        // Reset lock state for new target
+        BA_aimAssistWasVertLocked = false;
     };
 
     // Update target reference
@@ -137,6 +171,16 @@ if (isNull _target) then {
     // Calculate audio parameters
     private _params = [_soldier, _target] call BA_fnc_calculateAimOffset;
     _params params ["_pan", "_pitch", "_vertError", "_horizError", "_vertThreshold", "_horizThreshold"];
+
+    // Detect vertical lock transitions and play blips
+    private _vertLocked = _vertError < _vertThreshold;
+    if (_vertLocked && !BA_aimAssistWasVertLocked) then {
+        "nvda_arma3_bridge" callExtension "aim_blip";         // Lock: 800 Hz
+    };
+    if (!_vertLocked && BA_aimAssistWasVertLocked) then {
+        "nvda_arma3_bridge" callExtension "aim_unlock_blip";  // Unlock: 500 Hz
+    };
+    BA_aimAssistWasVertLocked = _vertLocked;
 
     // Send to DLL
     // Format: "aim_update:pan,pitch,vertError,horizError,vertThreshold,horizThreshold"
