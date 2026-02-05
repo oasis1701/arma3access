@@ -105,6 +105,12 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         true
     };
 
+    // T key (20) - Snap aim to target (requires aim assist enabled with target)
+    if (_key == 20 && !_ctrl && !_shift && !_alt) exitWith {
+        [] call BA_fnc_snapAimToTarget;
+        true
+    };
+
     // Ctrl+W (key 17) - Toggle terrain radar (only when observer mode OFF)
     if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
         if (!BA_observerMode) then {

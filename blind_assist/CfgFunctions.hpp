@@ -363,6 +363,10 @@ class BA {
         // Calculate audio parameters (pan, pitch, locked)
         // Usage: [_soldier, _target] call BA_fnc_calculateAimOffset;
         class calculateAimOffset {};
+
+        // Snap aim to current target (T key - horizontal only)
+        // Usage: [] call BA_fnc_snapAimToTarget;
+        class snapAimToTarget {};
     };
 
     class TerrainRadar {
