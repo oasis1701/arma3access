@@ -245,6 +245,45 @@ if (_gogglesClass != "") then {
     BA_menuItems pushBack [_itemName, _gogglesClass, "", 1, "equipment"];
 };
 
+// === PLAYER STATUS (must always be the last menu item) ===
+private _playerName = name _unit;
+
+// Role: prefer roleDescription (mission-set), fall back to config displayName
+private _role = roleDescription _unit;
+if (_role == "") then {
+    _role = getText (configFile >> "CfgVehicles" >> typeOf _unit >> "displayName");
+};
+if (_role == "") then { _role = "Unknown role"; };
+
+// Side: map to friendly names
+private _sideStr = switch (side _unit) do {
+    case west: { "BLUFOR" };
+    case east: { "OPFOR" };
+    case resistance: { "Independent" };
+    case civilian: { "Civilian" };
+    default { str side _unit };
+};
+
+// Faction display name
+private _factionName = getText (configFile >> "CfgFactionClasses" >> faction _unit >> "displayName");
+if (_factionName == "") then { _factionName = faction _unit; };
+
+// Vehicle status
+private _vehicleStatus = "";
+if (vehicle _unit != _unit) then {
+    private _veh = vehicle _unit;
+    private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _veh >> "displayName");
+    if (_vehName == "") then { _vehName = typeOf _veh; };
+    private _vehRole = assignedVehicleRole _unit;
+    private _roleName = if (count _vehRole > 0) then { _vehRole select 0 } else { "passenger" };
+    _vehicleStatus = format ["in %1 as %2", _vehName, _roleName];
+} else {
+    _vehicleStatus = "on foot";
+};
+
+private _statusText = format ["%1, %2, %3 %4, %5", _playerName, _role, _sideStr, _factionName, _vehicleStatus];
+BA_menuItems pushBack [_statusText, "", "", 0, "item"];
+
 diag_log format ["BA_DEBUG: Final BA_menuItems count = %1", count BA_menuItems];
 diag_log format ["BA_DEBUG: BA_menuItems = %1", BA_menuItems];
 
