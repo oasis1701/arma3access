@@ -31,20 +31,30 @@ switch (BA_menuLevel) do {
         private _type = _item select 4;
 
         if (_type == "weapon") then {
-            // Weapon selected -> Show Restock option
+            // Weapon selected -> Show options
             BA_selectedWeaponName = _item select 0;
             BA_selectedWeapon = _item select 1;
+            BA_selectedPrimaryMagazine = _item select 2;
             BA_selectedMagazine = _item select 2;
 
-            // Build options menu (just Restock for now)
-            BA_menuItems = [
-                ["Restock", "restock"]
-            ];
+            // Check if weapon has GL data (array length > 5)
+            if (count _item > 5) then {
+                BA_selectedGLMagazine = _item select 5;
+            } else {
+                BA_selectedGLMagazine = "";
+            };
+
+            // Build options menu dynamically
+            BA_menuItems = [["Restock", "restock"]];
+            if (BA_selectedGLMagazine != "") then {
+                BA_menuItems pushBack ["Restock Grenade Launcher", "restock_gl"];
+            };
             BA_menuLevel = 2;
             BA_menuIndex = 0;
 
-            // Announce: "[weapon]. 1 of 1. Restock."
-            [format ["%1. 1 of 1. Restock.", BA_selectedWeaponName]] call BA_fnc_speak;
+            // Announce
+            private _total = count BA_menuItems;
+            [format ["%1. 1 of %2. Restock.", BA_selectedWeaponName, _total]] call BA_fnc_speak;
         } else {
             // Non-weapon items have no options
             ["No options for this item."] call BA_fnc_speak;
@@ -56,7 +66,14 @@ switch (BA_menuLevel) do {
         private _item = BA_menuItems select BA_menuIndex;
         private _action = _item select 1;
 
-        if (_action == "restock") then {
+        if (_action == "restock" || _action == "restock_gl") then {
+            // Set the correct magazine based on action
+            if (_action == "restock_gl") then {
+                BA_selectedMagazine = BA_selectedGLMagazine;
+            } else {
+                BA_selectedMagazine = BA_selectedPrimaryMagazine;
+            };
+
             // Show magazine count selection
             BA_menuItems = [
                 ["1", 1],

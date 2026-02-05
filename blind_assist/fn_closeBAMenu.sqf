@@ -22,13 +22,15 @@ if (!BA_menuActive) exitWith {};
 switch (BA_menuLevel) do {
     case 3: {
         // Back to options menu
-        BA_menuItems = [
-            ["Restock", "restock"]
-        ];
+        BA_menuItems = [["Restock", "restock"]];
+        if (!isNil "BA_selectedGLMagazine" && {BA_selectedGLMagazine != ""}) then {
+            BA_menuItems pushBack ["Restock Grenade Launcher", "restock_gl"];
+        };
         BA_menuLevel = 2;
         BA_menuIndex = 0;
 
-        [format ["%1. 1 of 1. Restock.", BA_selectedWeaponName]] call BA_fnc_speak;
+        private _total = count BA_menuItems;
+        [format ["%1. 1 of %2. Restock.", BA_selectedWeaponName, _total]] call BA_fnc_speak;
     };
 
     case 2: {

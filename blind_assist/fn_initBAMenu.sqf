@@ -24,3 +24,5 @@ BA_menuIndex = 0;
 BA_selectedWeapon = "";
 BA_selectedWeaponName = "";
 BA_selectedMagazine = "";
+BA_selectedPrimaryMagazine = "";
+BA_selectedGLMagazine = "";
