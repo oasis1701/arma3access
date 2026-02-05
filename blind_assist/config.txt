@@ -374,6 +374,13 @@ class CfgFunctions
 			{
 			};
 		};
+		class ChatReader
+		{
+			file="\blind_assist";
+			class initChatReader
+			{
+			};
+		};
 	};
 };
 class BA_FocusModeDialog

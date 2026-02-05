@@ -25,6 +25,7 @@ sleep 1;
 [] call BA_fnc_initDirectionSnap;
 [] call BA_fnc_initPlayerNav;
 [] call BA_fnc_initEnemyDetection;
+[] call BA_fnc_initChatReader;
 
 // Register handler for save game loads
 // postInit doesn't run when loading saves, so we need this event handler
@@ -42,6 +43,7 @@ addMissionEventHandler ["Loaded", {
         [] call BA_fnc_initDirectionSnap;
         [] call BA_fnc_initPlayerNav;
         [] call BA_fnc_initEnemyDetection;
+        [] call BA_fnc_initChatReader;
         ["Blind Assist loaded."] call BA_fnc_speak;
     };
 }];

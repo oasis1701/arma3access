@@ -584,3 +584,38 @@ Enemies are NOT announced when:
 
 ---
 
+## Phase 14: Chat Reader - COMPLETE (2026-02-05)
+Automatic NVDA announcements for incoming Side Chat and Command Chat messages.
+
+### Features
+- **Automatic**: No key press needed - announces incoming radio messages
+- **Side Chat (Channel 1)**: Game announcements like "Sector Lost", "Objective Updated"
+- **Command Chat (Channel 2)**: Commander strategic messages
+- **Visual preserved**: Messages still display on screen normally
+
+### Announcement Format
+```
+"Radio: [Name] says, [message]"
+```
+Examples:
+- "Radio: HQ says, Sector Alpha captured."
+- "Radio: Command says, Reinforcements inbound."
+- "Radio: Sergeant Miller says, Enemy contact!"
+
+### Channel Reference
+| Channel | ID | Announced |
+|---------|----|----|
+| Global | 0 | No |
+| Side | 1 | Yes |
+| Command | 2 | Yes |
+| Group | 3 | No (spammy) |
+| Vehicle | 4 | No |
+| Direct | 5 | No |
+
+### Use Cases
+- **Warlords**: "We are attacking Mike-26", "Sector lost"
+- **Combat Patrol**: Objective updates, completion messages
+- **Custom missions**: Any scripted sideChat announcements
+
+---
+

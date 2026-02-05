@@ -198,7 +198,7 @@ static const float UNLOCK_BLIP_FREQ = 500.0f;       // 500 Hz for unlock
 static const int BLIP_ATTACK_SAMPLES = 44;          // ~1ms attack
 static const int BLIP_SUSTAIN_SAMPLES = 882;        // 20ms sustain
 static const int BLIP_RELEASE_SAMPLES = 88;         // ~2ms release
-static const float BLIP_VOLUME = 0.08f;             // Loud blip
+static const float BLIP_VOLUME = 0.30f;             // Loud blip (4x increase for gunfight audibility)
 
 // Audio callback - generates two-tone precision feedback in real-time
 void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {

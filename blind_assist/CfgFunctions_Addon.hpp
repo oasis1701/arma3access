@@ -465,4 +465,12 @@ class BA {
         // Usage: [] call BA_fnc_updateEnemyDetection;
         class updateEnemyDetection {};
     };
+
+    class ChatReader {
+        file = "\blind_assist";
+
+        // Initialize chat reader for Side/Command chat announcements
+        // Usage: [] call BA_fnc_initChatReader;
+        class initChatReader {};
+    };
 };
