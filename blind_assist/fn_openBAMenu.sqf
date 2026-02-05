@@ -138,6 +138,22 @@ if (_handgun != "") then {
     BA_menuItems pushBack _entry;
 };
 
+// === AMMUNITION ===
+// List all magazine types (ammo, grenades, shells) with counts
+private _unitMags = magazines _unit;
+private _magCounts = createHashMap;
+{ _magCounts set [_x, (_magCounts getOrDefault [_x, 0]) + 1]; } forEach _unitMags;
+
+{
+    private _class = _x;
+    private _magCount = _y;
+    private _magName = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
+    if (_magName == "") then { _magName = _class; };
+
+    private _countText = if (_magCount > 1) then { format [" x%1", _magCount] } else { "" };
+    BA_menuItems pushBack [_magName + _countText, _class, "", _magCount, "item"];
+} forEach _magCounts;
+
 // === INVENTORY ITEMS ===
 // Get all items from uniform, vest, backpack
 private _allItems = (uniformItems _unit) + (vestItems _unit) + (backpackItems _unit);
