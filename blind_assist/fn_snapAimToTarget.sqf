@@ -23,6 +23,31 @@ BA_autoLockEnabled = !BA_autoLockEnabled;
 
 if (BA_autoLockEnabled) then {
     ["Target lock on."] call BA_fnc_speak;
+
+    // If aim assist already has a target, start tracking immediately
+    if (!isNil "BA_aimAssistTarget" && {!isNull BA_aimAssistTarget} && {alive BA_aimAssistTarget} && {!BA_observerMode}) then {
+        BA_snapTarget = BA_aimAssistTarget;
+
+        onEachFrame {
+            if (isNil "BA_snapTarget" || {isNull BA_snapTarget} || {!alive BA_snapTarget} || {!alive player}) exitWith {
+                onEachFrame {};
+                BA_snapTarget = objNull;
+            };
+
+            if (vehicle player != player) exitWith {
+                onEachFrame {};
+                BA_snapTarget = objNull;
+            };
+
+            if (isNil "BA_autoLockEnabled" || {!BA_autoLockEnabled}) exitWith {
+                onEachFrame {};
+            };
+
+            private _playerPos = getPos player;
+            private _targetPos = getPos BA_snapTarget;
+            player setDir (_playerPos getDir _targetPos);
+        };
+    };
 } else {
     ["Target lock off."] call BA_fnc_speak;
     // Stop any active tracking
