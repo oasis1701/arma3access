@@ -64,27 +64,6 @@ BA_warnedIncapacitated = false; // Prevents unconscious warning spam
 BA_warnedCaptive = false;       // Prevents captive warning spam
 BA_lastObservedVehicle = objNull; // Tracks vehicle for ejection detection
 
-// Initialize cursor system
-[] call BA_fnc_initCursor;
-
-// Initialize landmarks menu system
-[] call BA_fnc_initLandmarksMenu;
-
-// Initialize scanner system
-[] call BA_fnc_initScanner;
-
-// Initialize aim assist system
-[] call BA_fnc_initAimAssist;
-
-// Initialize terrain radar system
-[] call BA_fnc_initTerrainRadar;
-
-// Initialize direction snap system
-[] call BA_fnc_initDirectionSnap;
-
-// Initialize player navigation system
-[] call BA_fnc_initPlayerNav;
-
 // Add keyboard event handler
 // DIK codes: O = 24, Tab = 15
 // Parameters: [displayOrControl, key, shift, ctrl, alt]

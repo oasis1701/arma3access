@@ -168,19 +168,23 @@ New functions must be added to TWO config files:
 class myNewFeature {};
 ```
 
-### 2. Initialization (fn_autoInit.sqf)
+### 2. Initialization (fn_autoInit.sqf ONLY)
 If your feature needs initialization, add the call to TWO places in `fn_autoInit.sqf`:
 
-1. **Main init block** (around line 17-27) - runs on fresh mission start
-2. **"Loaded" event handler** (around line 30-42) - runs when loading saved games
+1. **Main init block** - runs on fresh mission start
+2. **"Loaded" event handler** - runs when loading saved games
 
 ```sqf
-// Add to BOTH places:
+// Add to BOTH places in fn_autoInit.sqf:
 [] call BA_fnc_initMyNewFeature;
 ```
 
 **Why both?** `postInit` only runs on fresh mission starts. The "Loaded" handler ensures
 Blind Assist re-initializes when players load a saved game.
+
+**Note:** `fn_initObserverMode.sqf` is only for observer-mode-specific setup (state variables
++ keybindings). Do NOT add subsystem init calls there — all initialization goes through
+`fn_autoInit.sqf`.
 
 ### 3. Deployment Checklist
 After making changes:

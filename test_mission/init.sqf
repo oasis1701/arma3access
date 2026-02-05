@@ -18,14 +18,8 @@ if (_nvdaStatus == "OK") then {
     systemChat "Speaking welcome message...";
     "nvda_arma3_bridge" callExtension "speak:Welcome to Arma 3 Blind Assist, Loading, please wait.";
 
-    // Initialize Observer Mode system
-    [] call BA_fnc_initObserverMode;
-
-    // Initialize Order Menu system
-    [] call BA_fnc_initOrderMenu;
-
-    // Initialize Group Menu system
-    [] call BA_fnc_initGroupMenu;
+    // Initialize all Blind Assist systems
+    [] call BA_fnc_autoInit;
 
     // Initialize Dev Sandbox (spawns assets, speaks ready message)
     [] call BA_fnc_initDevSandbox;

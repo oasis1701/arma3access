@@ -10,6 +10,11 @@
  */
 
 class BA {
+    class Core {
+        file = "blind_assist";
+        class autoInit {};
+    };
+
     class NVDA {
         file = "blind_assist";
 

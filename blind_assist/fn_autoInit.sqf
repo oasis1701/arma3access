@@ -15,6 +15,7 @@ waitUntil {!isNull player};
 sleep 1;
 
 // Initialize all Blind Assist systems
+[] call BA_fnc_initCursor;
 [] call BA_fnc_initObserverMode;
 [] call BA_fnc_initOrderMenu;
 [] call BA_fnc_initGroupMenu;
@@ -34,6 +35,7 @@ addMissionEventHandler ["Loaded", {
     // Re-initialize when a save is loaded
     [] spawn {
         sleep 0.5;
+        [] call BA_fnc_initCursor;
         [] call BA_fnc_initObserverMode;
         [] call BA_fnc_initOrderMenu;
         [] call BA_fnc_initGroupMenu;
