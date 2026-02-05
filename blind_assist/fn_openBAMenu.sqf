@@ -39,6 +39,58 @@ private _unit = if (BA_observerMode && !isNull BA_originalUnit) then {
 BA_menuItems = [];
 diag_log format ["BA_DEBUG: Building weapon list for unit %1", _unit];
 
+// Helper: check for secondary muzzles (UGLs, etc.) and add menu entries
+private _fnc_addSecondaryMuzzles = {
+    params ["_unit", "_weaponClass", "_weaponDisplayName"];
+    diag_log format ["BA_DEBUG: _fnc_addSecondaryMuzzles called for %1", _weaponClass];
+    private _foundSecondary = false;
+
+    // Method 1: weaponsItems runtime check
+    private _wItems = weaponsItems _unit;
+    {
+        if ((_x select 0) == _weaponClass) then {
+            if (count _x > 5) then {
+                private _secMag = _x select 5;
+                if (count _secMag > 0) then {
+                    private _secMagClass = _secMag select 0;
+                    private _cnt = 0;
+                    { if (_x == _secMagClass) then { _cnt = _cnt + 1; }; } forEach (magazines _unit);
+                    private _entryName = format ["%1 - Grenade Launcher", _weaponDisplayName];
+                    diag_log format ["BA_DEBUG: Secondary muzzle (weaponsItems) on %1: mag=%2, count=%3", _weaponClass, _secMagClass, _cnt];
+                    BA_menuItems pushBack [_entryName, _weaponClass, _secMagClass, _cnt, "weapon"];
+                    _foundSecondary = true;
+                };
+            };
+        };
+    } forEach _wItems;
+
+    // Method 2: compatibleMagazines fallback (when GL has no ammo loaded)
+    if (!_foundSecondary) then {
+        private _allMags = compatibleMagazines _weaponClass;
+        private _primaryMags = getArray (configFile >> "CfgWeapons" >> _weaponClass >> "magazines");
+        private _secondaryMags = [];
+        { if (!(_x in _primaryMags)) then { _secondaryMags pushBack _x; }; } forEach _allMags;
+
+        diag_log format ["BA_DEBUG: compatibleMagazines fallback for %1: all=%2, primary=%3, secondary=%4", _weaponClass, _allMags, _primaryMags, _secondaryMags];
+
+        if (count _secondaryMags > 0) then {
+            private _unitMags = magazines _unit;
+            private _bestMag = _secondaryMags select 0;
+            private _bestCount = 0;
+            {
+                private _magClass = _x;
+                private _c = 0;
+                { if (_x == _magClass) then { _c = _c + 1; }; } forEach _unitMags;
+                if (_c > _bestCount) then { _bestMag = _magClass; _bestCount = _c; };
+            } forEach _secondaryMags;
+
+            private _entryName = format ["%1 - Grenade Launcher", _weaponDisplayName];
+            diag_log format ["BA_DEBUG: Secondary muzzle (fallback) on %1: mag=%2, count=%3", _weaponClass, _bestMag, _bestCount];
+            BA_menuItems pushBack [_entryName, _weaponClass, _bestMag, _bestCount, "weapon"];
+        };
+    };
+};
+
 // === WEAPONS ===
 // Primary weapon
 private _primary = primaryWeapon _unit;
@@ -51,6 +103,7 @@ if (_primary != "") then {
     private _name = getText (configFile >> "CfgWeapons" >> _primary >> "displayName");
     diag_log format ["BA_DEBUG: Primary %1 (%2), %3 mags", _name, _magClass, _count];
     BA_menuItems pushBack [_name, _primary, _magClass, _count, "weapon"];
+    [_unit, _primary, _name] call _fnc_addSecondaryMuzzles;
 };
 
 // Secondary weapon (launcher)
@@ -60,6 +113,7 @@ if (_secondary != "") then {
     _info params ["_magClass", "_count"];
     private _name = getText (configFile >> "CfgWeapons" >> _secondary >> "displayName");
     BA_menuItems pushBack [_name, _secondary, _magClass, _count, "weapon"];
+    [_unit, _secondary, _name] call _fnc_addSecondaryMuzzles;
 };
 
 // Handgun
@@ -69,6 +123,7 @@ if (_handgun != "") then {
     _info params ["_magClass", "_count"];
     private _name = getText (configFile >> "CfgWeapons" >> _handgun >> "displayName");
     BA_menuItems pushBack [_name, _handgun, _magClass, _count, "weapon"];
+    [_unit, _handgun, _name] call _fnc_addSecondaryMuzzles;
 };
 
 // === INVENTORY ITEMS ===
