@@ -546,3 +546,41 @@ Announces when crossing thresholds: 500m, 300m, 200m, 150m, 100m, 75m, 50m, 30m,
 
 ---
 
+## Phase 13: Automatic Enemy Detection - COMPLETE (2026-02-05)
+Real-time announcements when enemies are spotted by your soldier.
+
+### Features
+- **Automatic**: No key press needed - announces as soon as soldier detects enemy
+- **Realistic detection**: Uses `nearTargets` - only announces enemies your soldier knows about
+- **Re-announcement**: If enemy leaves awareness and returns, announces again
+- **All modes**: Works in observer mode, focus mode, and normal play
+
+### Announcement Format
+```
+"[distance] meters, [unit type], [direction]"
+```
+Examples:
+- "50 meters, Rifleman, northeast"
+- "200 meters, Tank, south"
+- "120 meters, CSAT Autorifleman, west"
+
+### Detection Criteria
+Enemies are announced when:
+- Your soldier sees them
+- Your soldier hears them
+- Your side has spotted them (shared intel)
+
+Enemies are NOT announced when:
+- They're hidden and undetected
+- They're behind you and silent
+- Your soldier has no awareness of them
+
+### Technical Notes
+- Update rate: 2 Hz (every 0.5 seconds)
+- Range: 2000m (limited by `nearTargets`, not a magic detection bubble)
+- Tracks announced enemies to avoid spam
+- Removes enemies from tracking when they leave awareness
+- Uses same unit reference as Alt+5 status check
+
+---
+
