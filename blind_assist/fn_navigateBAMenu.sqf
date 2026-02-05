@@ -44,20 +44,20 @@ switch (BA_menuLevel) do {
 
         private _announcement = if (_type == "weapon") then {
             private _magText = if (_magCount == 1) then { "magazine" } else { "magazines" };
-            format ["%1 of %2. %3, %4 %5.", BA_menuIndex + 1, _count, _name, _magCount, _magText]
+            format ["%1, %2 %3.", _name, _magCount, _magText]
         } else {
-            format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _name]
+            format ["%1.", _name]
         };
         [_announcement] call BA_fnc_speak;
     };
     case 2: {
         // Options: "[n] of [total]. [option]."
         private _label = _item select 0;
-        [format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _label]] call BA_fnc_speak;
+        [format ["%1.", _label]] call BA_fnc_speak;
     };
     case 3: {
         // Mag count: "[n] of [total]. [count]."
         private _value = _item select 1;
-        [format ["%1 of %2. %3.", BA_menuIndex + 1, _count, _value]] call BA_fnc_speak;
+        [format ["%1.", _value]] call BA_fnc_speak;
     };
 };
