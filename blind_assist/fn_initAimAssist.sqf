@@ -32,6 +32,9 @@ BA_aimAssistHitEH = -1;            // Hit event handler ID
 // Lock state tracking (for blip sound)
 BA_aimAssistWasVertLocked = false; // Previous vertical lock state
 
+// Horizontal guidance (secondary click tone)
+BA_aimHorizGuidanceEnabled = false;  // Horizontal click tone off by default
+
 // Configuration
 BA_aimAssistMaxRange = 500;        // Maximum target acquisition range (meters)
 BA_aimAssistLockAngle = 1.0;       // Degrees of error for "locked" - testing camera direction

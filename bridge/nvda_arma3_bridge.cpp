@@ -71,6 +71,7 @@ static std::atomic<float> g_aimVertThreshold(0.02f);  // Adaptive vertical thres
 static std::atomic<float> g_aimHorizThreshold(0.005f); // Adaptive horizontal threshold
 static std::atomic<bool> g_aimActive(false);        // Whether aim assist is active
 static std::atomic<bool> g_aimMuted(false);         // Mute when no target
+static std::atomic<bool> g_aimHorizEnabled(false);  // Horizontal guidance off by default
 
 // Vertical lock blip state
 static std::atomic<bool> g_aimBlipPending(false);   // Flag to trigger blip
@@ -246,7 +247,7 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     // Only active when roughly facing target (abs(pan) < 0.2)
     // Clicks speed up as you approach target, then go smooth when on target
     float panMagnitude = fabsf(pan);
-    bool secondaryActive = (panMagnitude < HORIZ_ACTIVATE_THRESHOLD);
+    bool secondaryActive = g_aimHorizEnabled.load() && (panMagnitude < HORIZ_ACTIVATE_THRESHOLD);
     float secondaryPulseRate = 0.0f;
     if (secondaryActive && panMagnitude >= horizThreshold) {
         // Map pan from [horizThreshold, HORIZ_ACTIVATE_THRESHOLD] to [MAX_PULSE_RATE, MIN_PULSE_RATE]
@@ -952,10 +953,25 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
         return;
     }
 
+    // Command: aim_horiz_on - Enable horizontal guidance tone
+    if (cmd == "aim_horiz_on") {
+        g_aimHorizEnabled.store(true);
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
+    // Command: aim_horiz_off - Disable horizontal guidance tone
+    if (cmd == "aim_horiz_off") {
+        g_aimHorizEnabled.store(false);
+        safe_output(output, outputSize, "OK");
+        return;
+    }
+
     // Command: aim_stop - Stop the tone and disable aim assist
     if (cmd == "aim_stop") {
         g_aimActive.store(false);
         g_aimMuted.store(true);
+        g_aimHorizEnabled.store(false);
         safe_output(output, outputSize, "OK");
         return;
     }

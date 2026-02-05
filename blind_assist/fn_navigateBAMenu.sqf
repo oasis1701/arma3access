@@ -32,6 +32,26 @@ if (_direction == "up") then {
     if (BA_menuIndex >= _count) then { BA_menuIndex = 0; };
 };
 
+// Handle left/right tab switching (Level 1 only)
+if (_direction == "left" || _direction == "right") exitWith {
+    if (BA_menuLevel != 1) exitWith {};
+
+    // Save current tab's index
+    BA_menuTabIndex set [BA_menuTab, BA_menuIndex];
+
+    // Switch tab with wraparound
+    if (_direction == "left") then {
+        BA_menuTab = BA_menuTab - 1;
+        if (BA_menuTab < 0) then { BA_menuTab = (count BA_menuTabNames) - 1; };
+    } else {
+        BA_menuTab = BA_menuTab + 1;
+        if (BA_menuTab >= count BA_menuTabNames) then { BA_menuTab = 0; };
+    };
+
+    // Rebuild items for new tab
+    [true] call BA_fnc_openBAMenu;
+};
+
 // Announce based on current level
 private _item = BA_menuItems select BA_menuIndex;
 

@@ -57,6 +57,13 @@ if (BA_aimAssistEnabled) then {
     private _result = "nvda_arma3_bridge" callExtension "aim_start";
 
     if (_result == "OK") then {
+        // Sync horizontal guidance state to DLL
+        if (BA_aimHorizGuidanceEnabled) then {
+            "nvda_arma3_bridge" callExtension "aim_horiz_on";
+        } else {
+            "nvda_arma3_bridge" callExtension "aim_horiz_off";
+        };
+
         // Add per-frame update handler
         BA_aimAssistEHId = addMissionEventHandler ["EachFrame", {
             [] call BA_fnc_updateAimAssist;

@@ -20,6 +20,11 @@ BA_menuLevel = 0;        // 0=closed, 1=weapons, 2=options, 3=mag count
 BA_menuItems = [];
 BA_menuIndex = 0;
 
+// Tab system
+BA_menuTab = 0;                          // 0=Inventory, 1=Settings
+BA_menuTabNames = ["Inventory", "Settings"];
+BA_menuTabIndex = [0, 0];               // Per-tab remembered item index
+
 // Selected weapon info (preserved across levels)
 BA_selectedWeapon = "";
 BA_selectedWeaponName = "";

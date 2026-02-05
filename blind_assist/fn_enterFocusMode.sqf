@@ -122,6 +122,8 @@ _display displayAddEventHandler ["KeyDown", {
         switch (_key) do {
             case 200: { ["up"] call BA_fnc_navigateBAMenu; true };
             case 208: { ["down"] call BA_fnc_navigateBAMenu; true };
+            case 203: { ["left"] call BA_fnc_navigateBAMenu; true };
+            case 205: { ["right"] call BA_fnc_navigateBAMenu; true };
             case 28: { [] call BA_fnc_selectBAMenuItem; true };
             case 1: { [] call BA_fnc_closeBAMenu; true };
             default { true };

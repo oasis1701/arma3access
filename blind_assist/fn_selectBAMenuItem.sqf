@@ -26,6 +26,30 @@ if (_count == 0) exitWith {
 
 switch (BA_menuLevel) do {
     case 1: {
+        // Settings tab — toggle the selected setting
+        if (BA_menuTab == 1) exitWith {
+            private _item = BA_menuItems select BA_menuIndex;
+            private _action = _item select 2;
+
+            if (_action == "aimHorizGuidance") then {
+                BA_aimHorizGuidanceEnabled = !BA_aimHorizGuidanceEnabled;
+                private _state = if (BA_aimHorizGuidanceEnabled) then {"On"} else {"Off"};
+
+                // Sync to DLL
+                if (BA_aimHorizGuidanceEnabled) then {
+                    "nvda_arma3_bridge" callExtension "aim_horiz_on";
+                } else {
+                    "nvda_arma3_bridge" callExtension "aim_horiz_off";
+                };
+
+                // Update menu item display
+                _item set [0, format ["Aim Assist Horizontal tone: %1", _state]];
+                BA_menuItems set [BA_menuIndex, _item];
+
+                [format ["Aim Assist Horizontal tone: %1.", _state]] call BA_fnc_speak;
+            };
+        };
+
         // Item selected -> Check type before showing options
         private _item = BA_menuItems select BA_menuIndex;
         private _type = _item select 4;
