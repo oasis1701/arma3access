@@ -67,8 +67,8 @@ _display displayAddEventHandler ["KeyDown", {
         true
     };
 
-    // WASD (17, 30, 31, 32) - Exit focus mode and pass key through
-    if (_key in [17, 30, 31, 32] && !_ctrl && !_alt) exitWith {
+    // ASD (30, 31, 32) - Exit focus mode and pass key through (W reserved for lookout)
+    if (_key in [30, 31, 32] && !_ctrl && !_alt) exitWith {
         [] call BA_fnc_exitFocusMode;
         false  // Let movement key through to Arma
     };
@@ -130,6 +130,28 @@ _display displayAddEventHandler ["KeyDown", {
         }
     };
 
+    // Lookout menu navigation (when active)
+    if (BA_lookoutMenuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateLookoutMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateLookoutMenu; true };
+            case 28: {
+                // Select: get radius, close menu, exit focus mode, run findLookout
+                private _item = BA_lookoutMenuItems select BA_lookoutMenuIndex;
+                private _radius = _item select 1;
+                BA_lookoutMenuActive = false;
+                BA_lookoutMenuItems = [];
+                BA_lookoutMenuIndex = 0;
+                closeDialog 0;
+                [_radius] call BA_fnc_findLookout;
+                true
+            };
+            case 1: { [] call BA_fnc_closeLookoutMenu; true };
+            case 17: { [] call BA_fnc_closeLookoutMenu; true };
+            default { true };
+        }
+    };
+
     // Intersection menu navigation (when active)
     if (BA_intersectionMenuActive) exitWith {
         switch (_key) do {
@@ -152,6 +174,29 @@ _display displayAddEventHandler ["KeyDown", {
             [] call BA_fnc_closeIntersectionMenu;
         } else {
             [] call BA_fnc_openIntersectionMenu;
+        };
+        true
+    };
+
+    // W key (17) - Lookout menu toggle / cancel lookout nav
+    if (_key == 17 && !_shift && !_alt) exitWith {
+        // Ctrl+W = terrain radar toggle (pass through)
+        if (_ctrl) exitWith {
+            [] call BA_fnc_toggleTerrainRadar;
+            true
+        };
+        // If lookout nav active, cancel it
+        if (BA_lookoutNavActive && {BA_playerNavEnabled}) exitWith {
+            [] call BA_fnc_clearPlayerWaypoint;
+            BA_lookoutNavActive = false;
+            ["Lookout cancelled."] call BA_fnc_speak;
+            true
+        };
+        // Toggle lookout menu
+        if (BA_lookoutMenuActive) then {
+            [] call BA_fnc_closeLookoutMenu;
+        } else {
+            [] call BA_fnc_openLookoutMenu;
         };
         true
     };

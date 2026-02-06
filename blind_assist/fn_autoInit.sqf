@@ -29,6 +29,7 @@ sleep 1;
 [] call BA_fnc_initStanceMonitor;
 [] call BA_fnc_initChatReader;
 [] call BA_fnc_initBAMenu;
+[] call BA_fnc_initLookoutMenu;
 
 // Register handler for save game loads
 // postInit doesn't run when loading saves, so we need this event handler
@@ -50,6 +51,7 @@ addMissionEventHandler ["Loaded", {
         [] call BA_fnc_initStanceMonitor;
         [] call BA_fnc_initChatReader;
         [] call BA_fnc_initBAMenu;
+        [] call BA_fnc_initLookoutMenu;
         ["Blind Assist loaded."] call BA_fnc_speak;
     };
 }];

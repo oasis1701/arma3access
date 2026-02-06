@@ -34,6 +34,10 @@ if (BA_menuActive) then {
     [] call BA_fnc_closeBAMenu;
 };
 
+if (BA_lookoutMenuActive) then {
+    [] call BA_fnc_closeLookoutMenu;
+};
+
 // Close the dialog (this also triggers onUnload as a safety net)
 closeDialog 0;
 

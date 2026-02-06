@@ -526,4 +526,28 @@ class BA {
         // Usage: [] call BA_fnc_takeCover;
         class takeCover {};
     };
+
+    class LookoutMenu {
+        file = "\blind_assist";
+
+        // Initialize lookout menu state variables
+        // Usage: [] call BA_fnc_initLookoutMenu;
+        class initLookoutMenu {};
+
+        // Open the lookout menu (W key in focus mode)
+        // Usage: [] call BA_fnc_openLookoutMenu;
+        class openLookoutMenu {};
+
+        // Navigate up/down in lookout menu
+        // Usage: ["up"] call BA_fnc_navigateLookoutMenu;
+        class navigateLookoutMenu {};
+
+        // Close lookout menu without selection
+        // Usage: [] call BA_fnc_closeLookoutMenu;
+        class closeLookoutMenu {};
+
+        // Find best lookout position and navigate there
+        // Usage: [50] call BA_fnc_findLookout;
+        class findLookout {};
+    };
 };
