@@ -26,6 +26,7 @@ sleep 1;
 [] call BA_fnc_initDirectionSnap;
 [] call BA_fnc_initPlayerNav;
 [] call BA_fnc_initEnemyDetection;
+[] call BA_fnc_initStanceMonitor;
 [] call BA_fnc_initChatReader;
 [] call BA_fnc_initBAMenu;
 
@@ -46,6 +47,7 @@ addMissionEventHandler ["Loaded", {
         [] call BA_fnc_initDirectionSnap;
         [] call BA_fnc_initPlayerNav;
         [] call BA_fnc_initEnemyDetection;
+        [] call BA_fnc_initStanceMonitor;
         [] call BA_fnc_initChatReader;
         [] call BA_fnc_initBAMenu;
         ["Blind Assist loaded."] call BA_fnc_speak;

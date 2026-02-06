@@ -499,6 +499,18 @@ class BA {
         class updateEnemyDetection {};
     };
 
+    class StanceMonitor {
+        file = "\blind_assist";
+
+        // Initialize stance change announcements (always active)
+        // Usage: [] call BA_fnc_initStanceMonitor;
+        class initStanceMonitor {};
+
+        // Per-frame stance change detection (4Hz)
+        // Usage: [] call BA_fnc_updateStanceMonitor;
+        class updateStanceMonitor {};
+    };
+
     class ChatReader {
         file = "\blind_assist";
 
