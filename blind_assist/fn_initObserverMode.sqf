@@ -92,22 +92,22 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         true
     };
 
-    // Ctrl+W (key 17) - Toggle terrain radar (only when observer mode OFF)
-    if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
-        if (!BA_observerMode) then {
-            [] call BA_fnc_toggleTerrainRadar;
-        } else {
-            ["Terrain radar only available in manual mode."] call BA_fnc_speak;
-        };
-        true
-    };
+    // TEMPORARILY DISABLED - Ctrl+W terrain radar toggle
+    // if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
+    //     if (!BA_observerMode) then {
+    //         [] call BA_fnc_toggleTerrainRadar;
+    //     } else {
+    //         ["Terrain radar only available in manual mode."] call BA_fnc_speak;
+    //     };
+    //     true
+    // };
 
-    // Ctrl+Shift+W (key 17) - Toggle terrain radar debug output
-    if (_key == 17 && _ctrl && _shift && !_alt) exitWith {
-        BA_terrainRadarDebug = !BA_terrainRadarDebug;
-        [format ["Radar debug %1", if (BA_terrainRadarDebug) then {"on"} else {"off"}]] call BA_fnc_speak;
-        true
-    };
+    // TEMPORARILY DISABLED - Ctrl+Shift+W terrain radar debug
+    // if (_key == 17 && _ctrl && _shift && !_alt) exitWith {
+    //     BA_terrainRadarDebug = !BA_terrainRadarDebug;
+    //     [format ["Radar debug %1", if (BA_terrainRadarDebug) then {"on"} else {"off"}]] call BA_fnc_speak;
+    //     true
+    // };
 
     // Backtick/Tilde (key 41) - Toggle focus mode (only when NOT in observer mode)
     // Note: Focus mode has its own key handler via dialog, but we need this to enter focus mode

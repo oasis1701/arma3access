@@ -399,10 +399,46 @@ class CfgFunctions
 			{
 			};
 		};
+		class StanceMonitor
+		{
+			file="\blind_assist";
+			class initStanceMonitor
+			{
+			};
+			class updateStanceMonitor
+			{
+			};
+		};
 		class ChatReader
 		{
 			file="\blind_assist";
 			class initChatReader
+			{
+			};
+		};
+		class TakeCover
+		{
+			file="\blind_assist";
+			class takeCover
+			{
+			};
+		};
+		class LookoutMenu
+		{
+			file="\blind_assist";
+			class initLookoutMenu
+			{
+			};
+			class openLookoutMenu
+			{
+			};
+			class navigateLookoutMenu
+			{
+			};
+			class closeLookoutMenu
+			{
+			};
+			class findLookout
 			{
 			};
 		};

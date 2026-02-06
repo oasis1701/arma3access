@@ -38,6 +38,10 @@ if (BA_aimAssistEnabled) then {
     // Clear target
     BA_aimAssistTarget = objNull;
 
+    // Reset grace period state
+    BA_aimAssistGraceStart = -1;
+    BA_aimAssistHasLOS = true;
+
     // Remove hit detection handler
     if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {
         BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];

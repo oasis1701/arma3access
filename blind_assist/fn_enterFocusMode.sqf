@@ -180,11 +180,11 @@ _display displayAddEventHandler ["KeyDown", {
 
     // W key (17) - Lookout menu toggle / cancel lookout nav
     if (_key == 17 && !_shift && !_alt) exitWith {
-        // Ctrl+W = terrain radar toggle (pass through)
-        if (_ctrl) exitWith {
-            [] call BA_fnc_toggleTerrainRadar;
-            true
-        };
+        // TEMPORARILY DISABLED - Ctrl+W terrain radar toggle
+        // if (_ctrl) exitWith {
+        //     [] call BA_fnc_toggleTerrainRadar;
+        //     true
+        // };
         // If lookout nav active, cancel it
         if (BA_lookoutNavActive && {BA_playerNavEnabled}) exitWith {
             [] call BA_fnc_clearPlayerWaypoint;

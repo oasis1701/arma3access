@@ -5,6 +5,11 @@
  * This is called from an EachFrame event handler.
  * It throttles updates to 20Hz (50ms intervals) for performance.
  *
+ * Uses a grace period state machine to avoid flicker:
+ * - Target valid + LOS:     Track normally, reset grace timer
+ * - Target valid + no LOS:  Grace period (1.5s) - keep tracking silently
+ * - Target invalid:          Immediate loss (no grace)
+ *
  * Arguments:
  *   None
  *
@@ -41,8 +46,42 @@ if (isNull _soldier || !alive _soldier) exitWith {
 // Store previous target for state change detection
 private _previousTarget = BA_aimAssistTarget;
 
-// Find target (refresh every frame to track movement and new enemies)
-private _target = [_soldier] call BA_fnc_findAimTarget;
+// Find target with stickiness (pass current target so it checks that first)
+private _findResult = [_soldier, BA_aimAssistTarget] call BA_fnc_findAimTarget;
+_findResult params ["_target", "_hasLOS"];
+
+// --- Grace period state machine ---
+
+if (!isNull _target) then {
+    // We have a valid target (alive, hostile, in range, known)
+
+    if (_hasLOS) then {
+        // LOS is clear - reset grace, track normally
+        BA_aimAssistGraceStart = -1;
+        BA_aimAssistHasLOS = true;
+    } else {
+        // No LOS but target is still valid - enter/continue grace period
+        if (BA_aimAssistHasLOS) then {
+            // Just lost LOS - start grace timer
+            BA_aimAssistGraceStart = _now;
+            BA_aimAssistHasLOS = false;
+        };
+
+        // Check if grace period has expired
+        if (BA_aimAssistGraceStart > 0 && {_now - BA_aimAssistGraceStart >= BA_aimAssistGraceDuration}) then {
+            // Grace expired - declare target lost
+            _target = objNull;
+            _hasLOS = false;
+        };
+        // Otherwise grace is still active - continue tracking (below)
+    };
+} else {
+    // Target invalid (dead, out of range, friendly, unknown) - immediate loss
+    BA_aimAssistGraceStart = -1;
+    BA_aimAssistHasLOS = true;
+};
+
+// --- Handle target state ---
 
 if (isNull _target) then {
     // No valid target - mute the tone
@@ -78,8 +117,10 @@ if (isNull _target) then {
     BA_aimAssistTarget = objNull;
     BA_aimAssistTargetDeathType = "";
     BA_aimAssistWasVertLocked = false;
+    BA_aimAssistGraceStart = -1;
+    BA_aimAssistHasLOS = true;
 } else {
-    // Announce new or changed target
+    // Announce new or changed target (only when we have LOS for initial acquisition)
     if (_target != _previousTarget) then {
         private _type = getText (configFile >> "CfgVehicles" >> typeOf _target >> "displayName");
         private _dist = round (_soldier distance _target);
