@@ -499,6 +499,18 @@ class BA {
         class updateEnemyDetection {};
     };
 
+    class EnemyNerf {
+        file = "\blind_assist";
+
+        // Initialize passive enemy skill nerf (auto-starts, always active)
+        // Usage: [] call BA_fnc_initEnemyNerf;
+        class initEnemyNerf {};
+
+        // Per-frame update for enemy nerf scanning
+        // Usage: [] call BA_fnc_updateEnemyNerf;
+        class updateEnemyNerf {};
+    };
+
     class StanceMonitor {
         file = "\blind_assist";
 
