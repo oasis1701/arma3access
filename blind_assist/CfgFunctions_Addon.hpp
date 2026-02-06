@@ -518,4 +518,12 @@ class BA {
         // Usage: [] call BA_fnc_initChatReader;
         class initChatReader {};
     };
+
+    class TakeCover {
+        file = "\blind_assist";
+
+        // Smart cover: run to nearest cover relative to threat (C key)
+        // Usage: [] call BA_fnc_takeCover;
+        class takeCover {};
+    };
 };

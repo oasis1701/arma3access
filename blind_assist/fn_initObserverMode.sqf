@@ -34,6 +34,7 @@
  *   Alt+8        - Announce position context
  *   Alt+9        - Announce role
  *   Alt+0        - Announce full status summary
+ *   C            - Take cover (manual mode only, not in vehicle)
  *
  * Hotkeys (Focus Mode - handled by dialog):
  *   ~ (Backtick) - Toggle focus mode (cursor/scanner without observer)
@@ -150,6 +151,14 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // Note: In observer/focus mode, PageDown is used for scanner navigation
     if (_key == 209 && !_ctrl && !_shift && !_alt && !BA_observerMode && !BA_focusMode) exitWith {
         [true] call BA_fnc_cycleDirection;  // true = clockwise
+        true
+    };
+
+    // C key (46) - Take cover (only in manual mode, not in vehicle)
+    if (_key == 46 && !_ctrl && !_shift && !_alt) exitWith {
+        if (!BA_observerMode && {vehicle player == player}) then {
+            [] call BA_fnc_takeCover;
+        };
         true
     };
 

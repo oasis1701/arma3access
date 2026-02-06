@@ -465,9 +465,9 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         }
 
         // ================================================================
-        // Terrain Radar audio (mutually exclusive with aim assist)
+        // Terrain Radar audio (can play alongside aim assist)
         // ================================================================
-        if (g_radarActive.load() && !active) {
+        if (g_radarActive.load()) {
             // Check for pending beeps in queue (only when idle)
             if (g_radarEnvState == 0) {
                 int tail = g_radarQueueTail.load(std::memory_order_relaxed);
@@ -585,10 +585,10 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         }
 
         // ================================================================
-        // Navigation Beacon audio (mutually exclusive with aim assist)
+        // Navigation Beacon audio (can play alongside aim assist)
         // Triangle wave with frequency sweep, pulsing, and LPF
         // ================================================================
-        if (g_beaconActive.load() && !active) {
+        if (g_beaconActive.load()) {
             float beaconPan = g_beaconPan.load();
 
             // Calculate pan magnitude and centeredness (0 = far, 1 = centered)
