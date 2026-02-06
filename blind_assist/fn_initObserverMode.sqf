@@ -119,23 +119,6 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         };
     };
 
-    // TEMPORARILY DISABLED - Ctrl+W terrain radar toggle
-    // if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
-    //     if (!BA_observerMode) then {
-    //         [] call BA_fnc_toggleTerrainRadar;
-    //     } else {
-    //         ["Terrain radar only available in manual mode."] call BA_fnc_speak;
-    //     };
-    //     true
-    // };
-
-    // TEMPORARILY DISABLED - Ctrl+Shift+W terrain radar debug
-    // if (_key == 17 && _ctrl && _shift && !_alt) exitWith {
-    //     BA_terrainRadarDebug = !BA_terrainRadarDebug;
-    //     [format ["Radar debug %1", if (BA_terrainRadarDebug) then {"on"} else {"off"}]] call BA_fnc_speak;
-    //     true
-    // };
-
     // Backtick/Tilde (key 41) - Toggle focus mode (only when NOT in observer mode)
     // Note: Focus mode has its own key handler via dialog, but we need this to enter focus mode
     if (_key == 41 && !_ctrl && !_shift && !_alt) exitWith {
@@ -192,6 +175,44 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
     // Only process other hotkeys if in observer mode
     // Focus mode keys are handled by the dialog overlay (fn_enterFocusMode.sqf)
     if (!BA_observerMode) exitWith { false };
+
+    // Ctrl+W (key 17) - Open/close lookout menu / cancel lookout nav
+    if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
+        // If lookout nav active, cancel it
+        if (BA_lookoutNavActive && {BA_playerNavEnabled}) exitWith {
+            [] call BA_fnc_clearPlayerWaypoint;
+            BA_lookoutNavActive = false;
+            ["Lookout cancelled."] call BA_fnc_speak;
+            true
+        };
+        // Toggle lookout menu
+        if (BA_lookoutMenuActive) then {
+            [] call BA_fnc_closeLookoutMenu;
+        } else {
+            [] call BA_fnc_openLookoutMenu;
+        };
+        true
+    };
+
+    // Lookout menu navigation (when active)
+    if (BA_lookoutMenuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateLookoutMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateLookoutMenu; true };
+            case 28: {
+                private _item = BA_lookoutMenuItems select BA_lookoutMenuIndex;
+                private _radius = _item select 1;
+                BA_lookoutMenuActive = false;
+                BA_lookoutMenuItems = [];
+                BA_lookoutMenuIndex = 0;
+                [_radius] call BA_fnc_findLookout;
+                true
+            };
+            case 1: { [] call BA_fnc_closeLookoutMenu; true };
+            case 17: { if (_ctrl) then { [] call BA_fnc_closeLookoutMenu; }; true };
+            default { true };
+        }
+    };
 
     // G key (34) - Group selection menu
     if (_key == 34 && !_ctrl && !_shift && !_alt) exitWith {

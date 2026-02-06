@@ -67,8 +67,8 @@ _display displayAddEventHandler ["KeyDown", {
         true
     };
 
-    // ASD (30, 31, 32) - Exit focus mode and pass key through (W reserved for lookout)
-    if (_key in [30, 31, 32] && !_ctrl && !_alt) exitWith {
+    // WASD (17, 30, 31, 32) - Exit focus mode and pass key through
+    if (_key in [17, 30, 31, 32] && !_ctrl && !_alt) exitWith {
         [] call BA_fnc_exitFocusMode;
         false  // Let movement key through to Arma
     };
@@ -147,7 +147,7 @@ _display displayAddEventHandler ["KeyDown", {
                 true
             };
             case 1: { [] call BA_fnc_closeLookoutMenu; true };
-            case 17: { [] call BA_fnc_closeLookoutMenu; true };
+            case 17: { if (_ctrl) then { [] call BA_fnc_closeLookoutMenu; }; true };
             default { true };
         }
     };
@@ -178,13 +178,8 @@ _display displayAddEventHandler ["KeyDown", {
         true
     };
 
-    // W key (17) - Lookout menu toggle / cancel lookout nav
-    if (_key == 17 && !_shift && !_alt) exitWith {
-        // TEMPORARILY DISABLED - Ctrl+W terrain radar toggle
-        // if (_ctrl) exitWith {
-        //     [] call BA_fnc_toggleTerrainRadar;
-        //     true
-        // };
+    // Ctrl+W (key 17) - Lookout menu toggle / cancel lookout nav
+    if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
         // If lookout nav active, cancel it
         if (BA_lookoutNavActive && {BA_playerNavEnabled}) exitWith {
             [] call BA_fnc_clearPlayerWaypoint;
