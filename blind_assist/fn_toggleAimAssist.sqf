@@ -38,9 +38,9 @@ if (BA_aimAssistEnabled) then {
     // Clear target
     BA_aimAssistTarget = objNull;
 
-    // Reset grace period state
+    // Reset grace period and hidden state
     BA_aimAssistGraceStart = -1;
-    BA_aimAssistHasLOS = true;
+    BA_aimAssistTargetHidden = false;
 
     // Remove hit detection handler
     if (!isNull BA_aimAssistHitTarget && BA_aimAssistHitEH >= 0) then {

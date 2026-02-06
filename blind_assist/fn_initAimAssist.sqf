@@ -32,10 +32,10 @@ BA_aimAssistHitEH = -1;            // Hit event handler ID
 // Lock state tracking (for blip sound)
 BA_aimAssistWasVertLocked = false; // Previous vertical lock state
 
-// Grace period (anti-flicker)
+// Grace period (anti-flicker) and hidden state
 BA_aimAssistGraceStart = -1;       // Timestamp when LOS was first lost (-1 = not in grace)
-BA_aimAssistGraceDuration = 1.5;   // Seconds to maintain target without LOS before declaring lost
-BA_aimAssistHasLOS = true;         // Current LOS state
+BA_aimAssistGraceDuration = 1.0;   // Seconds before declaring target hidden (anti-flicker only)
+BA_aimAssistTargetHidden = false;  // Whether locked target is behind cover (audio muted)
 
 // Horizontal guidance (secondary click tone)
 BA_aimHorizGuidanceEnabled = false;  // Horizontal click tone off by default

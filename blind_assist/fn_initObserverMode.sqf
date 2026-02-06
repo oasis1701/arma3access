@@ -92,6 +92,33 @@ findDisplay 46 displayAddEventHandler ["KeyDown", {
         true
     };
 
+    // Tab (key 15) - Release aim assist target lock (works in both modes)
+    if (_key == 15 && !_ctrl && !_shift && !_alt) then {
+        if (BA_aimAssistEnabled && {!isNull BA_aimAssistTarget}) exitWith {
+            // Release target lock — clean up event handlers
+            if (!isNull BA_aimAssistHitTarget) then {
+                if (BA_aimAssistHitEH >= 0) then {
+                    BA_aimAssistHitTarget removeEventHandler ["Hit", BA_aimAssistHitEH];
+                    BA_aimAssistHitEH = -1;
+                };
+                if (!isNil "BA_aimAssistKilledEH" && {BA_aimAssistKilledEH >= 0}) then {
+                    BA_aimAssistHitTarget removeEventHandler ["Killed", BA_aimAssistKilledEH];
+                    BA_aimAssistKilledEH = -1;
+                };
+                BA_aimAssistHitTarget = objNull;
+            };
+
+            // Clear target state
+            BA_aimAssistTarget = objNull;
+            BA_aimAssistTargetHidden = false;
+            BA_aimAssistGraceStart = -1;
+            BA_aimAssistTargetDeathType = "";
+            BA_aimAssistWasVertLocked = false;
+
+            true
+        };
+    };
+
     // TEMPORARILY DISABLED - Ctrl+W terrain radar toggle
     // if (_key == 17 && _ctrl && !_shift && !_alt) exitWith {
     //     if (!BA_observerMode) then {
