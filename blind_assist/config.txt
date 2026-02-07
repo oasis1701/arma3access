@@ -412,6 +412,16 @@ class CfgFunctions
 			{
 			};
 		};
+		class SpottingAssist
+		{
+			file="\blind_assist";
+			class initSpottingAssist
+			{
+			};
+			class updateSpottingAssist
+			{
+			};
+		};
 		class StanceMonitor
 		{
 			file="\blind_assist";
