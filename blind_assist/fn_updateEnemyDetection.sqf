@@ -29,13 +29,13 @@ private _currentEnemyObjects = _enemies apply { _x select 4 };
 // Sync tracking list to only include enemies currently in awareness
 // This removes enemies who left awareness, allowing re-announcement when they return
 BA_detectedEnemies = BA_detectedEnemies select {
-    alive _x && {_x in _currentEnemyObjects}
+    _x in _currentEnemyObjects
 };
 
 // Filter out already-tracked enemies (only announce truly new detections)
 private _newEnemies = _enemies select {
     private _enemyObj = _x select 4;
-    !isNull _enemyObj && {!(_enemyObj in BA_detectedEnemies)}
+    !isNull _enemyObj && {alive _enemyObj} && {!(_enemyObj in BA_detectedEnemies)}
 };
 
 // Exit if no new enemies

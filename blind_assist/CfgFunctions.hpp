@@ -515,6 +515,18 @@ class BA {
         class updateEnemyNerf {};
     };
 
+    class SpottingAssist {
+        file = "blind_assist";
+
+        // Initialize spotting assist for solo player enemy detection
+        // Usage: [] call BA_fnc_initSpottingAssist;
+        class initSpottingAssist {};
+
+        // Per-frame spotting assist update (2Hz)
+        // Usage: [] call BA_fnc_updateSpottingAssist;
+        class updateSpottingAssist {};
+    };
+
     class StanceMonitor {
         file = "blind_assist";
 
