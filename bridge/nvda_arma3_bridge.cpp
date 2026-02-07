@@ -169,6 +169,8 @@ static double g_clickPulsePhase = 0.0; // Secondary click pulse envelope phase
 static float g_clickLpfState = 0.0f;   // Low pass filter state for click tone
 static float g_clickEnvelopeState = 0.0f;  // Current envelope level (0-1) for smooth attack/release
 static float g_primaryEnvelopeState = 0.0f;  // Current envelope level for primary tone
+static bool g_prevPulseOn = false;             // Track pulse on/off for chirp reset
+static float g_chirpTime = 100.0f;            // Time since chirp start (large = fully decayed)
 
 // Audio constants
 static const int SAMPLE_RATE = 44100;
@@ -192,6 +194,12 @@ static const float HORIZ_ACTIVATE_THRESHOLD = 0.2f; // Secondary tone activates 
 static const float VERT_ACTIVATE_THRESHOLD = 0.4f;  // vertError above this = slow clicks (edge of useful range)
 static const double PI = 3.14159265358979323846;
 // Note: VERT_CENTER_THRESHOLD and HORIZ_CENTER_THRESHOLD are now adaptive (passed from SQF)
+
+// Chirp sweep parameters for directional feedback
+static const float CHIRP_SWEEP_RANGE = 800.0f;    // Hz offset at start of each chirp
+static const float CHIRP_SWEEP_DECAY = 30.0f;     // Exponential decay rate (1/s)
+static const float CHIRP_CENTER_FREQ = 550.0f;    // Center frequency (no sweep applied here)
+static const float CHIRP_DEAD_ZONE = 5.0f;        // Hz band around center with no sweep
 
 // Vertical lock blip constants
 static const float BLIP_FREQ = 800.0f;              // 800 Hz for lock
@@ -278,7 +286,7 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
     static const float primaryReleaseCoef = 1.0f / (PRIMARY_RELEASE_MS * samplesPerMs);
 
     // Phase increments per sample
-    double primaryPhaseInc = (2.0 * PI * freq) / SAMPLE_RATE;
+    // Note: primaryPhaseInc is computed per-sample inside the loop (frequency varies during chirp sweeps)
     double primaryPulseInc = (2.0 * PI * primaryPulseRate) / SAMPLE_RATE;
     double clickPhaseInc = (2.0 * PI * clickFreq) / SAMPLE_RATE;
     double clickPulseInc = (2.0 * PI * secondaryPulseRate) / SAMPLE_RATE;
@@ -289,14 +297,48 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
 
         if (active && !muted) {
             // ================================================================
-            // Primary tone (vertical precision) - panned stereo sine wave
+            // Primary tone (vertical precision) - panned triangle wave with directional chirp
             // ================================================================
-            float primarySample = (float)sin(g_phase) * BASE_VOLUME;
+
+            // Detect rising edge of pulse (start of new click) to reset chirp
+            bool currentPulseOn = (primaryPulseRate > 0.0f) ? (sin(g_pulsePhase) > 0.0f) : true;
+            if (currentPulseOn && !g_prevPulseOn) {
+                g_chirpTime = 0.0f;  // Reset chirp at start of each new click
+            }
+            g_prevPulseOn = currentPulseOn;
+
+            // Determine sweep direction from pitch vs center
+            // Both chirps stay at or above base freq (always audible)
+            // Aim below target (pitch < 550) → descending pew: freq+range → freq → "move up"
+            // Aim above target (pitch > 550) → ascending whoop: freq → freq+range → "move down"
+            float instantFreq;
+            if (freq < CHIRP_CENTER_FREQ - CHIRP_DEAD_ZONE) {
+                // "Move up" — descending pew: starts at freq+range, decays to freq
+                instantFreq = freq + CHIRP_SWEEP_RANGE * expf(-CHIRP_SWEEP_DECAY * g_chirpTime);
+            } else if (freq > CHIRP_CENTER_FREQ + CHIRP_DEAD_ZONE) {
+                // "Move down" — ascending whoop: starts at freq, rises to freq+range
+                instantFreq = freq + CHIRP_SWEEP_RANGE * (1.0f - expf(-CHIRP_SWEEP_DECAY * g_chirpTime));
+            } else {
+                // Dead center — no sweep, steady tone
+                instantFreq = freq;
+            }
+
+            // Per-sample phase increment (variable frequency due to chirp)
+            double primaryPhaseInc = (2.0 * PI * (double)instantFreq) / SAMPLE_RATE;
+            g_chirpTime += 1.0f / SAMPLE_RATE;
+
+            // Triangle waveform: map phase [0, 2*PI] to triangle [-1, +1]
+            float normPhase = (float)(fmod(g_phase, 2.0 * PI) / (2.0 * PI));
+            float primarySample = (4.0f * fabsf(normPhase - 0.5f) - 1.0f) * BASE_VOLUME;
+
+            // Advance primary phase with swept frequency
+            g_phase += primaryPhaseInc;
+            if (g_phase >= 2.0 * PI) g_phase -= 2.0 * PI;
 
             // Apply pulse envelope with smooth attack/release ramps
             float targetPrimaryEnvelope = 1.0f;  // Default: full on (continuous tone)
             if (primaryPulseRate > 0.0f) {
-                targetPrimaryEnvelope = (sin(g_pulsePhase) > 0.0f) ? 1.0f : 0.0f;
+                targetPrimaryEnvelope = currentPulseOn ? 1.0f : 0.0f;
             }
 
             // Smooth envelope transition
@@ -663,9 +705,7 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
         *output++ = leftSample;
         *output++ = rightSample;
 
-        // Advance phases
-        g_phase += primaryPhaseInc;
-        if (g_phase >= 2.0 * PI) g_phase -= 2.0 * PI;
+        // Advance phases (primary phase is advanced inside the chirp section above)
 
         if (primaryPulseRate > 0.0f) {
             g_pulsePhase += primaryPulseInc;
@@ -853,6 +893,8 @@ void __stdcall RVExtension(char *output, int outputSize, const char *function) {
             g_aimHorizError.store(1.0f);  // Start at max error
             g_aimMuted.store(true);       // Start muted until we have a target
             g_aimActive.store(true);
+            g_chirpTime = 100.0f;         // Reset chirp (fully decayed)
+            g_prevPulseOn = false;
             safe_output(output, outputSize, "OK");
         } else {
             safe_output(output, outputSize, "AUDIO_INIT_FAILED");
