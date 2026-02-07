@@ -19,9 +19,10 @@ if (isNil "BA_scannerCategories") exitWith {
     []
 };
 
-// Get current category types
+// Get current category data
 private _categoryData = BA_scannerCategories select BA_scannerCategoryIndex;
 private _categoryTypes = _categoryData select 1;
+private _filterTag = _categoryData select 2;
 
 // Get cursor position for search center
 private _searchPos = if (!isNil "BA_cursorPos") then { BA_cursorPos } else { getPos player };
@@ -38,8 +39,8 @@ private _allObjects = [];
 // Remove duplicates (same object might match multiple types)
 _allObjects = _allObjects arrayIntersect _allObjects;
 
-// For Infantry category, also include dead bodies and filter out animals
-if (BA_scannerCategoryIndex == 0) then {
+// For infantry categories, also include dead bodies and filter out animals
+if ((_filterTag find "infantry") == 0) then {
     private _deadBodies = allDeadMen select {
         (_x distance _searchPos) <= BA_scannerRange
     };
@@ -61,6 +62,13 @@ _allObjects = _allObjects select {
     // Remove fences and barbed wire by classname
     !(_type find "fence" >= 0) &&
     !(_type find "razorwire" >= 0)
+};
+
+// Apply category filter if tag is set
+if (_filterTag != "") then {
+    _allObjects = _allObjects select {
+        [_x, _filterTag] call BA_fnc_scannerFilter
+    };
 };
 
 // Sort by distance from cursor

@@ -75,7 +75,10 @@ if (_object isKindOf "Man") then {
 
 // Special handling for Logistics category (containers, dropped equipment)
 private _isContainer = false;
-if (!isNil "BA_scannerCategoryIndex" && {BA_scannerCategoryIndex == 2}) then {
+private _categoryName = if (!isNil "BA_scannerCategories" && {BA_scannerCategoryIndex < count BA_scannerCategories}) then {
+    (BA_scannerCategories select BA_scannerCategoryIndex) select 0
+} else { "" };
+if (_categoryName == "Logistics") then {
     private _weapons = weaponCargo _object;
     private _magazines = magazineCargo _object;
     private _items = itemCargo _object;

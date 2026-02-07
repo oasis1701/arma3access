@@ -275,6 +275,10 @@ class BA {
         // Get side relationship for object (friendly/enemy/etc)
         // Usage: [_object] call BA_fnc_getObjectSide;
         class getObjectSide {};
+
+        // Filter scanned object by category tag (friendly/enemy/alive/dead)
+        // Usage: [_object, "friendly_infantry"] call BA_fnc_scannerFilter;
+        class scannerFilter {};
     };
 
     class RoadMode {
@@ -561,5 +565,17 @@ class BA {
         // Find best lookout position and navigate there
         // Usage: [50] call BA_fnc_findLookout;
         class findLookout {};
+    };
+
+    class DialogReader {
+        file = "blind_assist";
+
+        // Initialize dialog reader for NVDA accessibility
+        // Usage: [] call BA_fnc_initDialogReader;
+        class initDialogReader {};
+
+        // Per-frame dialog focus detection and announcement
+        // Usage: [] call BA_fnc_updateDialogReader;
+        class updateDialogReader {};
     };
 };

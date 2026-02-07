@@ -227,6 +227,9 @@ class CfgFunctions
 			class getObjectSide
 			{
 			};
+			class scannerFilter
+			{
+			};
 		};
 		class RoadMode
 		{
@@ -449,6 +452,16 @@ class CfgFunctions
 			{
 			};
 			class findLookout
+			{
+			};
+		};
+		class DialogReader
+		{
+			file="\blind_assist";
+			class initDialogReader
+			{
+			};
+			class updateDialogReader
 			{
 			};
 		};
