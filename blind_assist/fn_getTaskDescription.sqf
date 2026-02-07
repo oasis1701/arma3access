@@ -78,7 +78,7 @@ if (_task isEqualType []) then {
 
     // Format state for speech (use toUpper for case-insensitive matching)
     private _stateText = switch (toUpper _state) do {
-        case "CREATED": { "new" };
+        case "CREATED": { "queued" };
         case "ASSIGNED": { "active" };
         case "SUCCEEDED": { "completed" };
         case "FAILED": { "failed" };

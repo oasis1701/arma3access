@@ -49,6 +49,8 @@ private _natoItems = [];
 private _extrasItems = [];
 
 {
+    // Skip unnamed locations - they show as "Location, Location" and aren't useful
+    if (text _x == "") then { continue };
     private _type = type _x;
     if (_type in _geographyTypes) then {
         _geoItems pushBack _x;
@@ -91,10 +93,13 @@ private _markerItems = [];
     private _name = _x;
     // Skip system markers (BIS_ prefix) and empty markers
     if (_name != "" && {!(_name select [0, 4] == "BIS_")} && {!(_name select [0, 1] == "_")}) then {
-        private _pos = getMarkerPos _name;
-        // Skip markers at [0,0,0] (invalid or hidden)
-        if !(_pos isEqualTo [0, 0, 0]) then {
-            _markerItems pushBack _name;
+        // Skip invisible markers (alpha 0) and markers with no display text (internal/AI markers)
+        if (markerAlpha _name > 0 && {markerText _name != ""}) then {
+            private _pos = getMarkerPos _name;
+            // Skip markers at [0,0,0] (invalid or hidden)
+            if !(_pos isEqualTo [0, 0, 0]) then {
+                _markerItems pushBack _name;
+            };
         };
     };
 } forEach allMapMarkers;
@@ -105,56 +110,37 @@ _markerItems = [_markerItems, [], { BA_cursorPos distance2D (getMarkerPos _x) },
 // Limit markers
 if (count _markerItems > _maxItems) then { _markerItems resize _maxItems };
 
-// Get mission tasks - use multiple methods for compatibility
+// Get mission tasks - query only player and original unit (not all squad members)
+// This avoids per-member duplicate task objects from mods like Hetman War Stories
 private _taskItems = [];
 
 diag_log "BA_TASKS: Starting task detection";
 
-// Determine the relevant group (use original unit's group if in observer mode)
-private _playerGroup = if (!isNil "BA_originalUnit" && {!isNull BA_originalUnit}) then {
-    group BA_originalUnit
-} else {
-    group player
+// Only query player and BA_originalUnit (in observer mode)
+private _taskUnits = [player];
+if (!isNil "BA_originalUnit" && {!isNull BA_originalUnit} && {BA_originalUnit != player}) then {
+    _taskUnits pushBack BA_originalUnit;
 };
 
-diag_log format ["BA_TASKS: Player group = %1, units = %2", _playerGroup, count units _playerGroup];
-
-// Method 1: Low-level simpleTasks - check ALL group members
-private _simpleTasks = simpleTasks player;
-diag_log format ["BA_TASKS: simpleTasks player = %1", count _simpleTasks];
+// Method 1: Low-level simpleTasks
+private _simpleTasks = [];
 {
     private _unitTasks = simpleTasks _x;
-    diag_log format ["BA_TASKS: simpleTasks %1 = %2", name _x, count _unitTasks];
+    diag_log format ["BA_TASKS: simpleTasks %1 = %2", _x, count _unitTasks];
     _simpleTasks = _simpleTasks + _unitTasks;
-} forEach (units _playerGroup);
-
-// Also check original unit specifically if in observer mode
-if (!isNil "BA_originalUnit" && {!isNull BA_originalUnit} && {BA_originalUnit != player}) then {
-    _simpleTasks = _simpleTasks + (simpleTasks BA_originalUnit);
-    diag_log format ["BA_TASKS: simpleTasks BA_originalUnit = %1", count simpleTasks BA_originalUnit];
-};
+} forEach _taskUnits;
 
 diag_log format ["BA_TASKS: Total simpleTasks = %1", count _simpleTasks];
 
-// Method 2: BIS Task Framework - check ALL group members
+// Method 2: BIS Task Framework
 private _frameworkTaskIDs = [];
 if (!isNil "BIS_fnc_tasksUnit") then {
-    _frameworkTaskIDs = [player] call BIS_fnc_tasksUnit;
-    diag_log format ["BA_TASKS: BIS_fnc_tasksUnit player = %1", _frameworkTaskIDs];
-
-    // Check all group members for framework tasks
     {
         private _unitTaskIDs = [_x] call BIS_fnc_tasksUnit;
-        diag_log format ["BA_TASKS: BIS_fnc_tasksUnit %1 = %2", name _x, _unitTaskIDs];
+        diag_log format ["BA_TASKS: BIS_fnc_tasksUnit %1 = %2", _x, _unitTaskIDs];
         _frameworkTaskIDs = _frameworkTaskIDs + _unitTaskIDs;
-    } forEach (units _playerGroup);
+    } forEach _taskUnits;
 
-    // Also check original unit if in observer mode
-    if (!isNil "BA_originalUnit" && {!isNull BA_originalUnit} && {BA_originalUnit != player}) then {
-        _frameworkTaskIDs = _frameworkTaskIDs + ([BA_originalUnit] call BIS_fnc_tasksUnit);
-    };
-
-    // Remove duplicates
     _frameworkTaskIDs = _frameworkTaskIDs arrayIntersect _frameworkTaskIDs;
 };
 
@@ -169,11 +155,27 @@ private _frameworkTasks = [];
     };
 } forEach _frameworkTaskIDs;
 
-// Combine both sources and remove duplicates
+// Combine both sources and remove object-level duplicates
 private _allTasks = _simpleTasks + _frameworkTasks;
 _allTasks = _allTasks arrayIntersect _allTasks;
 
-diag_log format ["BA_TASKS: Combined tasks before filter = %1", count _allTasks];
+diag_log format ["BA_TASKS: Combined tasks before dedup = %1", count _allTasks];
+
+// Deduplicate by task title (handles mods that create separate task objects per unit)
+private _seenTitles = [];
+private _uniqueTasks = [];
+{
+    private _desc = taskDescription _x;
+    private _title = if (_desc isEqualType []) then { _desc select 1 } else { str _desc };
+    if (_title == "") then { _title = str _x };
+    if !(_title in _seenTitles) then {
+        _seenTitles pushBack _title;
+        _uniqueTasks pushBack _x;
+    };
+} forEach _allTasks;
+_allTasks = _uniqueTasks;
+
+diag_log format ["BA_TASKS: After title dedup = %1", count _allTasks];
 
 // Filter: only active tasks with valid destinations
 {
