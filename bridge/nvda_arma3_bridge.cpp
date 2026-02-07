@@ -199,7 +199,8 @@ static const double PI = 3.14159265358979323846;
 static const float CHIRP_SWEEP_RANGE = 800.0f;    // Hz offset at start of each chirp
 static const float CHIRP_SWEEP_DECAY = 30.0f;     // Exponential decay rate (1/s)
 static const float CHIRP_CENTER_FREQ = 550.0f;    // Center frequency (no sweep applied here)
-static const float CHIRP_DEAD_ZONE = 5.0f;        // Hz band around center with no sweep
+// Dead zone is now adaptive: vertThreshold * 250 Hz (matches on-target threshold)
+static const float CHIRP_DOWN_OCTAVE_MIX = 0.5f;  // Octave harmonic volume for "move down" (0.5 = half of fundamental)
 
 // Vertical lock blip constants
 static const float BLIP_FREQ = 800.0f;              // 800 Hz for lock
@@ -308,18 +309,19 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
             g_prevPulseOn = currentPulseOn;
 
             // Determine sweep direction from pitch vs center
-            // Both chirps stay at or above base freq (always audible)
+            // Dead zone matches adaptive on-target threshold (no more gap at long range)
             // Aim below target (pitch < 550) → descending pew: freq+range → freq → "move up"
             // Aim above target (pitch > 550) → ascending whoop: freq → freq+range → "move down"
+            float deadZoneHz = vertThreshold * 250.0f;  // Convert vertThreshold to Hz
             float instantFreq;
-            if (freq < CHIRP_CENTER_FREQ - CHIRP_DEAD_ZONE) {
+            if (freq < CHIRP_CENTER_FREQ - deadZoneHz) {
                 // "Move up" — descending pew: starts at freq+range, decays to freq
                 instantFreq = freq + CHIRP_SWEEP_RANGE * expf(-CHIRP_SWEEP_DECAY * g_chirpTime);
-            } else if (freq > CHIRP_CENTER_FREQ + CHIRP_DEAD_ZONE) {
+            } else if (freq > CHIRP_CENTER_FREQ + deadZoneHz) {
                 // "Move down" — ascending whoop: starts at freq, rises to freq+range
                 instantFreq = freq + CHIRP_SWEEP_RANGE * (1.0f - expf(-CHIRP_SWEEP_DECAY * g_chirpTime));
             } else {
-                // Dead center — no sweep, steady tone
+                // Within on-target zone — no sweep, steady tone
                 instantFreq = freq;
             }
 
@@ -328,8 +330,18 @@ void audio_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_ui
             g_chirpTime += 1.0f / SAMPLE_RATE;
 
             // Triangle waveform: map phase [0, 2*PI] to triangle [-1, +1]
+            // "Move down" adds octave harmonic for distinct richer timbre
             float normPhase = (float)(fmod(g_phase, 2.0 * PI) / (2.0 * PI));
-            float primarySample = (4.0f * fabsf(normPhase - 0.5f) - 1.0f) * BASE_VOLUME;
+            float primarySample;
+            if (freq > CHIRP_CENTER_FREQ + deadZoneHz) {
+                // "Move down" — triangle + octave harmonic for richer timbre
+                primarySample = (4.0f * fabsf(normPhase - 0.5f) - 1.0f) * BASE_VOLUME;
+                float octavePhase = fmod(normPhase * 2.0f, 1.0f);
+                primarySample += (4.0f * fabsf(octavePhase - 0.5f) - 1.0f) * BASE_VOLUME * CHIRP_DOWN_OCTAVE_MIX;
+            } else {
+                // "Move up" and center — pure triangle
+                primarySample = (4.0f * fabsf(normPhase - 0.5f) - 1.0f) * BASE_VOLUME;
+            }
 
             // Advance primary phase with swept frequency
             g_phase += primaryPhaseInc;
