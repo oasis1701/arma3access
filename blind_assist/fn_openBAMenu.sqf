@@ -288,6 +288,32 @@ switch (BA_menuTab) do {
             [format ["Aim Assist Horizontal tone: %1", _horizState], "toggle", "aimHorizGuidance"]
         ];
     };
+
+    // ================================================================
+    // Tab 2: Interactions
+    // ================================================================
+    case 2: {
+        private _unit = if (BA_observerMode && !isNull BA_originalUnit) then {
+            BA_originalUnit
+        } else {
+            player
+        };
+
+        private _inVehicle = vehicle _unit != _unit;
+
+        if (_inVehicle) then {
+            // In vehicle: show Exit Vehicle
+            BA_menuItems pushBack ["Exit Vehicle", "exit_vehicle", "", 0, "interaction"];
+        } else {
+            // On foot: show Enter Vehicle
+            BA_menuItems pushBack ["Enter Vehicle", "enter_vehicle", "", 0, "interaction"];
+        };
+
+        // Heal Self: only when damaged and has FirstAidKit
+        if (damage _unit > 0 && {"FirstAidKit" in (items _unit)}) then {
+            BA_menuItems pushBack ["Heal Self", "heal_self", "", 0, "interaction"];
+        };
+    };
 };
 
 diag_log format ["BA_DEBUG: Final BA_menuItems count = %1", count BA_menuItems];
@@ -317,7 +343,7 @@ private _pos = BA_menuIndex + 1;
 if (_isFreshOpen) then {
     // Fresh open: "BA Menu. [Tab] tab. [pos] of [total]. [item]."
     private _name = _item select 0;
-    private _type = if (BA_menuTab == 0) then { _item select 4 } else { "setting" };
+    private _type = if (BA_menuTab == 1) then { "setting" } else { _item select 4 };
 
     private _announcement = if (_type == "weapon") then {
         private _count = _item select 3;
@@ -330,7 +356,7 @@ if (_isFreshOpen) then {
 } else {
     // Tab switch: "[Tab] tab, [total] items. [pos]. [item]."
     private _name = _item select 0;
-    private _type = if (BA_menuTab == 0) then { _item select 4 } else { "setting" };
+    private _type = if (BA_menuTab == 1) then { "setting" } else { _item select 4 };
     private _itemsText = if (_total == 1) then { "item" } else { "items" };
 
     private _announcement = if (_type == "weapon") then {

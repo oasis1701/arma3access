@@ -50,6 +50,77 @@ switch (BA_menuLevel) do {
             };
         };
 
+        // Interactions tab — handle interaction actions
+        if (BA_menuTab == 2) exitWith {
+            private _item = BA_menuItems select BA_menuIndex;
+            private _action = _item select 1;
+
+            private _unit = if (BA_observerMode && !isNull BA_originalUnit) then {
+                BA_originalUnit
+            } else {
+                player
+            };
+
+            switch (_action) do {
+                case "exit_vehicle": {
+                    _unit action ["Eject", vehicle _unit];
+                    BA_menuActive = false;
+                    BA_menuLevel = 0;
+                    BA_menuItems = [];
+                    BA_menuIndex = 0;
+                    ["Exiting vehicle."] call BA_fnc_speak;
+                };
+
+                case "heal_self": {
+                    _unit action ["HealSelf", _unit];
+                    BA_menuActive = false;
+                    BA_menuLevel = 0;
+                    BA_menuItems = [];
+                    BA_menuIndex = 0;
+                    ["Healing."] call BA_fnc_speak;
+                };
+
+                case "enter_vehicle": {
+                    // Build sub-menu of nearby vehicles
+                    private _pos = getPos _unit;
+                    private _nearVehicles = nearestObjects [_pos, ["Car", "Tank", "Air", "Ship"], 10];
+                    _nearVehicles = _nearVehicles select { alive _x && _x != _unit };
+
+                    if (count _nearVehicles == 0) exitWith {
+                        ["No vehicles nearby."] call BA_fnc_speak;
+                    };
+
+                    BA_interactionType = "enter_vehicle";
+                    BA_menuItems = [];
+
+                    {
+                        private _veh = _x;
+                        private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _veh >> "displayName");
+                        if (_vehName == "") then { _vehName = typeOf _veh; };
+
+                        // Occupancy: count crew vs max seats
+                        private _crewCount = count crew _veh;
+                        private _maxSeats = getNumber (configFile >> "CfgVehicles" >> typeOf _veh >> "transportSoldier") + (count allTurrets [_veh, true]);
+                        // Add driver seat
+                        _maxSeats = _maxSeats + 1;
+
+                        private _dist = round (_unit distance _veh);
+                        private _label = format ["%1, %2 of %3, %4 meters", _vehName, _crewCount, _maxSeats, _dist];
+
+                        BA_menuItems pushBack [_label, _veh, "", 0, "vehicle"];
+                    } forEach _nearVehicles;
+
+                    BA_menuLevel = 2;
+                    BA_menuIndex = 0;
+
+                    private _total = count BA_menuItems;
+                    private _firstItem = BA_menuItems select 0;
+                    private _itemsText = if (_total == 1) then { "vehicle" } else { "vehicles" };
+                    [format ["Nearby %1. 1 of %2. %3.", _itemsText, _total, _firstItem select 0]] call BA_fnc_speak;
+                };
+            };
+        };
+
         // Item selected -> Check type before showing options
         private _item = BA_menuItems select BA_menuIndex;
         private _type = _item select 4;
@@ -86,7 +157,48 @@ switch (BA_menuLevel) do {
     };
 
     case 2: {
-        // Option selected
+        // Interactions tab Level 2 — vehicle selection
+        if (BA_menuTab == 2) exitWith {
+            private _item = BA_menuItems select BA_menuIndex;
+
+            if (BA_interactionType == "enter_vehicle") then {
+                private _veh = _item select 1;
+
+                // Validate vehicle still exists and is alive
+                if (isNull _veh || !alive _veh) exitWith {
+                    ["Vehicle no longer available."] call BA_fnc_speak;
+                };
+
+                // Check for free seats
+                private _crewCount = count crew _veh;
+                private _maxSeats = getNumber (configFile >> "CfgVehicles" >> typeOf _veh >> "transportSoldier") + (count allTurrets [_veh, true]) + 1;
+
+                if (_crewCount >= _maxSeats) exitWith {
+                    ["Vehicle is full."] call BA_fnc_speak;
+                };
+
+                private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _veh >> "displayName");
+                if (_vehName == "") then { _vehName = typeOf _veh; };
+
+                private _unit = if (BA_observerMode && !isNull BA_originalUnit) then {
+                    BA_originalUnit
+                } else {
+                    player
+                };
+
+                _unit action ["GetInCargo", _veh];
+
+                BA_menuActive = false;
+                BA_menuLevel = 0;
+                BA_menuItems = [];
+                BA_menuIndex = 0;
+                BA_interactionType = "";
+
+                [format ["Boarding %1.", _vehName]] call BA_fnc_speak;
+            };
+        };
+
+        // Option selected (Inventory tab)
         private _item = BA_menuItems select BA_menuIndex;
         private _action = _item select 1;
 

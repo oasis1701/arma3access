@@ -21,9 +21,12 @@ BA_menuItems = [];
 BA_menuIndex = 0;
 
 // Tab system
-BA_menuTab = 0;                          // 0=Inventory, 1=Settings
-BA_menuTabNames = ["Inventory", "Settings"];
-BA_menuTabIndex = [0, 0];               // Per-tab remembered item index
+BA_menuTab = 0;                          // 0=Inventory, 1=Settings, 2=Interactions
+BA_menuTabNames = ["Inventory", "Settings", "Interactions"];
+BA_menuTabIndex = [0, 0, 0];            // Per-tab remembered item index
+
+// Interactions tab state
+BA_interactionType = "";                 // Tracks which sub-menu is active at Level 2
 
 // Selected weapon info (preserved across levels)
 BA_selectedWeapon = "";
