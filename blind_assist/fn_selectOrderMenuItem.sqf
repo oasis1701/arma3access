@@ -29,5 +29,12 @@ BA_orderMenuActive = false;
 BA_orderMenuItems = [];
 BA_orderMenuIndex = 0;
 
-// Issue the order
+// In focus mode, issue order to stashed squad unit
+if (BA_focusMode) exitWith {
+    private _targetUnit = if (!isNil "BA_pendingSquadUnit") then { BA_pendingSquadUnit } else { objNull };
+    BA_pendingSquadUnit = objNull;
+    [_commandType, _label, _targetUnit] call BA_fnc_issueOrder;
+};
+
+// Observer mode: issue the order directly
 [_commandType, _label] call BA_fnc_issueOrder;

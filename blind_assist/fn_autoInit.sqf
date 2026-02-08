@@ -18,6 +18,7 @@ sleep 1;
 [] call BA_fnc_initCursor;
 [] call BA_fnc_initObserverMode;
 [] call BA_fnc_initOrderMenu;
+[] call BA_fnc_initSquadMenu;
 [] call BA_fnc_initGroupMenu;
 [] call BA_fnc_initLandmarksMenu;
 [] call BA_fnc_initScanner;

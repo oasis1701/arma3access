@@ -170,7 +170,36 @@ class BA {
 
         // Issue order to unit
         // Usage: ["move", "Move"] call BA_fnc_issueOrder;
+        // Usage: ["move", "Move", _specificUnit] call BA_fnc_issueOrder;
         class issueOrder {};
+    };
+
+    class SquadMenu {
+        file = "blind_assist";
+
+        // Initialize squad member menu state variables
+        // Usage: [] call BA_fnc_initSquadMenu;
+        class initSquadMenu {};
+
+        // Open squad member selection menu
+        // Usage: [] call BA_fnc_openSquadMenu;
+        class openSquadMenu {};
+
+        // Navigate up/down in squad member menu
+        // Usage: ["up"] call BA_fnc_navigateSquadMenu;
+        class navigateSquadMenu {};
+
+        // Select current squad member and issue pending order
+        // Usage: [] call BA_fnc_selectSquadMenuItem;
+        class selectSquadMenuItem {};
+
+        // Close squad member menu without action
+        // Usage: [] call BA_fnc_closeSquadMenu;
+        class closeSquadMenu {};
+
+        // Get formatted squad member description
+        // Usage: [_unit] call BA_fnc_getSquadMemberDesc;
+        class getSquadMemberDesc {};
     };
 
     class GroupMenu {

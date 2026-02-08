@@ -79,10 +79,41 @@ _display displayAddEventHandler ["KeyDown", {
         true
     };
 
-    // O key (24) without Ctrl - Orders menu not available
+    // O key (24) without Ctrl - Open squad member menu (or close active menus)
     if (_key == 24 && !_ctrl && !_shift && !_alt) exitWith {
-        ["Orders menu requires observer mode."] call BA_fnc_speak;
+        if (BA_orderMenuActive) then {
+            [] call BA_fnc_closeOrderMenu;
+            BA_pendingSquadUnit = objNull;
+        } else {
+            if (BA_squadMenuActive) then {
+                [] call BA_fnc_closeSquadMenu;
+            } else {
+                [] call BA_fnc_openSquadMenu;
+            };
+        };
         true
+    };
+
+    // When squad member menu is active, intercept navigation keys
+    if (BA_squadMenuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateSquadMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateSquadMenu; true };
+            case 28: { [] call BA_fnc_selectSquadMenuItem; true };
+            case 1: { [] call BA_fnc_closeSquadMenu; true };
+            default { true };
+        }
+    };
+
+    // When order menu is active, intercept navigation keys
+    if (BA_orderMenuActive) exitWith {
+        switch (_key) do {
+            case 200: { ["up"] call BA_fnc_navigateOrderMenu; true };
+            case 208: { ["down"] call BA_fnc_navigateOrderMenu; true };
+            case 28: { [] call BA_fnc_selectOrderMenuItem; true };
+            case 1: { [] call BA_fnc_closeOrderMenu; BA_pendingSquadUnit = objNull; true };
+            default { true };
+        }
     };
 
     // L key (38) - Open/close landmarks menu

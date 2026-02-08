@@ -15,22 +15,32 @@
  *   [] call BA_fnc_openOrderMenu;
  */
 
-// Must be in observer mode
-if (!BA_observerMode) exitWith {
-    ["Not in observer mode"] call BA_fnc_speak;
+// Must be in observer mode or focus mode
+if (!BA_observerMode && !BA_focusMode) exitWith {
+    ["Observer or focus mode required"] call BA_fnc_speak;
     false
 };
 
-// Must have an observed unit
-if (isNull BA_observedUnit) exitWith {
-    ["No unit selected"] call BA_fnc_speak;
-    false
-};
-
-// Detect unit type - use selected order group if set, otherwise observed unit
-private _unitForDetection = BA_observedUnit;
+// Get the unit for type detection
+private _unitForDetection = objNull;
 if (!isNil "BA_selectedOrderGroup" && {!isNull BA_selectedOrderGroup}) then {
     _unitForDetection = leader BA_selectedOrderGroup;
+} else {
+    if (BA_observerMode) then {
+        _unitForDetection = BA_observedUnit;
+    } else {
+        // Focus mode: use stashed squad unit if available
+        if (!isNil "BA_pendingSquadUnit" && {!isNull BA_pendingSquadUnit}) then {
+            _unitForDetection = BA_pendingSquadUnit;
+        } else {
+            _unitForDetection = player;
+        };
+    };
+};
+
+if (isNull _unitForDetection) exitWith {
+    ["No unit selected"] call BA_fnc_speak;
+    false
 };
 BA_orderMenuUnitType = [_unitForDetection] call BA_fnc_detectUnitType;
 
@@ -80,14 +90,24 @@ BA_orderMenuItems = switch (BA_orderMenuUnitType) do {
             ["Return to Base", "jet_rtb"]
         ]
     };
+    case "armed_vehicle": {
+        [
+            ["Move", "vehicle_move"],
+            ["Hold Fire", "hold_fire"],
+            ["Fire at Will", "fire_at_will"]
+        ]
+    };
+    case "unarmed_vehicle": {
+        [
+            ["Move", "vehicle_move"]
+        ]
+    };
     // Other unit types - temporarily disabled, show basic move only
-    case "armed_vehicle";
-    case "unarmed_vehicle";
     case "artillery";
     case "static";
     default {
         [
-            ["Move", "move"]
+            ["Move", "vehicle_move"]
         ]
     };
 };

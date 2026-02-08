@@ -170,7 +170,19 @@ class BA {
 
         // Issue order to unit
         // Usage: ["move", "Move"] call BA_fnc_issueOrder;
+        // Usage: ["move", "Move", _specificUnit] call BA_fnc_issueOrder;
         class issueOrder {};
+    };
+
+    class SquadMenu {
+        file = "\blind_assist";
+
+        class initSquadMenu {};
+        class openSquadMenu {};
+        class navigateSquadMenu {};
+        class selectSquadMenuItem {};
+        class closeSquadMenu {};
+        class getSquadMemberDesc {};
     };
 
     class GroupMenu {

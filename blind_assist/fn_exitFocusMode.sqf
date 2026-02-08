@@ -38,6 +38,19 @@ if (BA_lookoutMenuActive) then {
     [] call BA_fnc_closeLookoutMenu;
 };
 
+if (BA_orderMenuActive) then {
+    [] call BA_fnc_closeOrderMenu;
+};
+
+if (BA_squadMenuActive) then {
+    BA_squadMenuActive = false;
+    BA_squadMenuItems = [];
+    BA_squadMenuDescs = [];
+    BA_squadMenuIndex = 0;
+};
+
+BA_pendingSquadUnit = objNull;
+
 // Close the dialog (this also triggers onUnload as a safety net)
 closeDialog 0;
 

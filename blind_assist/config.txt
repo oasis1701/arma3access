@@ -147,6 +147,28 @@ class CfgFunctions
 			{
 			};
 		};
+		class SquadMenu
+		{
+			file="\blind_assist";
+			class initSquadMenu
+			{
+			};
+			class openSquadMenu
+			{
+			};
+			class navigateSquadMenu
+			{
+			};
+			class selectSquadMenuItem
+			{
+			};
+			class closeSquadMenu
+			{
+			};
+			class getSquadMemberDesc
+			{
+			};
+		};
 		class GroupMenu
 		{
 			file="\blind_assist";

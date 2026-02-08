@@ -93,6 +93,94 @@ If ghost was at `[0,0,0]` with wrong side, **missions would break**. So we:
 - Ghost group created with `createGroup [side, true]` for correct side
 - Switching observed unit (Ctrl+Tab) does NOT move the ghost - ghost always follows BA_originalUnit
 
+### Order System Architecture (IMPORTANT)
+
+The mod supports two play modes, each with its own order flow:
+
+**Mode 1: Observer Mode** — Player commands AI groups from above
+```
+Player enters Observer Mode (F12)
+  → Player is now a ghost unit; AI controls their soldier
+  → Player cycles groups with G key (sets BA_selectedOrderGroup)
+  → Player cycles units with Ctrl+Tab (changes BA_observedUnit)
+  → Player opens order menu (O key)
+  → Order issued to the GROUP (2-param call: [orderType, label])
+```
+
+**Mode 2: Focus Mode** — Player is on the ground, commanding squad members directly
+```
+Player enters Focus Mode (F key)
+  → Virtual cursor appears at player's position
+  → Player opens squad menu (O key) → selects a specific squad member
+  → That unit is stashed in BA_pendingSquadUnit
+  → Order menu opens (adapts to the unit's type)
+  → Order issued to the INDIVIDUAL UNIT (3-param call: [orderType, label, targetUnit])
+```
+
+#### Order Flow (Key Files)
+
+```
+fn_openOrderMenu.sqf
+  ├── Gets unit for detection:
+  │     Observer: BA_observedUnit or leader of BA_selectedOrderGroup
+  │     Focus:   BA_pendingSquadUnit (selected squad member)
+  ├── Calls fn_detectUnitType.sqf → returns unit category
+  └── Populates BA_orderMenuItems based on category
+
+fn_selectOrderMenuItem.sqf
+  ├── Focus mode:  calls fn_issueOrder with [type, label, BA_pendingSquadUnit]
+  └── Observer mode: calls fn_issueOrder with [type, label]
+
+fn_issueOrder.sqf
+  ├── _isUnitOrder = !isNull _targetUnit  (true = focus mode, false = observer)
+  ├── _group = group of unit (or BA_selectedOrderGroup if set)
+  ├── _vehicle = vehicle of group leader (or target unit's vehicle)
+  └── switch (_orderType) → each case handles BOTH modes via if (_isUnitOrder)
+```
+
+#### Unit Type Detection (`fn_detectUnitType.sqf`)
+
+The order menu changes based on what the selected unit is doing:
+
+| Unit State | Detected Type | Order Menu |
+|------------|---------------|------------|
+| On foot | `"infantry"` | Move, Sneak, Assault, Sweep, Garrison, Find Cover, Regroup, Heal, Hold Fire, Fire at Will |
+| In armed land vehicle | `"armed_vehicle"` | Move, Hold Fire, Fire at Will |
+| In unarmed land vehicle | `"unarmed_vehicle"` | Move |
+| In helicopter | `"helicopter"` | Move, Land, Stop, Altitude, Loiter, Defend, Attack, Strafe |
+| In jet | `"jet"` | Move, Patrol, Strike, Loiter, Altitude, RTB |
+| In artillery | `"artillery"` | Move (basic) |
+| In static weapon | `"static"` | Move (basic) |
+
+#### Adding New Orders
+
+1. Add the menu entry in `fn_openOrderMenu.sqf` under the appropriate unit type case
+2. Add the `case "your_order":` in `fn_issueOrder.sqf`'s switch block
+3. **Every case MUST handle both modes:**
+   ```sqf
+   case "your_order": {
+       if (_isUnitOrder) then {
+           // Focus mode: command the specific _targetUnit
+       } else {
+           // Observer mode: command the _group
+       };
+   };
+   ```
+
+#### AI Movement Commands Reference (CRITICAL)
+
+Different Arma 3 commands work in different contexts. Use the RIGHT command for each situation:
+
+| Command | Use For | Notes |
+|---------|---------|-------|
+| `_group move _pos` | Observer mode group orders | Moves entire group. Does NOT work when player is group leader. |
+| `_unit doMove _pos` | Infantry unit orders | Works for foot soldiers. For vehicle drivers: driver dismounts and walks! |
+| `_unit commandMove _pos` | Vehicle driver unit orders | Driver stays in vehicle and drives. Works whether player is inside or outside. |
+| `addWaypoint` | Helicopter landing, special behaviors | Use with `setCurrentWaypoint`. Doesn't work for player-led groups without it. |
+| `setDestination` | AVOID | Too low-level, ignored when player is group leader. |
+
+**Key rule:** When ordering a vehicle driver to move in focus mode, always use `commandMove` on the driver, never `doMove` (causes dismounting).
+
 ### Vehicle Commands Pattern (IMPORTANT)
 
 When issuing orders to vehicles (helicopters, jets, tanks, etc.), the player may command them in two ways:

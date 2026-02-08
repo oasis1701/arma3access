@@ -7,15 +7,18 @@
  * Arguments:
  *   0: Order type string <STRING>
  *   1: Order label for announcement <STRING>
+ *   2: Target unit for individual orders (optional) <OBJECT>
  *
  * Return Value:
  *   None
  *
  * Example:
  *   ["move", "Move"] call BA_fnc_issueOrder;
+ *   ["move", "Move", _specificUnit] call BA_fnc_issueOrder;
  */
 
-params [["_orderType", "", [""]], ["_label", "", [""]]];
+params [["_orderType", "", [""]], ["_label", "", [""]], ["_targetUnit", objNull, [objNull]]];
+private _isUnitOrder = !isNull _targetUnit;
 
 // Debug helper
 private _debug = {
@@ -32,7 +35,7 @@ if (_orderType == "") exitWith {
 
 // Get target position and unit
 private _targetPos = BA_cursorPos;
-private _unit = BA_observedUnit;
+private _unit = if (BA_observerMode) then { BA_observedUnit } else { player };
 
 format["cursorPos=%1, unit=%2", _targetPos, _unit] call _debug;
 
@@ -63,8 +66,13 @@ if (!isNil "BA_selectedOrderGroup") then {
 };
 
 // Get the vehicle from the group leader (handles both Ctrl+Tab and G key selection)
+// For unit orders, also get vehicle from the target unit
 private _groupLeader = leader _group;
 private _vehicle = vehicle _groupLeader;
+if (_isUnitOrder) then {
+    private _unitVeh = vehicle _targetUnit;
+    if (_unitVeh != _targetUnit) then { _vehicle = _unitVeh };
+};
 
 
 // Get grid reference for announcement
@@ -77,32 +85,49 @@ switch (_orderType) do {
     // ========== INFANTRY COMMANDS (WORKING) ==========
 
     case "move": {
-        format["move: group %1 to %2", _group, _targetPos] call _debug;
-        _group move _targetPos;
-        _group setBehaviour "AWARE";
-        _group setSpeedMode "NORMAL";
-        "move: command sent" call _debug;
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+        } else {
+            _group move _targetPos;
+            _group setBehaviour "AWARE";
+            _group setSpeedMode "NORMAL";
+        };
     };
 
     case "sneak": {
-        _group move _targetPos;
-        _group setBehaviour "STEALTH";
-        _group setSpeedMode "LIMITED";
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+            _targetUnit setUnitPos "MIDDLE";
+            _targetUnit setSpeedMode "LIMITED";
+        } else {
+            _group move _targetPos;
+            _group setBehaviour "STEALTH";
+            _group setSpeedMode "LIMITED";
+        };
     };
 
     case "assault": {
-        _group move _targetPos;
-        _group setBehaviour "COMBAT";
-        _group setCombatMode "RED";
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+            _targetUnit setCombatMode "RED";
+        } else {
+            _group move _targetPos;
+            _group setBehaviour "COMBAT";
+            _group setCombatMode "RED";
+        };
     };
 
     case "garrison": {
         private _buildings = nearestObjects [_targetPos, ["Building", "House"], 100];
         if (count _buildings > 0) then {
             private _building = _buildings select 0;
-            _group move (getPos _building);
-            if (!isNil "BIS_fnc_taskDefend") then {
-                [_group, _building] call BIS_fnc_taskDefend;
+            if (_isUnitOrder) then {
+                _targetUnit doMove (getPos _building);
+            } else {
+                _group move (getPos _building);
+                if (!isNil "BIS_fnc_taskDefend") then {
+                    [_group, _building] call BIS_fnc_taskDefend;
+                };
             };
             private _dist = round (_targetPos distance _building);
             [format["Garrisoning building %1 meters from cursor", _dist]] call BA_fnc_speak;
@@ -112,77 +137,157 @@ switch (_orderType) do {
     };
 
     case "sweep": {
-        private _wp = _group addWaypoint [_targetPos, 0];
-        _wp setWaypointType "SAD";
-        _wp setWaypointBehaviour "COMBAT";
-        _wp setWaypointCombatMode "RED";
-        _group setCurrentWaypoint _wp;
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+            _targetUnit setCombatMode "RED";
+        } else {
+            private _wp = _group addWaypoint [_targetPos, 0];
+            _wp setWaypointType "SAD";
+            _wp setWaypointBehaviour "COMBAT";
+            _wp setWaypointCombatMode "RED";
+            _group setCurrentWaypoint _wp;
+        };
     };
 
     case "heal": {
-        private _units = units _group;
-        private _medic = objNull;
-        private _mostInjured = objNull;
-        private _maxDamage = 0;
-
-        {
-            if ("Medikit" in items _x) then { _medic = _x; };
-            if (damage _x > _maxDamage && alive _x) then {
-                _maxDamage = damage _x;
-                _mostInjured = _x;
+        if (_isUnitOrder) then {
+            if (damage _targetUnit > 0.1 && "FirstAidKit" in items _targetUnit) then {
+                _targetUnit action ["HealSelf", _targetUnit];
+                [format["%1 using first aid kit", name _targetUnit]] call BA_fnc_speak;
+            } else {
+                if ("Medikit" in items _targetUnit) then {
+                    // This unit is a medic - find most injured squad mate
+                    private _mostInjured = objNull;
+                    private _maxDamage = 0;
+                    {
+                        if (damage _x > _maxDamage && alive _x) then {
+                            _maxDamage = damage _x;
+                            _mostInjured = _x;
+                        };
+                    } forEach units _group;
+                    if (!isNull _mostInjured && _maxDamage > 0.1) then {
+                        _targetUnit action ["Heal", _mostInjured];
+                        [format["%1 healing %2", name _targetUnit, name _mostInjured]] call BA_fnc_speak;
+                    } else {
+                        ["No one needs healing"] call BA_fnc_speak;
+                    };
+                } else {
+                    [format["%1 has no medical supplies", name _targetUnit]] call BA_fnc_speak;
+                };
             };
-        } forEach _units;
-
-        if (!isNull _medic && !isNull _mostInjured && _maxDamage > 0.1) then {
-            _medic action ["Heal", _mostInjured];
-            [format["Medic healing %1", name _mostInjured]] call BA_fnc_speak;
         } else {
+            private _units = units _group;
+            private _medic = objNull;
+            private _mostInjured = objNull;
+            private _maxDamage = 0;
+
             {
-                if (damage _x > 0.1 && "FirstAidKit" in items _x) then {
-                    _x action ["HealSelf", _x];
+                if ("Medikit" in items _x) then { _medic = _x; };
+                if (damage _x > _maxDamage && alive _x) then {
+                    _maxDamage = damage _x;
+                    _mostInjured = _x;
                 };
             } forEach _units;
-            ["Squad using first aid kits"] call BA_fnc_speak;
+
+            if (!isNull _medic && !isNull _mostInjured && _maxDamage > 0.1) then {
+                _medic action ["Heal", _mostInjured];
+                [format["Medic healing %1", name _mostInjured]] call BA_fnc_speak;
+            } else {
+                {
+                    if (damage _x > 0.1 && "FirstAidKit" in items _x) then {
+                        _x action ["HealSelf", _x];
+                    };
+                } forEach _units;
+                ["Squad using first aid kits"] call BA_fnc_speak;
+            };
         };
     };
 
     case "regroup": {
-        private _leader = leader _group;
-        {
-            _x doFollow _leader;
-            _x setUnitPos "AUTO";
-            _x setBehaviour "AWARE";
-        } forEach units _group;
-        _group setSpeedMode "NORMAL";
-        ["Squad regrouping on leader"] call BA_fnc_speak;
+        if (_isUnitOrder) then {
+            _targetUnit doFollow (leader _group);
+            _targetUnit setUnitPos "AUTO";
+            [format["%1 regrouping on leader", name _targetUnit]] call BA_fnc_speak;
+        } else {
+            private _leader = leader _group;
+            {
+                _x doFollow _leader;
+                _x setUnitPos "AUTO";
+                _x setBehaviour "AWARE";
+            } forEach units _group;
+            _group setSpeedMode "NORMAL";
+            ["Squad regrouping on leader"] call BA_fnc_speak;
+        };
     };
 
     case "find_cover": {
-        _group setBehaviour "COMBAT";
-        _group setSpeedMode "FULL";
-
-        {
-            private _unit = _x;
-            private _coverObjects = nearestTerrainObjects [getPos _unit, ["TREE", "SMALL TREE", "BUSH", "ROCK", "ROCKS", "WALL", "FENCE"], 50];
-
+        if (_isUnitOrder) then {
+            private _coverObjects = nearestTerrainObjects [getPos _targetUnit, ["TREE", "SMALL TREE", "BUSH", "ROCK", "ROCKS", "WALL", "FENCE"], 50];
             if (count _coverObjects > 0) then {
                 private _cover = _coverObjects select 0;
-                _unit doMove (getPos _cover);
-                _unit setUnitPos "MIDDLE";
+                _targetUnit doMove (getPos _cover);
+                _targetUnit setUnitPos "MIDDLE";
             } else {
-                _unit setUnitPos "DOWN";
+                _targetUnit setUnitPos "DOWN";
             };
-        } forEach units _group;
+            [format["%1 finding cover", name _targetUnit]] call BA_fnc_speak;
+        } else {
+            _group setBehaviour "COMBAT";
+            _group setSpeedMode "FULL";
 
-        ["Squad scattering to cover"] call BA_fnc_speak;
+            {
+                private _unit = _x;
+                private _coverObjects = nearestTerrainObjects [getPos _unit, ["TREE", "SMALL TREE", "BUSH", "ROCK", "ROCKS", "WALL", "FENCE"], 50];
+
+                if (count _coverObjects > 0) then {
+                    private _cover = _coverObjects select 0;
+                    _unit doMove (getPos _cover);
+                    _unit setUnitPos "MIDDLE";
+                } else {
+                    _unit setUnitPos "DOWN";
+                };
+            } forEach units _group;
+
+            ["Squad scattering to cover"] call BA_fnc_speak;
+        };
     };
 
     case "hold_fire": {
-        _group setCombatMode "BLUE";
+        if (_isUnitOrder) then {
+            _targetUnit setCombatMode "BLUE";
+        } else {
+            _group setCombatMode "BLUE";
+        };
     };
 
     case "fire_at_will": {
-        _group setCombatMode "RED";
+        if (_isUnitOrder) then {
+            _targetUnit setCombatMode "RED";
+        } else {
+            _group setCombatMode "RED";
+        };
+    };
+
+    // ========== VEHICLE COMMANDS ==========
+
+    case "vehicle_move": {
+        if (_isUnitOrder) then {
+            // commandMove on the driver — works whether player is inside or outside the vehicle
+            private _vehDriver = driver (vehicle _targetUnit);
+            if (!isNull _vehDriver) then {
+                _vehDriver commandMove _targetPos;
+            } else {
+                ["No driver in vehicle"] call BA_fnc_speak;
+            };
+        } else {
+            // Observer mode: move the entire group (intended behavior)
+            private _vehDriver = driver _vehicle;
+            if (!isNull _vehDriver) then {
+                _group move _targetPos;
+            } else {
+                ["No driver in vehicle"] call BA_fnc_speak;
+            };
+        };
     };
 
     // ========== HELICOPTER COMMANDS ==========
@@ -195,7 +300,11 @@ switch (_orderType) do {
         private _flyHeight = _vehicle getVariable ["BA_flyHeight", 150];
         if (_flyHeight < 30) then { _flyHeight = 150; };
         _vehicle flyInHeight _flyHeight;
-        _group move _targetPos;
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+        } else {
+            _group move _targetPos;
+        };
         _group setBehaviour "AWARE";
         _group setCombatMode "RED";
         _group setSpeedMode "NORMAL";
@@ -388,7 +497,11 @@ switch (_orderType) do {
         private _altitude = _vehicle getVariable ["BA_jetAltitude", 500];
         _vehicle flyInHeightASL [_altitude, _altitude, _altitude];
 
-        _group move _targetPos;
+        if (_isUnitOrder) then {
+            _targetUnit doMove _targetPos;
+        } else {
+            _group move _targetPos;
+        };
         _group setBehaviour "AWARE";
         _group setCombatMode "RED";
         _group setSpeedMode "FULL";
@@ -629,7 +742,11 @@ switch (_orderType) do {
 
 // Announce order issued (except for commands with custom messages or error cases)
 if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe", "jet_patrol", "jet_strike", "jet_hunt", "jet_strafe", "jet_alt_low", "jet_alt_med", "jet_alt_high", "jet_rtb"]) then {
-    private _message = format["%1 issued to grid %2", _label, _gridInfo];
+    private _message = if (_isUnitOrder) then {
+        format["%1, %2, grid %3", name _targetUnit, _label, _gridInfo]
+    } else {
+        format["%1 issued to grid %2", _label, _gridInfo]
+    };
     format["announcing: %1", _message] call _debug;
     [_message] call BA_fnc_speak;
 };
