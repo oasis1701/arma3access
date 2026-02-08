@@ -35,15 +35,15 @@ private _descriptions = [];
     _descriptions pushBack _desc;
 } forEach _aliveUnits;
 
-// Set menu state
-BA_squadMenuItems = _aliveUnits;
-BA_squadMenuDescs = _descriptions;
+// Set menu state - prepend "Order All" as first item
+BA_squadMenuItems = [objNull] + _aliveUnits;
+BA_squadMenuDescs = ["Order All, command entire squad"] + _descriptions;
 BA_squadMenuIndex = 0;
 BA_squadMenuActive = true;
 
 // Announce
-private _count = count _aliveUnits;
-private _firstDesc = _descriptions select 0;
+private _count = count BA_squadMenuItems;
+private _firstDesc = BA_squadMenuDescs select 0;
 private _message = format["Select squad member. 1 of %1. %2. Up Down to navigate, Enter to select, Escape to cancel.", _count, _firstDesc];
 [_message] call BA_fnc_speak;
 

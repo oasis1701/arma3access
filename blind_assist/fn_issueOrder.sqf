@@ -205,13 +205,13 @@ switch (_orderType) do {
 
     case "regroup": {
         if (_isUnitOrder) then {
-            _targetUnit doFollow (leader _group);
+            _targetUnit commandFollow (leader _group);
             _targetUnit setUnitPos "AUTO";
             [format["%1 regrouping on leader", name _targetUnit]] call BA_fnc_speak;
         } else {
             private _leader = leader _group;
             {
-                _x doFollow _leader;
+                _x commandFollow _leader;
                 _x setUnitPos "AUTO";
                 _x setBehaviour "AWARE";
             } forEach units _group;
@@ -268,7 +268,34 @@ switch (_orderType) do {
         };
     };
 
+    // ========== GROUP-WIDE COMMANDS ==========
+
+    case "stop_all": {
+        commandStop (units _group);
+        ["All units stopping"] call BA_fnc_speak;
+    };
+
     // ========== VEHICLE COMMANDS ==========
+
+    case "dismount_all": {
+        private _mounted = (units _group) select { vehicle _x != _x };
+        if (count _mounted > 0) then {
+            // In observer mode, AI isn't under player command so prevent re-entry
+            if (BA_observerMode) then {
+                { _x orderGetIn false } forEach _mounted;
+            };
+            commandGetOut _mounted;
+            if (BA_observerMode) then {
+                // Re-allow boarding after 30s so future mount orders work
+                [_mounted] spawn {
+                    params ["_units"];
+                    sleep 30;
+                    { _x orderGetIn true } forEach _units;
+                };
+            };
+        };
+        ["All units dismounting"] call BA_fnc_speak;
+    };
 
     case "vehicle_move": {
         if (_isUnitOrder) then {
@@ -741,7 +768,7 @@ switch (_orderType) do {
 };
 
 // Announce order issued (except for commands with custom messages or error cases)
-if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe", "jet_patrol", "jet_strike", "jet_hunt", "jet_strafe", "jet_alt_low", "jet_alt_med", "jet_alt_high", "jet_rtb"]) then {
+if !(_orderType in ["garrison", "heal", "regroup", "find_cover", "stop_all", "dismount_all", "heli_stop", "heli_alt_50", "heli_alt_150", "heli_alt_300", "heli_defend", "heli_strafe", "jet_patrol", "jet_strike", "jet_hunt", "jet_strafe", "jet_alt_low", "jet_alt_med", "jet_alt_high", "jet_rtb"]) then {
     private _message = if (_isUnitOrder) then {
         format["%1, %2, grid %3", name _targetUnit, _label, _gridInfo]
     } else {

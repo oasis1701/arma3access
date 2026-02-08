@@ -27,6 +27,12 @@ BA_squadMenuItems = [];
 BA_squadMenuDescs = [];
 BA_squadMenuIndex = 0;
 
+// Check if "Order All" was selected (first item is objNull sentinel)
+if (isNull _unit) exitWith {
+    BA_pendingSquadUnit = objNull;
+    [] call BA_fnc_openOrderMenu;
+};
+
 // Validate unit is still alive
 if (!alive _unit) exitWith {
     [format["%1 is dead", name _unit]] call BA_fnc_speak;

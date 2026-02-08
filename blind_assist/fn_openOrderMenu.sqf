@@ -38,6 +38,24 @@ if (!isNil "BA_selectedOrderGroup" && {!isNull BA_selectedOrderGroup}) then {
     };
 };
 
+// "Order All" in focus mode: BA_pendingSquadUnit is null → show group-wide menu
+if (BA_focusMode && (isNil "BA_pendingSquadUnit" || {isNull BA_pendingSquadUnit})) exitWith {
+    BA_orderMenuItems = [
+        ["Stop", "stop_all"],
+        ["Dismount All", "dismount_all"],
+        ["Regroup", "regroup"],
+        ["Hold Fire", "hold_fire"],
+        ["Fire at Will", "fire_at_will"]
+    ];
+    BA_orderMenuActive = true;
+    BA_orderMenuIndex = 0;
+    BA_orderMenuUnitType = "squad_all";
+    private _firstItem = (BA_orderMenuItems select 0) select 0;
+    private _message = format["Squad orders. 1. %1. Arrows to navigate, Enter to select, Escape to cancel.", _firstItem];
+    [_message] call BA_fnc_speak;
+    true
+};
+
 if (isNull _unitForDetection) exitWith {
     ["No unit selected"] call BA_fnc_speak;
     false
@@ -93,13 +111,15 @@ BA_orderMenuItems = switch (BA_orderMenuUnitType) do {
     case "armed_vehicle": {
         [
             ["Move", "vehicle_move"],
+            ["Dismount All", "dismount_all"],
             ["Hold Fire", "hold_fire"],
             ["Fire at Will", "fire_at_will"]
         ]
     };
     case "unarmed_vehicle": {
         [
-            ["Move", "vehicle_move"]
+            ["Move", "vehicle_move"],
+            ["Dismount All", "dismount_all"]
         ]
     };
     // Other unit types - temporarily disabled, show basic move only
