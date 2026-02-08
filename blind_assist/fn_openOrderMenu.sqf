@@ -15,6 +15,9 @@
  *   [] call BA_fnc_openOrderMenu;
  */
 
+// Reset sub-menu state on fresh open
+BA_orderSubMenu = "";
+
 // Must be in observer mode or focus mode
 if (!BA_observerMode && !BA_focusMode) exitWith {
     ["Observer or focus mode required"] call BA_fnc_speak;
@@ -45,7 +48,8 @@ if (BA_focusMode && (isNil "BA_pendingSquadUnit" || {isNull BA_pendingSquadUnit}
         ["Dismount All", "dismount_all"],
         ["Regroup", "regroup"],
         ["Hold Fire", "hold_fire"],
-        ["Fire at Will", "fire_at_will"]
+        ["Fire at Will", "fire_at_will"],
+        ["Enter Vehicle", "enter_vehicle"]
     ];
     BA_orderMenuActive = true;
     BA_orderMenuIndex = 0;

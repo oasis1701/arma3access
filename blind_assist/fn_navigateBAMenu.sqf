@@ -57,8 +57,14 @@ private _item = BA_menuItems select BA_menuIndex;
 
 switch (BA_menuLevel) do {
     case 1: {
-        // Item list - format based on type
         private _name = _item select 0;
+
+        // Settings tab items are [label, "toggle", action] — only 3 elements
+        if (BA_menuTab == 1) exitWith {
+            [format ["%1.", _name]] call BA_fnc_speak;
+        };
+
+        // Other tabs: items have 5+ elements
         private _magCount = _item select 3;
         private _type = _item select 4;
 

@@ -16,5 +16,6 @@
 BA_orderMenuActive = false;
 BA_orderMenuItems = [];
 BA_orderMenuIndex = 0;
+BA_orderSubMenu = "";
 
 ["Orders cancelled"] call BA_fnc_speak;

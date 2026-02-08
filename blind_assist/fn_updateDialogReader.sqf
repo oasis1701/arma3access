@@ -8,6 +8,8 @@
  * Usage: [] call BA_fnc_updateDialogReader;
  */
 
+if (!BA_dialogReaderEnabled) exitWith {};
+
 // --- Throttle check ---
 private _now = diag_tickTime;
 if (_now - BA_dialogReaderLastUpdate < BA_dialogReaderUpdateInterval) exitWith {};

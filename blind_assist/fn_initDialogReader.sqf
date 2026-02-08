@@ -8,6 +8,7 @@
  */
 
 // State variables
+BA_dialogReaderEnabled = false;
 BA_dialogReaderLastCtrlIDC = -1;
 BA_dialogReaderLastCtrlIDD = -1;
 BA_dialogReaderLastValue = "";

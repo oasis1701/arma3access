@@ -48,6 +48,14 @@ switch (BA_menuLevel) do {
 
                 [format ["Aim Assist Horizontal tone: %1.", _state]] call BA_fnc_speak;
             };
+
+            if (_action == "dialogReader") then {
+                BA_dialogReaderEnabled = !BA_dialogReaderEnabled;
+                private _state = if (BA_dialogReaderEnabled) then {"On"} else {"Off"};
+                _item set [0, format ["Custom dialog accessibility: %1", _state]];
+                BA_menuItems set [BA_menuIndex, _item];
+                [format ["Custom dialog accessibility: %1.", _state]] call BA_fnc_speak;
+            };
         };
 
         // Interactions tab — handle interaction actions

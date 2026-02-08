@@ -284,8 +284,10 @@ switch (BA_menuTab) do {
     // ================================================================
     case 1: {
         private _horizState = if (BA_aimHorizGuidanceEnabled) then {"On"} else {"Off"};
+        private _dialogState = if (BA_dialogReaderEnabled) then {"On"} else {"Off"};
         BA_menuItems = [
-            [format ["Aim Assist Horizontal tone: %1", _horizState], "toggle", "aimHorizGuidance"]
+            [format ["Aim Assist Horizontal tone: %1", _horizState], "toggle", "aimHorizGuidance"],
+            [format ["Custom dialog accessibility: %1", _dialogState], "toggle", "dialogReader"]
         ];
     };
 
